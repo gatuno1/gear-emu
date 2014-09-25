@@ -98,19 +98,19 @@ namespace Gear.GUI
         /// @brief Include a plugin to a propeller chip instance.
         /// @details Attach a plugin, linking the propeller instance to the plugin, opening a new 
         /// tab window and enabling the close button by plugin's closable property.
-        /// @param[in] bm Instance of a Gear.PluginSupport.PluginBase class to be attached.
-        private void AttachPlugin(PluginBase bm)
+        /// @param[in] plugin Instance of a Gear.PluginSupport.PluginBase class to be attached.
+        private void AttachPlugin(PluginBase plugin)
         {
-            Chip.IncludePlugin(bm);     //include into plugin lists of a PropellerCPU instance
-            bm.PresentChip();       //invoke initial setup of plugin.
+            Chip.IncludePlugin(plugin);     //include into plugin lists of a PropellerCPU instance
+            plugin.PresentChip();       //invoke initial setup of plugin.
 
-            TabPage t = new TabPage(bm.Title);
+            TabPage t = new TabPage(plugin.Title);
             t.Parent = documentsTab;
-            bm.Dock = DockStyle.Fill;
-            bm.Parent = t;
+            plugin.Dock = DockStyle.Fill;
+            plugin.Parent = t;
             documentsTab.SelectedTab = t;
             //Mantain the close button availability
-            if (bm.IsClosable)
+            if (plugin.IsClosable)
             {
                 closeButton.Enabled = true;
             }
@@ -124,16 +124,16 @@ namespace Gear.GUI
         /// 
         /// Delete a plugin from the actives plugins of the propeller instance, efectibly stopping 
         /// the plugin. Remove also from pins and clock watch list.
-        /// @param bm Instance of a Gear.PluginSupport.PluginBase class to be detached.
+        /// @param plugin Instance of a Gear.PluginSupport.PluginBase class to be detached.
         /// @version V14.07.17 - Added.
         //Added method to detach a plugin from the active plugin list of the propeller instance.
-        private void DetachPlugin(PluginBase bm)
+        private void DetachPlugin(PluginBase plugin)
         {
-            if (bm.IsClosable)      //check if the plugin is closable, then remove...
+            if (plugin.IsClosable)      //check if the plugin is closable, then remove...
             {
-                Chip.RemoveOnPins(bm);  //from pins watch list
-                Chip.RemoveOnClock(bm); //from clock watch list
-                Chip.RemovePlugin(bm);  //from the plugins registered to the propeller emulator
+                Chip.RemoveOnPins(plugin);  //from pins watch list
+                Chip.RemoveOnClock(plugin); //from clock watch list
+                Chip.RemovePlugin(plugin);  //from the plugins registered to the propeller emulator
             };
         }
 
@@ -235,14 +235,14 @@ namespace Gear.GUI
 
                 //Dynamic load and compile the plugin module as a class, giving the chip 
                 // instance as a parameter.
-                PluginBase bm = ModuleCompiler.LoadModule(
+                PluginBase plugin = ModuleCompiler.LoadModule(
                     code, 
                     instanceName, 
                     references.ToArray(), 
                     Chip
                 );
 
-                if (bm == null)     //if it fails...
+                if (plugin == null)     //if it fails...
                 {
                     // ...open plugin editor in other window
                     PluginEditor pe = new PluginEditor(false);   
@@ -253,11 +253,11 @@ namespace Gear.GUI
                 else               //if success compiling & instanciate the new class...
                 {
                     //...add the reference to the plugin list of the emulator instance
-                    AttachPlugin(bm);   
+                    AttachPlugin(plugin);   
                     GearDesktop.LastPlugin = FileName;  //update location of last plugin
                 }
 
-                return bm;
+                return plugin;
             }
             catch (IOException ioe)
             {
