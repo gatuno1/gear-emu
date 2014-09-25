@@ -96,11 +96,6 @@ namespace Gear.GUI
             return Chip.GetCog(HostID);
         }
 
-        public override void PresentChip(PropellerCPU host)
-        {
-            Chip = host;
-        }
-
         private void DrawString(Graphics g, string s)
         {
             g.DrawString(s, MonoFont, StringBrush, StringX, StringY);

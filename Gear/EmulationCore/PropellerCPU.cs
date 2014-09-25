@@ -134,9 +134,9 @@ namespace Gear.EmulationCore
         private Emulator emulator;
 
         /// @brief Versionated List of Handlers for clock ticks on plugins.
-        private VersionatedContainerCollection TickHandlers;      
+        private List<PluginBase> TickHandlers;      
         /// @brief Versionated List of Handlers for Pin changes on plugins.
-        private VersionatedContainerCollection PinHandlers;
+        private List<PluginBase> PinHandlers;
         /// @brief List of active PlugIns (include system ones, like cog views, etc).
         private List<PluginBase> PlugIns;          
 
@@ -165,9 +165,8 @@ namespace Gear.EmulationCore
             PinHi = 0;
             PinFloat = 0xFFFFFFFFFFFFFFFF;
 
-            TickHandlers = new VersionatedContainerCollection();
-            PinHandlers = new VersionatedContainerCollection();
-//            PlugInsVer = new VersionatedContainerCollection();
+            TickHandlers = new List<PluginBase>();
+            PinHandlers = new List<PluginBase>();
             PlugIns = new List<PluginBase>();
 
             Time = 0;
@@ -486,8 +485,6 @@ namespace Gear.EmulationCore
             if (!(PlugIns.Contains(plugin)))
             {
                 PlugIns.Add(plugin);   //add to the list of plugins
-                //save versioning run time info for this plugin
-                plugin.Versioning = new PluginVersioning(plugin);   
             }
         }
 
@@ -503,7 +500,6 @@ namespace Gear.EmulationCore
             if (PlugIns.Contains(plugin))
             {
                 plugin.OnClose();      //call the event of instanciated plugin before remove 
-                plugin.Versioning.Dispose();   //do some internal clean up
                 PlugIns.Remove(plugin);
             }
         }
@@ -513,18 +509,8 @@ namespace Gear.EmulationCore
         /// @param plugin Compiled plugin reference to include.
         public void NotifyOnClock(PluginBase plugin)
         {
-            if (!(TickHandlers.Contains(plugin, PluginVersioning.memberType.OnClock)))
-                try
-                {
-                    TickHandlers.Add(plugin, PluginVersioning.memberType.OnClock);
-                }
-                catch (VersioningPluginException e)
-                {
-                    MessageBox.Show(e.Message + "\r\n" + this.ToString() + ".NotifyOnClock()",
-                        "Plugin Version Validation",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Exclamation);
-                }
+            if (!(TickHandlers.Contains(plugin)))
+                TickHandlers.Add(plugin);
         }
 
         /// @brief Remove a plugin from the clock notify list.
@@ -532,7 +518,7 @@ namespace Gear.EmulationCore
         /// @param plugin Compiled plugin reference to remove.
         public void RemoveOnClock(PluginBase plugin)
         {
-            if (TickHandlers.Contains(plugin, PluginVersioning.memberType.OnClock))
+            if (TickHandlers.Contains(plugin))
                 TickHandlers.Remove(plugin);
         }
 
@@ -541,18 +527,8 @@ namespace Gear.EmulationCore
         /// @param plugin Compiled plugin reference to include.
         public void NotifyOnPins(PluginBase plugin)
         {
-            if (!(PinHandlers.Contains(plugin, PluginVersioning.memberType.OnPinChange)))
-                try
-                {
-                    PinHandlers.Add(plugin, PluginVersioning.memberType.OnPinChange);
-                }
-                catch (VersioningPluginException e)
-                {
-                    MessageBox.Show(e.Message + "\r\n" + this.ToString() + ".NotifyOnPins()",
-                        "Plugin Version Validation",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Exclamation);
-                }
+            if (!(PinHandlers.Contains(plugin)))
+                PinHandlers.Add(plugin);
         }
 
         /// @brief Remove a plugin from the pin changed notify list.
@@ -560,7 +536,7 @@ namespace Gear.EmulationCore
         /// @param plugin Compiled plugin reference to remove.
         public void RemoveOnPins(PluginBase plugin)
         {
-            if (PinHandlers.Contains(plugin, PluginVersioning.memberType.OnPinChange))
+            if (PinHandlers.Contains(plugin))
                 PinHandlers.Remove(plugin);
         }
 
@@ -754,14 +730,11 @@ namespace Gear.EmulationCore
             // Advance the system counter
             SystemCounter++;
 
-            //build the max parameter list needed for versions of PluginBase.OnClock() method.
-            PluginVersioning.ParamMemberInfo[] parms = { 
-                new PluginVersioning.ParamMemberInfo("time", Time), 
-                new PluginVersioning.ParamMemberInfo("sysCounter", SystemCounter) 
-            };
             // Run each module of the list on time event (calling the appropiate OnClock()).
-            foreach (VersionatedContainer cont in TickHandlers)
-                cont.Invoke(parms);
+            foreach (PluginBase plugin in TickHandlers)
+            {
+                plugin.OnClock(Time, SystemCounter);
+            }
 
             if (pins != IN || dir != DIR || pinChange)
                 PinChanged();
@@ -798,14 +771,9 @@ namespace Gear.EmulationCore
                 }
             }
 
-            //build the max parameter list needed for versions of PluginBase.OnPinChange() method.
-            PluginVersioning.ParamMemberInfo[] parms = { 
-                new PluginVersioning.ParamMemberInfo("time", Time), 
-                new PluginVersioning.ParamMemberInfo("pins", PinStates)
-            };
             //traverse across plugins that use OnPinChange()
-            foreach (VersionatedContainer cont in PinHandlers)
-                cont.Invoke(parms);
+            foreach (PluginBase plugin in PinHandlers)
+                plugin.OnPinChange(Time, PinStates);
         }
 
         /// @brief Drive a pin of Propeller.

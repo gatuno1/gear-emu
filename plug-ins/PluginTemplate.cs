@@ -16,9 +16,10 @@ class <YourClassName> : PluginBase
     //Constructor for the initialization of your plugin
     public <YourClassName>(PropellerCPU chip) : base(chip)
     {
-        //Include here your initialization code only for interface objects 
-        //(example create user controls for the tab window). If you don't use 
-        //any, don't add code here, but you must not delete this method.
+        //Include here your initialization code only for attributes you add to 
+        //your class or interface objects (example create user controls for 
+        //the tab window). If you don't use any, don't add code here, but you 
+        //must not delete this method. 
         //If you wish to use DrivePin() for initial setup of pins, call it  
         //inside of OnReset() method, instead of here.
         OnReset();
