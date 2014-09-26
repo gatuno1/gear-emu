@@ -557,6 +557,10 @@ namespace Gear.GUI
 // vínculo a Referencia de MSCGEN: http://www.mcternan.me.uk/mscgen/
 // Vínculo a referencia de DOXYGEN commands: http://www.stack.nl/~dimitri/doxygen/manual/commands.html
 //
+/// @defgroup PluginDetails Details about Loading a Plugin
+/// 
+
+/// @ingroup PluginDetails
 /// @page PluginLoadingSequencePage Loading Sequence for a Plugin.
 /// @par Main Sequence.
 /// Sequence of plugin loading, since the user presses the button in the emulator window (ideal 
