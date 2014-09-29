@@ -314,7 +314,8 @@ namespace Gear.GUI.LogicProbe
 
                         if (range.Length < 2)
                         {
-                            MessageBox.Show("Invalid range value");
+                            MessageBox.Show("Invalid range value", "Pin value Problem", 
+                                MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                         }
 
                         int start = Convert.ToUInt16(range[0]);
@@ -337,15 +338,21 @@ namespace Gear.GUI.LogicProbe
             }
             catch (FormatException)
             {
-                MessageBox.Show("Value needs to be a valid number.");
+                MessageBox.Show(string.Format("Value needs to be a valid number between 0 and {0}.",
+                        PropellerCPU.TOTAL_PINS - 1),
+                        "Pin value Problem", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
             catch (IndexOutOfRangeException)
             {
-                MessageBox.Show(string.Format("You must specify a pin between 0 and {0}", PropellerCPU.TOTAL_PINS - 1));
+                MessageBox.Show(string.Format("You must specify a pin between 0 and {0}",
+                    PropellerCPU.TOTAL_PINS - 1),
+                    "Pin value Problem", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
             catch (OverflowException)
             {
-                MessageBox.Show(string.Format("You must specify a pin between 0 and {0}", PropellerCPU.TOTAL_PINS - 1));
+                MessageBox.Show(string.Format("You must specify a pin between 0 and {0}",
+                    PropellerCPU.TOTAL_PINS - 1), 
+                    "Pin value Problem", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
 
             Repaint(true);
@@ -366,7 +373,8 @@ namespace Gear.GUI.LogicProbe
 
                         if (range.Length < 2)
                         {
-                            MessageBox.Show("Invalid range value");
+                            MessageBox.Show("Invalid range value", "Pin value Problem", 
+                                MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                         }
 
                         int start = Convert.ToUInt16(range[0]);
@@ -387,17 +395,23 @@ namespace Gear.GUI.LogicProbe
                 }
                 catch (FormatException)
                 {
-                    MessageBox.Show("Value needs to be a valid number.");
+                    MessageBox.Show(string.Format("Pin Value needs to be a valid number between 0 and {0}.",
+                        PropellerCPU.TOTAL_PINS - 1), 
+                        "Pin value Problem", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     return;
                 }
                 catch (IndexOutOfRangeException)
                 {
-                    MessageBox.Show(string.Format("You must specify a pin between 0 and {0}", PropellerCPU.TOTAL_PINS - 1));
+                    MessageBox.Show(string.Format("You must specify a pin between 0 and {0}",
+                        PropellerCPU.TOTAL_PINS - 1),
+                        "Pin value Problem", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     return;
                 }
                 catch (OverflowException)
                 {
-                    MessageBox.Show(string.Format("You must specify a pin between 0 and {0}", PropellerCPU.TOTAL_PINS - 1));
+                    MessageBox.Show(string.Format("You must specify a pin between 0 and {0}",
+                        PropellerCPU.TOTAL_PINS - 1),
+                        "Pin value Problem", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     return;
                 }
             }
@@ -406,5 +420,6 @@ namespace Gear.GUI.LogicProbe
             Pins.Add(new LogicAnalog(pins.ToArray()));
             Repaint(true);
         }
+
     }
 }

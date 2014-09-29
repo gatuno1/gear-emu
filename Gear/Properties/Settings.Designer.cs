@@ -10,18 +10,77 @@
 
 namespace Gear.Properties
 {
+    
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "12.0.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase
     {
-
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
-
+        
         public static Settings Default
         {
             get
             {
                 return defaultInstance;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastPlugin
+        {
+            get 
+            {
+                return ((string)(this["LastPlugin"]));
+            }
+            set 
+            {
+                this["LastPlugin"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastBinary
+        {
+            get 
+            {
+                return ((string)(this["LastBinary"]));
+            }
+            set 
+            {
+                this["LastBinary"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseNoTemplate
+        {
+            get 
+            {
+                return ((bool)(this["UseNoTemplate"]));
+            }
+            set {
+                this["UseNoTemplate"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1024")]
+        public uint UpdateEachSteps
+        {
+            get 
+            {
+                return ((uint)(this["UpdateEachSteps"]));
+            }
+            set 
+            {
+                this["UpdateEachSteps"] = value;
             }
         }
     }

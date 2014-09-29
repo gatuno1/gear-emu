@@ -89,8 +89,12 @@ namespace Gear.EmulationCore
             "XTAL3+"    // External high-speed crystal:   $00000020
         };
 
-        //!< @todo Document member Gear.EmulationCore.PropellerCPU.Cogs
-        private Cog[] Cogs;         
+        /// @brief Array of cogs in the CPU.
+        private Cog[] Cogs;
+        /// @brief Number of cogs Running in the CPU.
+        /// @details Helpful to detect when all the cogs are stopped so you can stop the emulator.
+        /// @version 14.09.29 - Added to help detecting the complete stop of the CPU. 
+        private uint CogsRunning;
         //!< @todo Document member Gear.EmulationCore.PropellerCPU.Memory
         private byte[] Memory;      
         //!< @todo Document member Gear.EmulationCore.PropellerCPU.ResetMemory
@@ -130,7 +134,7 @@ namespace Gear.EmulationCore
         //!< @todo Document member Gear.EmulationCore.PropellerCPU.Time
         private double Time;
 
-        //!< @todo Document member Gear.EmulationCore.PropellerCPU.emulator
+        /// @brief Reference to the emulator instance running this CPU
         private Emulator emulator;
 
         /// @brief Versionated List of Handlers for clock ticks on plugins.
@@ -141,7 +145,7 @@ namespace Gear.EmulationCore
         private List<PluginBase> PlugIns;          
 
         //Expose constants declarations to use on the project. 
-        //!< @todo Document member Gear.EmulationCore.PropellerCPU.TOTAl_COGS
+        /// @brief Cogs implemented in emulator.
         public const int TOTAL_COGS   = 8;
         //!< @todo Document member Gear.EmulationCore.PropellerCPU.TOTAL_LOCKS
         public const int TOTAL_LOCKS  = 8;
@@ -185,8 +189,7 @@ namespace Gear.EmulationCore
             Resources.BiosImage.CopyTo(Memory, TOTAL_MEMORY - TOTAL_RAM);
         }
 
-        /// @todo Document method Gear.EmulationCore.PropellerBreakPoint().
-        /// 
+        /// @brief Set a breakpoint at this CPU, showing that in the emulator where this runs.
         public void BreakPoint()
         {
             emulator.BreakPoint();
@@ -652,6 +655,7 @@ namespace Gear.EmulationCore
                 Cogs[cog] = null;
                 ClockSources[cog] = null;
             }
+
         }
 
         /// @brief Advance one clock step.
@@ -707,6 +711,7 @@ namespace Gear.EmulationCore
             // CPU advances on the main clock source
             RingPosition = (RingPosition + 1) & 0xF;    // 16 positions on the ring counter
 
+            //execute a step on each cog
             for (int i = 0; i < Cogs.Length; i++)
                 if (Cogs[i] != null)
                 {
@@ -730,7 +735,7 @@ namespace Gear.EmulationCore
             // Advance the system counter
             SystemCounter++;
 
-            // Run each module of the list on time event (calling the appropiate OnClock()).
+            // Run each module of the list on time event (calling OnClock()).
             foreach (PluginBase plugin in TickHandlers)
             {
                 plugin.OnClock(Time, SystemCounter);
@@ -899,12 +904,12 @@ namespace Gear.EmulationCore
 
         /// @todo Document method Gear.EmulationCore.PropellerCPU.HubOp().
         /// 
-        public uint HubOp(Cog caller, uint operation, uint arguement, ref bool carry)
+        public uint HubOp(Cog caller, uint operation, uint argument, ref bool carry)
         {
             switch ((HubOperationCodes)operation)
             {
                 case HubOperationCodes.HUBOP_CLKSET:
-                    SetClockMode((byte)arguement);
+                    SetClockMode((byte)argument);
                     break;
                 case HubOperationCodes.HUBOP_COGID:
                     {
@@ -914,13 +919,13 @@ namespace Gear.EmulationCore
                 case HubOperationCodes.HUBOP_COGINIT:
                     {
                         uint cog = (uint)Cogs.Length;
-                        uint param = (arguement >> 16) & 0xFFFC;
-                        uint progm = (arguement >> 2) & 0xFFFC;
+                        uint param = (argument >> 16) & 0xFFFC;
+                        uint progm = (argument >> 2) & 0xFFFC;
 
                         // Start a new cog?
-                        if ((arguement & TOTAL_COGS) != 0)
+                        if ((argument & TOTAL_COGS) != 0)   //if cognumber is inside valid range 
                         {
-                            for (uint i = 0; i < Cogs.Length; i++)
+                            for (uint i = 0; i < Cogs.Length; i++)  //assign the first free cog
                             {
                                 if (Cogs[i] == null)
                                 {
@@ -937,7 +942,7 @@ namespace Gear.EmulationCore
                         }
                         else
                         {
-                            cog = (arguement & 7);
+                            cog = (argument & 7);
                         }
 
                         PLLGroup pll = new PLLGroup();
@@ -953,16 +958,17 @@ namespace Gear.EmulationCore
                         return (uint)cog;
                     }
                 case HubOperationCodes.HUBOP_COGSTOP:
-                    Stop((int)(arguement & 7));
+                    Stop((int)(argument & 7));
 
                     // TODO: DETERMINE CARRY
+
                     // TODO: DETERMINE RESULT
-                    return arguement;
+                    return argument;
                 case HubOperationCodes.HUBOP_LOCKCLR:
-                    carry = LocksState[arguement & 7];
-                    LocksState[arguement & 7] = false;
+                    carry = LocksState[argument & 7];
+                    LocksState[argument & 7] = false;
                     // TODO: DETERMINE RESULT
-                    return arguement;
+                    return argument;
                 case HubOperationCodes.HUBOP_LOCKNEW:
                     for (uint i = 0; i < LocksAvailable.Length; i++)
                     {
@@ -976,15 +982,15 @@ namespace Gear.EmulationCore
                     carry = true;   // No Locks available
                     return 0;       // Return 0 ?
                 case HubOperationCodes.HUBOP_LOCKRET:
-                    LocksAvailable[arguement & 7] = true;
+                    LocksAvailable[argument & 7] = true;
                     // TODO: DETERMINE CARRY
                     // TODO: DETERMINE RESULT
-                    return arguement;
+                    return argument;
                 case HubOperationCodes.HUBOP_LOCKSET:
-                    carry = LocksState[arguement & 7];
-                    LocksState[arguement & 7] = true;
+                    carry = LocksState[argument & 7];
+                    LocksState[argument & 7] = true;
                     // TODO: DETERMINE RESULT
-                    return arguement;
+                    return argument;
                 default:
                     // TODO: RAISE EXCEPTION
                     break;

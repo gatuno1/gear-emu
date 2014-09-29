@@ -44,6 +44,10 @@ namespace Gear.PluginSupport
         /// @version 14.8.10 - Added reference to keep PropellerCPU internal to class.
         protected PropellerCPU Chip;
 
+        /// @brief Default constructor.
+        /// @note Not to be used by plugin derived class, only by the Designer in MVSC.
+        protected PluginBase() { }
+
         /// @brief Constructor to initialize with the PropellerCPU reference.
         /// This avoid to declare in each plugin the following example code:
         /// @code{.cs}

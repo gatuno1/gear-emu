@@ -65,8 +65,8 @@ namespace Gear.GUI
                 AttachPlugin(new CogView(i, Chip));
 
             AttachPlugin(new MemoryView(Chip));
-            AttachPlugin(new LogicProbe.LogicView(Chip));
             AttachPlugin(new SpinView(Chip));
+            AttachPlugin(new LogicProbe.LogicView(Chip));   //changed to logicprobe be the last tab
             documentsTab.SelectedIndex = 0;
 
             // TEMPORARY RUN FUNCTION
@@ -87,8 +87,9 @@ namespace Gear.GUI
             }
         }
 
-        /// @todo Document Gear.GUI.Emulator.BreakPoint()
-        /// 
+        /// @brief Make a stop on the emulation.
+        /// @details This method would be called when a plug in determine to stop, for example
+        /// when a breakpoint condition is satisfied.
         public void BreakPoint()
         {
             runTimer.Stop();
@@ -137,11 +138,13 @@ namespace Gear.GUI
             };
         }
 
-        /// @todo Document Gear.GUI.Emulator.RunEmulatorStep
-        /// 
+        /// @brief Run the emulator updating the screen between a number of steps.
+        /// @details The program property "UpdateEachSteps" gives the number of steps before screen repaint.
+        /// Adjusting this number in configuration (like increasing the number) enable to obtain faster 
+        /// execution at expense of less screen responsiveness.
         private void RunEmulatorStep(object sender, EventArgs e)
         {
-            for (int i = 0; i < 1024; i++)
+            for (uint i = 0; i < Properties.Settings.Default.UpdateEachSteps; i++)
                 if (!Chip.Step())
                 {
                     runTimer.Stop();
@@ -254,7 +257,8 @@ namespace Gear.GUI
                 {
                     //...add the reference to the plugin list of the emulator instance
                     AttachPlugin(plugin);   
-                    GearDesktop.LastPlugin = FileName;  //update location of last plugin
+                    Properties.Settings.Default.LastPlugin = FileName;  //update location of last plugin
+                    Properties.Settings.Default.Save();
                 }
 
                 return plugin;
@@ -321,8 +325,7 @@ namespace Gear.GUI
             base.OnClosed(e);
         }
 
-        /// @todo Document Gear.GUI.Emulator.RepaintViews()
-        /// 
+        /// @brief Repaint the Views, including float windows.
         private void RepaintViews()
         {
             foreach (Control s in FloatControls)
@@ -455,11 +458,12 @@ namespace Gear.GUI
             runTimer.Start();
         }
 
-        /// @todo Document Gear.GUI.Emulator.stopEmulator_Click()
-        /// 
+        /// @brief Stop the emulation.
+        /// @version V14.09.29 - Added the refresh of the screen.
         private void stopEmulator_Click(object sender, EventArgs e)
         {
             runTimer.Stop();
+            RepaintViews(); //added the repaint, to refresh them
         }
 
         /// @todo Document Gear.GUI.Emulator.stepInstruction_Click()
@@ -489,8 +493,8 @@ namespace Gear.GUI
             OpenFileDialog dialog = new OpenFileDialog();
             dialog.Filter = "Gear Plug-in (*.xml)|*.xml|All Files (*.*)|*.*";
             dialog.Title = "Open Gear Plug-in...";
-            if (GearDesktop.LastPlugin != null)
-                dialog.InitialDirectory = Path.GetDirectoryName(GearDesktop.LastPlugin);
+            if (Properties.Settings.Default.LastPlugin.Length > 0)
+                dialog.InitialDirectory = Path.GetDirectoryName(Properties.Settings.Default.LastPlugin);
 
             if (dialog.ShowDialog(this) == DialogResult.OK)
                 LoadPlugin(dialog.FileName);

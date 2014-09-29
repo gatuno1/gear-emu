@@ -1,7 +1,8 @@
 //Plugin template for plugin system v1.0
-//Name   : <put your name here>
-//Version: <put the version of this plugin>
-//Purpose: <write what do your plugin>.
+//Name   : put your name here
+//Version: put the version of this plugin
+//Date   : date of this version
+//Purpose: write what do your plugin
 
 //Assemblies needed for GEAR plugin system (do not delete them).
 using System;
@@ -11,10 +12,10 @@ using Gear.PluginSupport;
 
 
 //Class name declared below must match class name on plugin editor text box
-class <YourClassName> : PluginBase
+class YourClassName : PluginBase
 {
     //Constructor for the initialization of your plugin
-    public <YourClassName>(PropellerCPU chip) : base(chip)
+    public YourClassName(PropellerCPU chip) : base(chip)
     {
         //Include here your initialization code only for attributes you add to 
         //your class or interface objects (example create user controls for 
@@ -69,7 +70,7 @@ class <YourClassName> : PluginBase
     //Warning: to assure the correct correct operation of the plugin system, 
     //you can't change the parameters of any predefined method: neither the 
     //names or the types. Also you must not add other parameters.
-    public override void OnClock(double time) 
+    public override void OnClock(double time, uint sysCounter) 
     { 
         //Put your code here.
     }
