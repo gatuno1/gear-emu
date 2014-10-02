@@ -170,7 +170,8 @@ namespace Gear.EmulationCore
             switch (State)
             {
                 case CogRunState.HUB_HUBOP:
-                    DataResult = Hub.HubOp(this, SourceValue, DestinationValue, ref CarryResult);
+                    DataResult = Hub.HubOp(this, SourceValue, DestinationValue, ref CarryResult, 
+                        ref ZeroResult);
                     WriteBackResult();
                     return;
                 case CogRunState.HUB_RDBYTE:

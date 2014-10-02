@@ -48,7 +48,6 @@ namespace Gear.GUI
         private Timer runTimer;             
 
         /// @brief Default Constructor.
-        /// 
         /// @param[in] source Binary program loaded (path & name)
         public Emulator(string source)
         {

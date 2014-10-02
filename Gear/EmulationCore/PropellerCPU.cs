@@ -41,11 +41,11 @@ namespace Gear.EmulationCore
     /// 
     public enum HubOperationCodes : uint
     {
-        HUBOP_CLKSET  = 0,  //!< Setting the clock
-        HUBOP_COGID   = 1,  //!< Getting the Cog ID
-        HUBOP_COGINIT = 2,  //!< Start or restart a Cog by ID
-        HUBOP_COGSTOP = 3,  //!< Stop Cog by its ID
-        HUBOP_LOCKNEW = 4,  //!< Check out new semaphore and get its ID
+        HUBOP_CLKSET  = 0,  //!< Setting the clock.
+        HUBOP_COGID   = 1,  //!< Getting the Cog ID.
+        HUBOP_COGINIT = 2,  //!< Start or restart a Cog by ID or next available.
+        HUBOP_COGSTOP = 3,  //!< Stop Cog by its ID.
+        HUBOP_LOCKNEW = 4,  //!< Check out new semaphore and get its ID.
         //!< Return semaphore back to semaphore pool, releasing it for future LOCKNEW requests.
         HUBOP_LOCKRET = 5,  
         HUBOP_LOCKSET = 6,  //!< Set semaphore to true and get its previous state
@@ -902,9 +902,25 @@ namespace Gear.EmulationCore
             return 0;
         }
 
-        /// @todo Document method Gear.EmulationCore.PropellerCPU.HubOp().
-        /// 
-        public uint HubOp(Cog caller, uint operation, uint argument, ref bool carry)
+        /// @brief Execute the hub operations.
+        /// @details This method is called from a cog to do the operations related to all the CPU.
+        /// @version 14.10.02 - corrected problem in COGSTOP return.
+        /// @param caller Reference to the caller Cog of this method.
+        /// @param operation Hub operation to execute.
+        /// @param argument Parameter given to the opcode (destination field in PASM).
+        /// @param[out] carry Carry flag that could be affected by the operation.
+        /// @param[out] zero Zero flag that could be affected by the operation.
+        /// @returns Value depending on operation.
+        /// @note Operations supported reference, based in Propeller Manual v1.2:
+        /// HUBOP_CLKSET - page 271.
+        /// HUBOP_COGID - page 283.
+        /// HUBOP_COGINIT - page 284.
+        /// HUBOP_COGSTOP - page 286.
+        /// HUBOP_LOCKNEW - page 304.
+        /// HUBOP_LOCKRET - page 305.
+        /// HUBOP_LOCKSET - page 306.
+        /// HUBOP_LOCKCLR - page 303.
+        public uint HubOp(Cog caller, uint operation, uint argument, ref bool carry, ref bool zero)
         {
             switch ((HubOperationCodes)operation)
             {
@@ -913,7 +929,7 @@ namespace Gear.EmulationCore
                     break;
                 case HubOperationCodes.HUBOP_COGID:
                     {
-                        // TODO: DETERMINE CARRY
+                        // TODO: DETERMINE CARRY - seems to be =false all times
                         return CogID(caller);
                     }
                 case HubOperationCodes.HUBOP_COGINIT:
@@ -921,6 +937,10 @@ namespace Gear.EmulationCore
                         uint cog = (uint)Cogs.Length;
                         uint param = (argument >> 16) & 0xFFFC;
                         uint progm = (argument >> 2) & 0xFFFC;
+                        // TODO: change logic to manage well the two cases: 
+                        //  1) COGINIT with no parameters (well supported in present code)
+                        //  2) COGINIT with a cog number (not managed yet).
+                        //  see Propeller Manual v1.2, page 284
 
                         // Start a new cog?
                         if ((argument & TOTAL_COGS) != 0)   //if cognumber is inside valid range 
@@ -954,16 +974,18 @@ namespace Gear.EmulationCore
                         else
                             Cogs[cog] = new NativeCog(this, progm, param, CoreFreq, pll);
 
-                        carry = false;
+                        carry = false;  //TODO: correct carry for case to start a new (next available) cog
+                                        // and all were occupied.
                         return (uint)cog;
                     }
                 case HubOperationCodes.HUBOP_COGSTOP:
                     Stop((int)(argument & 7));
 
-                    // TODO: DETERMINE CARRY
+                    // TODO: DETERMINE CARRY - must be true if all the cogs where running 
+                    // before the stop call
 
-                    // TODO: DETERMINE RESULT
-                    return argument;
+                    // TODO: DETERMINE RESULT - returns the cog number stopped
+                    return (argument & 7);
                 case HubOperationCodes.HUBOP_LOCKCLR:
                     carry = LocksState[argument & 7];
                     LocksState[argument & 7] = false;
