@@ -37,6 +37,8 @@ namespace Gear.GUI.LogicProbe
             {
                 components.Dispose();
             }
+            this.MonoFont.Dispose();
+            this.BackBuffer.Dispose();
             base.Dispose(disposing);
         }
 

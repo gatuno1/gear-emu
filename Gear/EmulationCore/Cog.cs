@@ -121,9 +121,9 @@ namespace Gear.EmulationCore
     abstract public partial class Cog
     {
         // Runtime variables
-        protected uint[] Memory;            //!< Program Memory
+        protected uint[] Memory;            //!< Cog Memory.
 
-        protected PropellerCPU Hub;            //!< Host processor
+        protected PropellerCPU Hub;         //!< Host processor
         protected volatile uint PC;         //!< Program Cursor
         protected volatile int BP;          //!< Breakpoint Address
 

@@ -141,6 +141,8 @@ namespace Gear.GUI
         /// @details The program property "UpdateEachSteps" gives the number of steps before screen repaint.
         /// Adjusting this number in configuration (like increasing the number) enable to obtain faster 
         /// execution at expense of less screen responsiveness.
+        /// @param[in] sender Reference to object where event was raised.
+        /// @param[in] e Event data arguments.
         private void RunEmulatorStep(object sender, EventArgs e)
         {
             for (uint i = 0; i < Properties.Settings.Default.UpdateEachSteps; i++)
@@ -350,8 +352,9 @@ namespace Gear.GUI
             RepaintViews();
         }
 
-        /// @todo Document Gear.GUI.Emulator.stepEmulator_Click()
-        /// 
+        /// @brief Run only one instruction of the active cog, stopping after executed.
+        /// @param[in] sender Reference to object where event was raised.
+        /// @param[in] e Event data arguments.
         private void stepEmulator_Click(object sender, EventArgs e)
         {
             Chip.Step();

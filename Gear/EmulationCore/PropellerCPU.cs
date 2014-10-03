@@ -38,33 +38,45 @@ using Gear.GUI;
 namespace Gear.EmulationCore
 {
     /// @brief Identifiers for hub operations.
-    /// 
     public enum HubOperationCodes : uint
     {
-        HUBOP_CLKSET  = 0,  //!< Setting the clock.
-        HUBOP_COGID   = 1,  //!< Getting the Cog ID.
-        HUBOP_COGINIT = 2,  //!< Start or restart a Cog by ID or next available.
-        HUBOP_COGSTOP = 3,  //!< Stop Cog by its ID.
-        HUBOP_LOCKNEW = 4,  //!< Check out new semaphore and get its ID.
-        //!< Return semaphore back to semaphore pool, releasing it for future LOCKNEW requests.
-        HUBOP_LOCKRET = 5,  
-        HUBOP_LOCKSET = 6,  //!< Set semaphore to true and get its previous state
-        HUBOP_LOCKCLR = 7   //!< Clear semaphore to false and get its previous state
+        /// @brief Setting the clock.
+        HUBOP_CLKSET  = 0,
+        /// @brief Getting the Cog ID.
+        HUBOP_COGID   = 1,
+        /// @brief Start or restart a Cog by ID or next available.
+        HUBOP_COGINIT = 2,
+        /// @brief Stop Cog by its ID.
+        HUBOP_COGSTOP = 3,
+        /// @brief Check out new semaphore and get its ID.
+        HUBOP_LOCKNEW = 4,
+        /// @brief Return semaphore back to semaphore pool, releasing it for future LOCKNEW requests.
+        HUBOP_LOCKRET = 5,
+        /// @brief Set semaphore to true and get its previous state.
+        HUBOP_LOCKSET = 6,
+        /// @brief Clear semaphore to false and get its previous state.
+        HUBOP_LOCKCLR = 7   
     }
 
-    /// @brief Possible pin states.
-    /// 
+    /// @brief Possible pin states for P1 Chip.
     public enum PinState
     {
-        FLOATING,   //!< Pin Floating
-        OUTPUT_LO,  //!< Output Low (0V)
-        OUTPUT_HI,  //!< Output Hi (3.3V)
-        INPUT_LO,   //!< Input Low (0V)
-        INPUT_HI,   //!< Input Hi (3.3V)
+        /// @brief Pin Floating.
+        FLOATING  = 0,
+        /// @brief Output Low (0V)
+        OUTPUT_LO = 2,
+        /// @brief Output Hi (3.3V)
+        OUTPUT_HI = 3,
+        /// @brief Input Low (0V)
+        INPUT_LO  = 4,
+        /// @brief Input Hi (3.3V)
+        INPUT_HI  = 5,   
     }
 
-    /// @todo Document Gear.EmulationCore.PropellerCPU class.
-    /// 
+    /// @brief Class to emulate the core of Propeller P1 chip.
+    /// @details Conceptually it comprehends the ROM, RAM (hub memory), clock , locks, hub ring, main 
+    /// pin state, and references to each cog (with their own cog memory, counters, frequency 
+    /// generator, program cursor).
     public partial class PropellerCPU
     {
         /// @brief Name of Constants for setting Clock.
@@ -125,16 +137,17 @@ namespace Gear.EmulationCore
         private uint CoreFreq;
         //!< @todo Document member Gear.EmulationCore.PropellerCPU.ClockMode
         private byte ClockMode;
-        //!< @todo Document member Gear.EmulationCore.PropellerCPU.PinStates
+        /// @brief Array for the state of each pin.
+        /// @detail Mainly used to expose to plugins the pin state of
         private PinState[] PinStates;
 
         //!< @todo Document member Gear.EmulationCore.PropellerCPU.pinChange
         private bool pinChange;
 
-        //!< @todo Document member Gear.EmulationCore.PropellerCPU.Time
+        /// @brief Emulation Time in secounds units.
         private double Time;
 
-        /// @brief Reference to the emulator instance running this CPU
+        /// @brief Reference to the emulator instance running this CPU.
         private Emulator emulator;
 
         /// @brief Versionated List of Handlers for clock ticks on plugins.
@@ -144,17 +157,19 @@ namespace Gear.EmulationCore
         /// @brief List of active PlugIns (include system ones, like cog views, etc).
         private List<PluginBase> PlugIns;          
 
-        //Expose constants declarations to use on the project. 
-        /// @brief Cogs implemented in emulator.
-        public const int TOTAL_COGS   = 8;
-        //!< @todo Document member Gear.EmulationCore.PropellerCPU.TOTAL_LOCKS
-        public const int TOTAL_LOCKS  = 8;
-        //!< @todo Document member Gear.EmulationCore.PropellerCPU.TOTAL_PINS
-        public const int TOTAL_PINS   = 64;
-        //!< @todo Document member Gear.EmulationCore.PropellerCPU.TOTAL_MEMORY
-        public const int TOTAL_MEMORY = 0x10000;
-        //!< @todo Document member Gear.EmulationCore.PropellerCPU.TOTAL_RAM
-        public const int TOTAL_RAM    = 0x8000;     
+        //Expose constants declarations of P1 Chip to use on the emulation. 
+        /// @brief Cogs implemented in emulator for P1 Chip.
+        public const int TOTAL_COGS      = 8;
+        /// @brief Number of lock availables in P1 Chip.
+        public const int TOTAL_LOCKS     = 8;
+        /// @brief Number of pins of P1 Chip.
+        public const int TOTAL_PINS      = 64;
+        /// @brief Pin mask for all the 64 pins of P1 Chip.
+        public const ulong PIN_FULL_MASK = 0xFFFFFFFFFFFFFFFF;
+        /// @brief Total main memory implemented on P1 Chip (Hub RAM + ROM).
+        public const int TOTAL_MEMORY    = 0x10000;
+        /// @brief Total RAM hub memory implemented on P1 Chip.
+        public const int TOTAL_RAM       = 0x8000;
 
         /// @brief PropellerCPU Constructor.
         /// @param em Reference to the Gear.GUI.Emulator instance controlling this PropellerCPU.
@@ -167,7 +182,7 @@ namespace Gear.EmulationCore
                 Cogs[i] = null;
 
             PinHi = 0;
-            PinFloat = 0xFFFFFFFFFFFFFFFF;
+            PinFloat = PIN_FULL_MASK;
 
             TickHandlers = new List<PluginBase>();
             PinHandlers = new List<PluginBase>();
@@ -641,9 +656,8 @@ namespace Gear.EmulationCore
             Cogs[0] = new InterpretedCog(this, InitFrame, CoreFreq, (PLLGroup)ClockSources[0]);
         }
 
-        /// @brief Stop a %cog in the %propeller.
-        ///
-        /// @param[in] cog %Cog number to stop.
+        /// @brief Stop a cog of the P1 Chip.
+        /// @param[in] cog Cog number to stop.
         public void Stop(int cog)
         {
             if (cog >= TOTAL_COGS || cog < 0)
@@ -747,34 +761,49 @@ namespace Gear.EmulationCore
             return result;
         }
 
-        /// @brief Update pin information when are changes.
+        /// @brief Update pin information seeking changes.
         /// @details Consider changes in DIRA and DIRB, and also generated in plugins.
         /// Inside it calls the OnPinChange() method for each plugin.
         public void PinChanged()
         {
             ulong pinsState = OUT;  //get total pins (P63..P0) OUT state
 
-            pinChange = false;
+            this.pinChange = false;
 
-            for (int i = 0; i < TOTAL_PINS; i++)    //loop for each pin of the chip
+            //TODO [ASB] : replace the code below with more optimized one using bit masking and constant PIN_FULL_MASK
+            
+            ulong total_pin_mask = (0x1 << (TOTAL_PINS-1)); //max pin mask, bit 64 for P1 chip
+            
+            for (ulong mask=0x1, i=0; mask <= total_pin_mask; mask <<= 1, i++)
             {
-                if (((DIR >> i) & 1) == 0)  //if Pin i has direction set to INPUT
+                if ( (DIR & mask) == 0x0)	//if Pin i has direction set to INPUT
                 {
-                    if (((PinFloat >> i) & 1) != 0)
-                        PinStates[i] = PinState.FLOATING;
-                    else if (((PinHi >> i) & 1) != 0)
-                        PinStates[i] = PinState.INPUT_HI;
-                    else
-                        PinStates[i] = PinState.INPUT_LO;
+                    if ( (PinFloat & mask) != 0x0)
+                    
                 }
-                else                     //then Pin i has direction set to OUTPUT
-                {
-                    if (((pinsState >> i) & 1) != 0)
-                        PinStates[i] = PinState.OUTPUT_HI;
-                    else
-                        PinStates[i] = PinState.OUTPUT_LO;
-                }
+                else
+            
             }
+
+            //for (int i = 0; i < TOTAL_PINS; i++)    //loop for each pin of the chip
+            //{
+            //    if (((DIR >> i) & 1) == 0)  //if Pin i has direction set to INPUT
+            //    {
+            //        if (((PinFloat >> i) & 1) != 0)
+            //            PinStates[i] = PinState.FLOATING;
+            //        else if (((PinHi >> i) & 1) != 0)
+            //            PinStates[i] = PinState.INPUT_HI;
+            //        else
+            //            PinStates[i] = PinState.INPUT_LO;
+            //    }
+            //    else                     //then Pin i has direction set to OUTPUT
+            //    {
+            //        if (((pinsState >> i) & 1) != 0)
+            //            PinStates[i] = PinState.OUTPUT_HI;
+            //        else
+            //            PinStates[i] = PinState.OUTPUT_LO;
+            //    }
+            //}
 
             //traverse across plugins that use OnPinChange()
             foreach (PluginBase plugin in PinHandlers)
