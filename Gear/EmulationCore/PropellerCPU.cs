@@ -772,17 +772,25 @@ namespace Gear.EmulationCore
 
             //TODO [ASB] : replace the code below with more optimized one using bit masking and constant PIN_FULL_MASK
             
-            ulong total_pin_mask = (0x1 << (TOTAL_PINS-1)); //max pin mask, bit 64 for P1 chip
-            
-            for (ulong mask=0x1, i=0; mask <= total_pin_mask; mask <<= 1, i++)
+            ulong total_pin_mask = (0x1UL << (TOTAL_PINS - 1)); //max pin mask, bit 63 for P1 chip
+            for (ulong mask = 1UL, i = 0UL; mask <= total_pin_mask; mask <<= 1, i++)
             {
-                if ( (DIR & mask) == 0x0)	//if Pin i has direction set to INPUT
+                if ( (DIR & mask) == 0UL)	//if Pin i has direction set to INPUT
                 {
-                    if ( (PinFloat & mask) != 0x0)
-                    
+                    if ( (PinFloat & mask) != 0UL)
+                        PinStates[i] = PinState.FLOATING;
+                    else if ( (PinHi & mask) != 0UL)
+                        PinStates[i] = PinState.INPUT_HI;
+                    else
+                        PinStates[i] = PinState.INPUT_LO;
                 }
-                else
-            
+                else                     //then Pin i has direction set to OUTPUT
+                {
+                    if ( (pinsState & mask) != 0UL)
+                        PinStates[i] = PinState.OUTPUT_HI;
+                    else
+                        PinStates[i] = PinState.OUTPUT_LO;
+                }
             }
 
             //for (int i = 0; i < TOTAL_PINS; i++)    //loop for each pin of the chip
