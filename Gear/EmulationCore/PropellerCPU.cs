@@ -62,15 +62,15 @@ namespace Gear.EmulationCore
     public enum PinState
     {
         /// @brief Pin Floating.
-        FLOATING  = 0,
+        FLOATING  = 4,
         /// @brief Output Low (0V)
         OUTPUT_LO = 2,
         /// @brief Output Hi (3.3V)
         OUTPUT_HI = 3,
         /// @brief Input Low (0V)
-        INPUT_LO  = 4,
+        INPUT_LO  = 0,
         /// @brief Input Hi (3.3V)
-        INPUT_HI  = 5,   
+        INPUT_HI  = 1,   
     }
 
     /// @brief Class to emulate the core of Propeller P1 chip.
@@ -138,7 +138,7 @@ namespace Gear.EmulationCore
         //!< @todo Document member Gear.EmulationCore.PropellerCPU.ClockMode
         private byte ClockMode;
         /// @brief Array for the state of each pin.
-        /// @detail Mainly used to expose to plugins the pin state of
+        /// @details Mainly used to expose to plugins the pin state of
         private PinState[] PinStates;
 
         //!< @todo Document member Gear.EmulationCore.PropellerCPU.pinChange
@@ -766,16 +766,12 @@ namespace Gear.EmulationCore
         /// Inside it calls the OnPinChange() method for each plugin.
         public void PinChanged()
         {
-            ulong pinsState = OUT;  //get total pins (P63..P0) OUT state
-
             this.pinChange = false;
-
-            //TODO [ASB] : replace the code below with more optimized one using bit masking and constant PIN_FULL_MASK
-            
-            ulong total_pin_mask = (0x1UL << (TOTAL_PINS - 1)); //max pin mask, bit 63 for P1 chip
-            for (ulong mask = 1UL, i = 0UL; mask <= total_pin_mask; mask <<= 1, i++)
+            ulong outState = OUT; 
+            ulong dirState = DIR;
+            for (ulong mask = 1UL, i = 0UL; i < (ulong)(TOTAL_PINS); mask <<= 1, i++)
             {
-                if ( (DIR & mask) == 0UL)	//if Pin i has direction set to INPUT
+                if ( (dirState & mask) == 0UL)	//if Pin i has direction set to INPUT
                 {
                     if ( (PinFloat & mask) != 0UL)
                         PinStates[i] = PinState.FLOATING;
@@ -786,13 +782,15 @@ namespace Gear.EmulationCore
                 }
                 else                     //then Pin i has direction set to OUTPUT
                 {
-                    if ( (pinsState & mask) != 0UL)
+                    if ( (outState & mask) != 0UL)
                         PinStates[i] = PinState.OUTPUT_HI;
                     else
                         PinStates[i] = PinState.OUTPUT_LO;
                 }
             }
 
+            //original old code
+            //ulong pinsState = OUT;  //get total pins (P63..P0) OUT state
             //for (int i = 0; i < TOTAL_PINS; i++)    //loop for each pin of the chip
             //{
             //    if (((DIR >> i) & 1) == 0)  //if Pin i has direction set to INPUT
