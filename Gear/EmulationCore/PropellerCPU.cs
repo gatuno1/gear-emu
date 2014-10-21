@@ -912,8 +912,8 @@ namespace Gear.EmulationCore
             LocksAvailable[number & 0x7] = true;
         }
 
-        /// @todo Document method Gear.EmulationCore.PropellerCPU.NewLock().
-        /// 
+        /// @brief Create a new lock.
+        /// @returns Lock ID of the new lock created.
         public uint NewLock()
         {
             for (uint i = 0; i < LocksAvailable.Length; i++)
@@ -926,8 +926,9 @@ namespace Gear.EmulationCore
             return 0xFFFFFFFF;
         }
 
-        /// @todo Document method Gear.EmulationCore.PropellerCPU.CogID().
-        /// 
+        /// @brief Determine the ID of the cog.
+        /// @param caller Cog instance to determine the its ID.
+        /// @returns Cog ID.
         public uint CogID(Cog caller)
         {
             for (uint i = 0; i < Cogs.Length; i++)
@@ -946,108 +947,117 @@ namespace Gear.EmulationCore
         /// @param[out] carry Carry flag that could be affected by the operation.
         /// @param[out] zero Zero flag that could be affected by the operation.
         /// @returns Value depending on operation.
-        /// @note Operations supported reference, based in Propeller Manual v1.2:
-        /// HUBOP_CLKSET - page 271.
-        /// HUBOP_COGID - page 283.
-        /// HUBOP_COGINIT - page 284.
-        /// HUBOP_COGSTOP - page 286.
-        /// HUBOP_LOCKNEW - page 304.
-        /// HUBOP_LOCKRET - page 305.
-        /// HUBOP_LOCKSET - page 306.
-        /// HUBOP_LOCKCLR - page 303.
+        /// @note Reference of supported Operations, based in Propeller Manual v1.2:
+        /// @arg HUBOP_CLKSET - page 271.
+        /// @arg HUBOP_COGID - page 283.
+        /// @arg HUBOP_COGINIT - page 284.
+        /// @arg HUBOP_COGSTOP - page 286.
+        /// @arg HUBOP_LOCKNEW - page 304.
+        /// @arg HUBOP_LOCKRET - page 305.
+        /// @arg HUBOP_LOCKSET - page 306.
+        /// @arg HUBOP_LOCKCLR - page 303.
         public uint HubOp(Cog caller, uint operation, uint argument, ref bool carry, ref bool zero)
         {
+            uint maskedArg = (argument & 0x7);
+            uint cog = (uint)Cogs.Length;
             switch ((HubOperationCodes)operation)
             {
                 case HubOperationCodes.HUBOP_CLKSET:
+                    zero = false;
+                    carry = false;
                     SetClockMode((byte)argument);
                     break;
+
                 case HubOperationCodes.HUBOP_COGID:
-                    {
-                        // TODO: DETERMINE CARRY - seems to be =false all times
-                        return CogID(caller);
-                    }
+                    carry = false;
+                    cog = CogID(caller);
+                    zero = (cog == 0) ? true : false;
+                    return cog;
+
                 case HubOperationCodes.HUBOP_COGINIT:
+                    //determine witch cog start
+                    if ((argument & 0x8) != 0)   //if free cog should be started (bit 3 is set)
                     {
-                        uint cog = (uint)Cogs.Length;
-                        uint param = (argument >> 16) & 0xFFFC;
-                        uint progm = (argument >> 2) & 0xFFFC;
-                        // TODO: change logic to manage well the two cases: 
-                        //  1) COGINIT with no parameters (well supported in present code)
-                        //  2) COGINIT with a cog number (not managed yet).
-                        //  see Propeller Manual v1.2, page 284
-
-                        // Start a new cog?
-                        if ((argument & TOTAL_COGS) != 0)   //if cognumber is inside valid range 
+                        for (uint i = 0; i < Cogs.Length; i++)  //assign the first free cog
                         {
-                            for (uint i = 0; i < Cogs.Length; i++)  //assign the first free cog
+                            if (Cogs[i] == null)
                             {
-                                if (Cogs[i] == null)
-                                {
-                                    cog = i;
-                                    break;
-                                }
-                            }
-
-                            if (cog >= Cogs.Length)
-                            {
-                                carry = true;
-                                return 0xFFFFFFFF;
+                                cog = i;
+                                break;
                             }
                         }
-                        else
+                        if (cog >= Cogs.Length)
                         {
-                            cog = (argument & 7);
+                            carry = true;   //no free cog
+                            return 0xFFFFFFFF;
                         }
-
-                        PLLGroup pll = new PLLGroup();
-
-                        ClockSources[cog] = (ClockSource)pll;
-
-                        if (progm == 0xF004)
-                            Cogs[cog] = new InterpretedCog(this, param, CoreFreq, pll);
-                        else
-                            Cogs[cog] = new NativeCog(this, progm, param, CoreFreq, pll);
-
-                        carry = false;  //TODO: correct carry for case to start a new (next available) cog
-                                        // and all were occupied.
-                        return (uint)cog;
+                        else 
+                            carry = false;
                     }
+                    else  // instead specific cog should be started
+                        cog = maskedArg;
+                    
+                    zero = (cog == 0) ? true : false;
+
+                    PLLGroup pll = new PLLGroup();
+                    ClockSources[cog] = (ClockSource)pll;
+                    uint param = (argument >> 16) & 0xFFFC;     //decode param value
+                    uint progm = (argument >> 2) & 0xFFFC;      //decode program addr to load to
+                    if (progm == 0xF004)
+                        Cogs[cog] = new InterpretedCog(this, param, CoreFreq, pll);
+                    else
+                        Cogs[cog] = new NativeCog(this, progm, param, CoreFreq, pll);
+                    CogsRunning++;
+                    return (uint)cog;
+
                 case HubOperationCodes.HUBOP_COGSTOP:
-                    Stop((int)(argument & 7));
+                    zero = (maskedArg == 0) ? true: false;
+                    carry = (CogsRunning < TOTAL_COGS) ? false : true;
+                    Stop((int)maskedArg);
+                    CogsRunning--;
+                    return maskedArg;
 
-                    // TODO: DETERMINE CARRY - must be true if all the cogs where running 
-                    // before the stop call
-
-                    // TODO: DETERMINE RESULT - returns the cog number stopped
-                    return (argument & 7);
                 case HubOperationCodes.HUBOP_LOCKCLR:
-                    carry = LocksState[argument & 7];
-                    LocksState[argument & 7] = false;
-                    // TODO: DETERMINE RESULT
+                    zero = (maskedArg == 0) ? true : false;
+                    carry = LocksState[maskedArg];
+                    LocksState[maskedArg] = false;
                     return argument;
+
                 case HubOperationCodes.HUBOP_LOCKNEW:
+                    zero = false;   // initial value if no Locks available
+                    carry = true;   // initial value if no Locks available
                     for (uint i = 0; i < LocksAvailable.Length; i++)
                     {
                         if (LocksAvailable[i])
                         {
                             LocksAvailable[i] = false;
                             carry = false;
+                            if (i == 0) 
+                                zero = true;
                             return i;
                         }
                     }
-                    carry = true;   // No Locks available
-                    return 0;       // Return 0 ?
+                    return 7;   // if all are occupied, return a 7, but carry is true
+
                 case HubOperationCodes.HUBOP_LOCKRET:
-                    LocksAvailable[argument & 7] = true;
-                    // TODO: DETERMINE CARRY
-                    // TODO: DETERMINE RESULT
-                    return argument;
+                    zero = (maskedArg == 0) ? true : false;
+                    carry = true;   // initial value if no Locks available
+                    for (uint i = 0; i < LocksAvailable.Length; i++)
+                    {
+                        if (LocksAvailable[i])
+                        {
+                            carry = false;
+                        }
+                    }
+                    LocksAvailable[maskedArg] = true;
+                    return maskedArg;
+
                 case HubOperationCodes.HUBOP_LOCKSET:
-                    carry = LocksState[argument & 7];
-                    LocksState[argument & 7] = true;
-                    // TODO: DETERMINE RESULT
-                    return argument;
+                    zero = (maskedArg == 0) ? true : false;
+                    carry = LocksState[maskedArg];
+                    LocksState[maskedArg] = true;
+                    return maskedArg;
+
                 default:
                     // TODO: RAISE EXCEPTION
                     break;

@@ -291,7 +291,6 @@ namespace Gear.GUI
         }
 
         /// @brief Select binary propeller image to load.
-        /// 
         /// @param[in] sender Reference to object where event was raised.
         /// @param[in] e Event data arguments.
         private void openBinary_Click(object sender, EventArgs e)
@@ -362,8 +361,8 @@ namespace Gear.GUI
         }
 
         /// @brief Close the plugin window and terminate the plugin instance.
-        /// 
-        /// Not only close the tab window, also detach the plugin from the PropellerCPU what uses it.
+        /// @details Not only close the tab window, also detach the plugin from the PropellerCPU 
+        /// what uses it.
         /// @param[in] sender Reference to object where event was raised.
         /// @param[in] e Event data arguments.
         private void closeActiveTab_Click(object sender, EventArgs e)
