@@ -464,7 +464,7 @@ namespace Gear.GUI
         private void stopEmulator_Click(object sender, EventArgs e)
         {
             runTimer.Stop();
-            RepaintViews(); //added the repaint, to refresh them
+            RepaintViews(); //added the repaint, to refresh the views
         }
 
         /// @todo Document Gear.GUI.Emulator.stepInstruction_Click()
@@ -499,6 +499,13 @@ namespace Gear.GUI
 
             if (dialog.ShowDialog(this) == DialogResult.OK)
                 LoadPlugin(dialog.FileName);
+        }
+
+        /// @todo Document Gear.GUI.Emulator.Emulator_FormClosing()
+        /// 
+        private void Emulator_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Chip.OnClose(sender, e);
         }
 
         /// @todo Document Gear.GUI.Emulator.OnDeactivate()
@@ -556,6 +563,7 @@ namespace Gear.GUI
                     runTimer.Start();
             }
         }
+
     }
 }
 

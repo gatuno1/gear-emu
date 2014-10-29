@@ -657,7 +657,7 @@ namespace Gear.EmulationCore
             // Prefetch instruction
             Operation = ReadLong(PC);
             // Check if it's time to trigger a breakpoint
-            return PC != BP;
+            return PC != BreakPointCogCursor;
         }
 
         private void InstructionRCR()

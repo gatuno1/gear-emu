@@ -183,6 +183,7 @@ namespace Gear.EmulationCore
 
             PinHi = 0;
             PinFloat = PIN_FULL_MASK;
+            CogsRunning = 0;
 
             TickHandlers = new List<PluginBase>();
             PinHandlers = new List<PluginBase>();
@@ -475,8 +476,9 @@ namespace Gear.EmulationCore
             Reset();
         }
 
-        /// @todo Document method Gear.EmulationCore.PropellerCPU.GetCog().
-        /// 
+        /// @brief Return the cog.
+        /// @param[in] id Cog number to get the reference.
+        /// @returns Return the reference to the cog.
         public Cog GetCog(int id)
         {
             if (id > Cogs.Length)
@@ -513,8 +515,6 @@ namespace Gear.EmulationCore
         /// @param[in] plugin Compiled plugin reference to remove
         public void RemovePlugin(PluginBase plugin)
         {
-            //if (PlugInsVer.Contains(plugin, PluginVersioning.memberType.PresentChip))
-            //    PlugInsVer.Remove(plugin);
             if (PlugIns.Contains(plugin))
             {
                 plugin.OnClose();      //call the event of instanciated plugin before remove 
@@ -623,18 +623,20 @@ namespace Gear.EmulationCore
             {
                 Cogs[i] = null;
             }
+            CogsRunning = 0;
+
             for (int i = 0; i < TOTAL_LOCKS; i++)    //clear locks state
             {
                 LocksAvailable[i] = true;
                 LocksState[i] = false;
             }
 
-            foreach (PluginBase mod in PlugIns)
-            {
-                mod.OnReset();
-            }
-
             PinChanged();   //update situation of pins
+
+            foreach (PluginBase plugin in PlugIns)
+            {
+                plugin.OnReset();
+            }
 
             SetClockMode((byte)(ClockMode & 0x7F));
 
@@ -654,6 +656,7 @@ namespace Gear.EmulationCore
             ClockSources[0] = new PLLGroup();
 
             Cogs[0] = new InterpretedCog(this, InitFrame, CoreFreq, (PLLGroup)ClockSources[0]);
+            CogsRunning = 1;
         }
 
         /// @brief Stop a cog of the P1 Chip.
@@ -677,20 +680,21 @@ namespace Gear.EmulationCore
         /// update the pins, by efect of calling each cog and source of clocks.
         public bool Step()
         {
-            ulong pins;
-            ulong dir;
+            ulong pinsPrev;
+            ulong dirPrev;
             int sourceTicked;
+            double minimumTime;
             bool cogResult;
             bool result = true;
 
             do
             {
-                double minimumTime = CoreClockSource.TimeUntilClock;
+                minimumTime = CoreClockSource.TimeUntilClock;
                 sourceTicked = -1;
 
                 // Preserve initial state of the pins
-                pins = IN;
-                dir = DIR;
+                pinsPrev = IN;
+                dirPrev = DIR;
 
                 for (int i = 0; i < ClockSources.Length; i++)
                 {
@@ -717,7 +721,7 @@ namespace Gear.EmulationCore
 
                 Time += minimumTime; // Time increment
 
-                if (sourceTicked != -1 && ((pins != IN || dir != DIR) || pinChange))
+                if (sourceTicked != -1 && ((pinsPrev != IN || dirPrev != DIR) || pinChange))
                     PinChanged();
             }
             while (sourceTicked != -1);
@@ -740,11 +744,11 @@ namespace Gear.EmulationCore
                     Cogs[cog].HubAccessable();
             }
 
-            if (pins != IN || dir != DIR || pinChange)
+            if (pinsPrev != IN || dirPrev != DIR || pinChange)
                 PinChanged();
 
-            pins = IN;
-            dir = DIR;
+            pinsPrev = IN;
+            dirPrev = DIR;
 
             // Advance the system counter
             SystemCounter++;
@@ -755,7 +759,7 @@ namespace Gear.EmulationCore
                 plugin.OnClock(Time, SystemCounter);
             }
 
-            if (pins != IN || dir != DIR || pinChange)
+            if (pinsPrev != IN || dirPrev != DIR || pinChange)
                 PinChanged();
 
             return result;
@@ -788,28 +792,6 @@ namespace Gear.EmulationCore
                         PinStates[i] = PinState.OUTPUT_LO;
                 }
             }
-
-            //original old code
-            //ulong pinsState = OUT;  //get total pins (P63..P0) OUT state
-            //for (int i = 0; i < TOTAL_PINS; i++)    //loop for each pin of the chip
-            //{
-            //    if (((DIR >> i) & 1) == 0)  //if Pin i has direction set to INPUT
-            //    {
-            //        if (((PinFloat >> i) & 1) != 0)
-            //            PinStates[i] = PinState.FLOATING;
-            //        else if (((PinHi >> i) & 1) != 0)
-            //            PinStates[i] = PinState.INPUT_HI;
-            //        else
-            //            PinStates[i] = PinState.INPUT_LO;
-            //    }
-            //    else                     //then Pin i has direction set to OUTPUT
-            //    {
-            //        if (((pinsState >> i) & 1) != 0)
-            //            PinStates[i] = PinState.OUTPUT_HI;
-            //        else
-            //            PinStates[i] = PinState.OUTPUT_LO;
-            //    }
-            //}
 
             //traverse across plugins that use OnPinChange()
             foreach (PluginBase plugin in PinHandlers)
@@ -1064,6 +1046,16 @@ namespace Gear.EmulationCore
             }
 
             return 0;
+        }
+
+        /// @brief Notify all the plugins about the closing event.
+        /// @version 14.10.26 - added.
+        public void OnClose(object sender, FormClosingEventArgs e)
+        { 
+            foreach(PluginBase plugin in PlugIns)
+            {
+                plugin.OnClose();
+            }
         }
 
     }

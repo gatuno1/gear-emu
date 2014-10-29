@@ -185,6 +185,8 @@ namespace Gear.EmulationCore
             return Hub.HubOp(this, (uint)HubOperationCodes.HUBOP_COGINIT, code, ref temp, ref temp2);
         }
 
+        /// @todo document Gear.EmulationCore.DoInstruction()
+        /// 
         override public bool DoInstruction()
         {
             switch (State)
@@ -808,7 +810,7 @@ namespace Gear.EmulationCore
                         break;
                 }
             }
-            return PC != BP;
+            return PC != BreakPointCogCursor;
         }
 
         private void ReturnFromSub(uint value, bool abort)

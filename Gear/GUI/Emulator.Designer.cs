@@ -332,6 +332,7 @@ namespace Gear.GUI
             this.Name = "Emulator";
             this.Text = "Emulator";
             this.Deactivate += new System.EventHandler(this.OnDeactivate);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Emulator_FormClosing);
             this.controlBar.ResumeLayout(false);
             this.controlBar.PerformLayout();
             this.ResumeLayout(false);
