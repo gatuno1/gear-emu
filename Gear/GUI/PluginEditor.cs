@@ -244,32 +244,47 @@ namespace Gear.GUI
         /// @details Take care of update change state of the window. No need to do it in 
         /// methods who call this.
         /// @todo Correct method to implement new versioning plugin system.
-        public void SaveFile(string FileName)
+        public void SaveFile(string FileName, string version)
         {
-            XmlDocument xmlDoc = new XmlDocument();
+            PluginPersistence.PluginData data;
+            
+            data.PluginSystemVersion = version;
+            //TODO [ASB]: completar el obtener los datos desde elmentos de pantalla
+            //data.PluginVersion = <version plugin>
+            //string[] Authors = new string[<lista autores>.Lenght]
+            //for(int i = 0; i < <lista autores>.Lenght; i++)
+            //    Authors[i] = <lista autores>[i];
+            //data.Authors = Authors;
+            //data.Modifier =
+            //data.DateModified =
+            //data.Description =
+            //data.Usage =
+            //string[] links = new string[<lista links>.Count];
+            //for(int i = 0; i < <lista links>.Lenght; i++)
+            //    links[i] = <lista links>[i];
+            //data.Links = links;
+            data.InstanceName = instanceName.Text;
+            string[] references = new string[referencesList.Items.Count];
+            for(int i=0; i < referencesList.Items.Count; i++)
+                references[i] = referencesList.Items[i].ToString();
+            data.References = references;
 
-            XmlElement root = xmlDoc.CreateElement("plugin");
-            xmlDoc.AppendChild(root);
-
-            XmlElement instance = xmlDoc.CreateElement("instance");
-            instance.SetAttribute("class", instanceName.Text);
-            root.AppendChild(instance);
-
-            foreach (string s in referencesList.Items)
-            {
-                instance = xmlDoc.CreateElement("reference");
-                instance.SetAttribute("name", s);
-                root.AppendChild(instance);
+            switch (version)
+	        {
+                case "1.0":
+                    
+                    
+                    break;
+                case "0.0":
+                    data.UseAuxFiles = new bool[1] { false };
+                    data.AuxFiles = new string[1] { "" };
+                    data.Codes = new string[1] { codeEditorView.Text }; //TODO [ASB] : actualizar esto según nueva pantalla multiventana para multiples archivos
+                    //update modified state for the plugin
+                    CodeChanged = PluginPersistence.SaveXML_v0_0(FileName, data);
+                    break;
             }
 
-            instance = xmlDoc.CreateElement("code");
-            instance.AppendChild(xmlDoc.CreateTextNode(codeEditorView.Text));
-            root.AppendChild(instance);
-
-            xmlDoc.Save(FileName);
-
             m_SaveFileName = FileName;
-            CodeChanged = false;    //update modified state for the plugin
         }
 
         /// @brief Method to compile C# source code to check errors on it.
@@ -361,7 +376,8 @@ namespace Gear.GUI
             dialog.Filter = "Gear plug-in component (*.xml)|*.xml|All Files (*.*)|*.*";
             dialog.Title = "Save Gear Plug-in...";
             if (m_SaveFileName != null)
-                dialog.InitialDirectory = Path.GetDirectoryName(m_SaveFileName);   //retrieve from last plugin edited
+                //retrieve from last plugin edited
+                dialog.InitialDirectory = Path.GetDirectoryName(m_SaveFileName);   
             else
                 if (Properties.Settings.Default.LastPlugin.Length > 0)
                     //retrieve from global last plugin
