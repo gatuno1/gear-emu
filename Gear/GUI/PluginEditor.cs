@@ -45,6 +45,8 @@ namespace Gear.GUI
         /// @brief File name of current plugin on editor window.
         /// @note Include full path and name to the file.
         private string m_SaveFileName;
+        /// @brief Version of the file for a plugin. 
+        private string m_FormatVersion;
         /// @brief Default font for editor code.
         /// @version V14.07.03 - Added.
         private Font defaultFont;    
@@ -94,6 +96,7 @@ namespace Gear.GUI
             }
 
             m_SaveFileName = null;
+            m_FormatVersion = null;
             changeDetectEnabled = true;
             CodeChanged = false;
             LastChange = ChangeType.none;
@@ -250,7 +253,7 @@ namespace Gear.GUI
             
             data.PluginSystemVersion = version;
             //TODO [ASB]: completar el obtener los datos desde elmentos de pantalla
-            //data.PluginVersion = <version plugin>
+            data.PluginVersion = version;
             //string[] Authors = new string[<lista autores>.Lenght]
             //for(int i = 0; i < <lista autores>.Lenght; i++)
             //    Authors[i] = <lista autores>[i];
@@ -272,15 +275,18 @@ namespace Gear.GUI
             switch (version)
 	        {
                 case "1.0":
-                    
-                    
+                    //TODO [ASB] : set the code
+                    //data.UseAuxFiles = 
+                    //data.AuxFiles = 
+                    //data.Codes = 
+                    CodeChanged = PluginPersistence.SaveXML_v0_0(FileName, data);
                     break;
                 case "0.0":
                     data.UseAuxFiles = new bool[1] { false };
                     data.AuxFiles = new string[1] { "" };
                     data.Codes = new string[1] { codeEditorView.Text }; //TODO [ASB] : actualizar esto según nueva pantalla multiventana para multiples archivos
                     //update modified state for the plugin
-                    CodeChanged = PluginPersistence.SaveXML_v0_0(FileName, data);
+                    CodeChanged = PluginPersistence.SaveXML_v0_0(FileName,data);
                     break;
             }
 
@@ -359,8 +365,8 @@ namespace Gear.GUI
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         private void SaveButton_Click(object sender, EventArgs e)
         {
-            if (m_SaveFileName != null)
-                SaveFile(m_SaveFileName);
+            if ((m_SaveFileName != null) & (m_FormatVersion != null))
+                SaveFile(m_SaveFileName, m_FormatVersion);
             else
                 SaveAsButton_Click(sender, e);
 
@@ -373,7 +379,8 @@ namespace Gear.GUI
         private void SaveAsButton_Click(object sender, EventArgs e)
         {
             SaveFileDialog dialog = new SaveFileDialog();
-            dialog.Filter = "Gear plug-in component (*.xml)|*.xml|All Files (*.*)|*.*";
+            dialog.Filter = "New format Gear plug-in (*.xml)|*.xml|Old format Gear plug-in (*.xml)|*.xml|All Files (*.*)|*.*";
+            dialog.FilterIndex = 1;
             dialog.Title = "Save Gear Plug-in...";
             if (m_SaveFileName != null)
                 //retrieve from last plugin edited
@@ -386,7 +393,12 @@ namespace Gear.GUI
 
             if (dialog.ShowDialog(this) == DialogResult.OK)
             {
-                SaveFile(dialog.FileName);
+                //select the version to use for saving the plugin
+                if (dialog.FilterIndex == 2)
+                    m_FormatVersion = "0.0";
+                else
+                    m_FormatVersion = "1.0";
+                SaveFile(dialog.FileName, m_FormatVersion);
                 UpdateTitle();   //update title window
             }
         }
