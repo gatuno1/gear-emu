@@ -100,7 +100,8 @@ namespace Gear.PluginSupport
             XmlDeclaration xmlDeclatation = xmlDoc.CreateXmlDeclaration("1.0", "utf-8", null);
             xmlDoc.AppendChild(xmlDeclatation);
             //Document type element & DTD to use
-            XmlDocumentType doctype = xmlDoc.CreateDocumentType("plugin", null, "plugin_v1.0.dtd", null);
+            xmlDoc.XmlResolver = null;
+            XmlDocumentType doctype = xmlDoc.CreateDocumentType("plugin", null, "Resourses/plugin_v1.0.dtd", null);
             xmlDoc.AppendChild(doctype);
             //Main element - plugin
             XmlElement root = xmlDoc.CreateElement("plugin");
@@ -112,14 +113,22 @@ namespace Gear.PluginSupport
             root.AppendChild(instance);
             {
                 //level 2 elements - author
-                foreach (string s in Data.Authors)
+                if (Data.Authors != null)
+                {
+                    foreach (string s in Data.Authors)
+                    {
+                        childElement = xmlDoc.CreateElement("author");
+                        textElement = xmlDoc.CreateTextNode("");
+                        cdata = xmlDoc.CreateCDataSection(s);
+                        instance.AppendChild(childElement);
+                        childElement.AppendChild(textElement);
+                        textElement.AppendChild(cdata);
+                    }
+                }
+                else
                 {
                     childElement = xmlDoc.CreateElement("author");
-                    textElement = xmlDoc.CreateTextNode("");
-                    cdata = xmlDoc.CreateCDataSection(s);
                     instance.AppendChild(childElement);
-                    childElement.AppendChild(textElement);
-                    textElement.AppendChild(cdata);
                 }
                 //level 2 element - modified_by
                 childElement = xmlDoc.CreateElement("modified_by");

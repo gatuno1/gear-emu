@@ -249,7 +249,7 @@ namespace Gear.GUI
         /// @todo Correct method to implement new versioning plugin system.
         public void SaveFile(string FileName, string version)
         {
-            PluginPersistence.PluginData data;
+            PluginPersistence.PluginData data = new PluginPersistence.PluginData();
             
             data.PluginSystemVersion = version;
             //TODO [ASB]: completar el obtener los datos desde elmentos de pantalla
@@ -258,10 +258,10 @@ namespace Gear.GUI
             //for(int i = 0; i < <lista autores>.Lenght; i++)
             //    Authors[i] = <lista autores>[i];
             //data.Authors = Authors;
-            //data.Modifier =
-            //data.DateModified =
-            //data.Description =
-            //data.Usage =
+            data.Modifier = "Modifier test";
+            data.DateModified = DateTime.Today.ToString("u");
+            data.Description = "Test Description";
+            data.Usage = "Test Usage";
             //string[] links = new string[<lista links>.Count];
             //for(int i = 0; i < <lista links>.Lenght; i++)
             //    links[i] = <lista links>[i];
@@ -279,7 +279,7 @@ namespace Gear.GUI
                     //data.UseAuxFiles = 
                     //data.AuxFiles = 
                     //data.Codes = 
-                    CodeChanged = PluginPersistence.SaveXML_v0_0(FileName, data);
+                    CodeChanged = PluginPersistence.SaveXML_v1_0(FileName, data);
                     break;
                 case "0.0":
                     data.UseAuxFiles = new bool[1] { false };
