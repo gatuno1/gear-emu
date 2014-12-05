@@ -195,7 +195,7 @@ namespace Gear.GUI
                     switch (tr.Name.ToLower())
                     {
                         case "reference":
-                            if (!tr.IsEmptyElement)     //prevent empty element generates error
+                            if (tr.HasAttributes)     //prevent empty element generates error
                                 referencesList.Items.Add(tr.GetAttribute("name"));
                             break;
                         case "instance":
@@ -250,43 +250,54 @@ namespace Gear.GUI
         public void SaveFile(string FileName, string version)
         {
             PluginPersistence.PluginData data = new PluginPersistence.PluginData();
-            
+            //fill struct with data from screen controls
             data.PluginSystemVersion = version;
-            //TODO [ASB]: completar el obtener los datos desde elmentos de pantalla
+            //TODO [ASB]: PluginData.PluginVersion - obtain data from screen control
             data.PluginVersion = version;
-            //string[] Authors = new string[<lista autores>.Lenght]
-            //for(int i = 0; i < <lista autores>.Lenght; i++)
-            //    Authors[i] = <lista autores>[i];
+            //TODO [ASB]: PluginData.Authors - obtain data from screen control
+            //string[] Authors = new string[<author list>.Lenght]
+            //for(int i = 0; i < <author list>.Lenght; i++)
+            //    Authors[i] = <author list>[i];
             //data.Authors = Authors;
+            //TODO [ASB]: PluginData.Modifier - obtain data from screen control
             data.Modifier = "Modifier test";
+            //TODO [ASB]: PluginData.DateModified - obtain data from screen control
             data.DateModified = DateTime.Today.ToString("u");
+            //TODO [ASB]: PluginData.Description - obtain data from screen control
             data.Description = "Test Description";
+            //TODO [ASB]: PluginData.Usage - obtain data from screen control
             data.Usage = "Test Usage";
+            //TODO [ASB]: PluginData.Links - obtain data from screen control
             //string[] links = new string[<lista links>.Count];
             //for(int i = 0; i < <lista links>.Lenght; i++)
             //    links[i] = <lista links>[i];
             //data.Links = links;
             data.InstanceName = instanceName.Text;
-            string[] references = new string[referencesList.Items.Count];
-            for(int i=0; i < referencesList.Items.Count; i++)
-                references[i] = referencesList.Items[i].ToString();
-            data.References = references;
-
+            string[] references;
+            if (referencesList.Items.Count > 0)
+            {
+                references = new string[referencesList.Items.Count];
+                for (int i = 0; i < referencesList.Items.Count; i++)
+                    references[i] = referencesList.Items[i].ToString();
+                data.References = references;
+            }
             switch (version)
 	        {
                 case "1.0":
-                    //TODO [ASB] : set the code
-                    //data.UseAuxFiles = 
-                    //data.AuxFiles = 
-                    //data.Codes = 
-                    CodeChanged = PluginPersistence.SaveXML_v1_0(FileName, data);
-                    break;
-                case "0.0":
+                    //TODO [ASB] : set the code to manage multiple files on user interface
                     data.UseAuxFiles = new bool[1] { false };
                     data.AuxFiles = new string[1] { "" };
-                    data.Codes = new string[1] { codeEditorView.Text }; //TODO [ASB] : actualizar esto según nueva pantalla multiventana para multiples archivos
+                    data.Codes = new string[1] { codeEditorView.Text };
                     //update modified state for the plugin
-                    CodeChanged = PluginPersistence.SaveXML_v0_0(FileName,data);
+                    CodeChanged = !PluginPersistence.SaveXML_v1_0(FileName, data);
+                    break;
+                case "0.0":
+                    //TODO [ASB] : set the code to manage multiple files on user interface
+                    data.UseAuxFiles = new bool[1] { false };
+                    data.AuxFiles = new string[1] { "" };
+                    data.Codes = new string[1] { codeEditorView.Text };
+                    //update modified state for the plugin
+                    CodeChanged = !PluginPersistence.SaveXML_v0_0(FileName,data);
                     break;
             }
 
@@ -379,8 +390,21 @@ namespace Gear.GUI
         private void SaveAsButton_Click(object sender, EventArgs e)
         {
             SaveFileDialog dialog = new SaveFileDialog();
-            dialog.Filter = "New format Gear plug-in (*.xml)|*.xml|Old format Gear plug-in (*.xml)|*.xml|All Files (*.*)|*.*";
-            dialog.FilterIndex = 1;
+            dialog.Filter = "New format Gear plug-in (*.xml)|*.xml|" +
+                "Old format Gear plug-in (*.xml)|*.xml|" +
+                "All Files (*.*)|*.*";
+            if (m_FormatVersion == null)
+                dialog.FilterIndex = 1; //default if not format selected
+            else
+                switch (m_FormatVersion)
+                {
+                    case "0.0":
+                        dialog.FilterIndex = 2;
+                        break;
+                    case "1.0":
+                        dialog.FilterIndex = 1;
+                        break;
+                };
             dialog.Title = "Save Gear Plug-in...";
             if (m_SaveFileName != null)
                 //retrieve from last plugin edited

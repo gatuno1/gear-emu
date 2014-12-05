@@ -55,7 +55,7 @@ namespace Gear.PluginSupport
         }
 
         /// @brief Save a plugin to XML as version 0.0
-        /// @returns True always
+        /// @returns State of saving.
         static public bool SaveXML_v0_0(string filenameXml, PluginData Data)
         {
             XmlDocument xmlDoc = new XmlDocument();
@@ -67,10 +67,18 @@ namespace Gear.PluginSupport
             instance.SetAttribute("class", Data.InstanceName);
             root.AppendChild(instance);
             //level 1 elements - reference
-            foreach (string s in Data.References)
+            if (Data.References != null)
+            {
+                foreach (string s in Data.References)
+                {
+                    instance = xmlDoc.CreateElement("reference");
+                    instance.SetAttribute("name", s);
+                    root.AppendChild(instance);
+                }
+            }
+            else 
             {
                 instance = xmlDoc.CreateElement("reference");
-                instance.SetAttribute("name", s);
                 root.AppendChild(instance);
             }
             //level 1 element - code
@@ -88,7 +96,7 @@ namespace Gear.PluginSupport
         }
 
         /// @brief Save a plugin to XML as version 1.0
-        /// @returns True always
+        /// @returns State of saving.
         static public bool SaveXML_v1_0(string filenameXml, PluginData Data)
         {
             XmlDocument xmlDoc = new XmlDocument();
@@ -132,41 +140,49 @@ namespace Gear.PluginSupport
                 }
                 //level 2 element - modified_by
                 childElement = xmlDoc.CreateElement("modified_by");
-                textElement = xmlDoc.CreateTextNode("");
-                cdata = xmlDoc.CreateCDataSection(Data.Modifier);
                 instance.AppendChild(childElement);
+                textElement = xmlDoc.CreateTextNode("");
                 childElement.AppendChild(textElement);
-                textElement.AppendChild(cdata);
+                cdata = xmlDoc.CreateCDataSection(Data.Modifier);
+                childElement.AppendChild(cdata);
                 //level 2 element - date_modified
                 childElement = xmlDoc.CreateElement("date_modified");
                 textElement = xmlDoc.CreateTextNode("");
                 cdata = xmlDoc.CreateCDataSection(Data.DateModified);
                 instance.AppendChild(childElement);
                 childElement.AppendChild(textElement);
-                textElement.AppendChild(cdata);
+                childElement.AppendChild(cdata);
                 //level 2 element - description
                 childElement = xmlDoc.CreateElement("description");
                 textElement = xmlDoc.CreateTextNode("");
                 cdata = xmlDoc.CreateCDataSection(Data.Description);
                 instance.AppendChild(childElement);
                 childElement.AppendChild(textElement);
-                textElement.AppendChild(cdata);
+                childElement.AppendChild(cdata);
                 //level 2 element - usage
                 childElement = xmlDoc.CreateElement("usage");
                 textElement = xmlDoc.CreateTextNode("");
                 cdata = xmlDoc.CreateCDataSection(Data.Usage);
                 instance.AppendChild(childElement);
                 childElement.AppendChild(textElement);
-                textElement.AppendChild(cdata);
+                childElement.AppendChild(cdata);
                 //level 2 elements - link
-                foreach (string s in Data.Links)
+                if (Data.Links != null)
+                {
+                    foreach (string s in Data.Links)
+                    {
+                        childElement = xmlDoc.CreateElement("link");
+                        textElement = xmlDoc.CreateTextNode("");
+                        cdata = xmlDoc.CreateCDataSection(s);
+                        instance.AppendChild(childElement);
+                        childElement.AppendChild(textElement);
+                        childElement.AppendChild(cdata);
+                    }
+                }
+                else 
                 {
                     childElement = xmlDoc.CreateElement("link");
-                    textElement = xmlDoc.CreateTextNode("");
-                    cdata = xmlDoc.CreateCDataSection(s);
                     instance.AppendChild(childElement);
-                    childElement.AppendChild(textElement);
-                    textElement.AppendChild(cdata);
                 }
             }
             //level 1 element - instance
@@ -174,20 +190,34 @@ namespace Gear.PluginSupport
             instance.SetAttribute("class", Data.InstanceName);
             root.AppendChild(instance);
             //level 1 elements - reference
-            foreach (string s in Data.References)
+            if (Data.References != null)
+            {
+                foreach (string s in Data.References)
+                {
+                    instance = xmlDoc.CreateElement("reference");
+                    instance.SetAttribute("name", s);
+                    root.AppendChild(instance);
+                }
+            }
+            else 
             {
                 instance = xmlDoc.CreateElement("reference");
-                instance.SetAttribute("name", s);
                 root.AppendChild(instance);
             }
             //level 1 elements - code
-            for (int i = 0; i < Data.UseAuxFiles.Rank; i++)
+            if (Data.UseAuxFiles != null)
+                for (int i = 0; i < Data.UseAuxFiles.Rank; i++)
+                {
+                    instance = xmlDoc.CreateElement("code");
+                    if (!Data.UseAuxFiles[i])
+                        instance.AppendChild(xmlDoc.CreateTextNode(Data.Codes[i]));
+                    else
+                        instance.SetAttribute("ref", Data.AuxFiles[i]);
+                    root.AppendChild(instance);
+                }
+            else
             {
                 instance = xmlDoc.CreateElement("code");
-                if (!Data.UseAuxFiles[i])
-                    instance.AppendChild(xmlDoc.CreateTextNode(Data.Codes[i]));
-                else
-                    instance.SetAttribute("ref", Data.AuxFiles[i]);
                 root.AppendChild(instance);
             }
             //saving xml document
