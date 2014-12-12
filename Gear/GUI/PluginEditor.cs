@@ -474,7 +474,7 @@ namespace Gear.GUI
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         private void addReferenceButton_Click(object sender, EventArgs e)
         {
-            if (referenceName.Text != null)
+            if ((referenceName.Text != null) && (referenceName.Text.Length > 0))
             {
                 referencesList.Items.Add(referenceName.Text);
                 referenceName.Text = "";
