@@ -47,6 +47,23 @@ namespace Gear.GUI
         private string m_SaveFileName;
         /// @brief Version of the file for a plugin. 
         private string m_FormatVersion;
+        /// @brief Text for About properties
+        /// @version V14.12.12 - Added
+        private string aboutText
+        {
+            get 
+            {
+                if (m_FormatVersion == null)
+                    return "Properties of plugin";
+                else switch (m_FormatVersion)
+                {
+                    case "0.0":
+                        return "No properties for old plugin format";
+                    default:
+                        return "Properties of plugin v." + m_FormatVersion;
+                }
+            }
+        }
         /// @brief Default font for editor code.
         /// @version V14.07.03 - Added.
         private Font defaultFont;    
@@ -64,7 +81,8 @@ namespace Gear.GUI
         {
             none = 0,   //!< @brief No change detected.
             name,       //!< @brief Name class change detected.
-            code        //!< @brief Code change detected.
+            code,       //!< @brief Code change detected.
+            about       //!< @brief About properties change detected.
         }
         /// @brief Store the last change detected.
         /// To determine changes, it includes only the C# code and class name.
@@ -116,6 +134,10 @@ namespace Gear.GUI
             errorListView.Columns.Add("Line", -2, HorizontalAlignment.Left);
             errorListView.Columns.Add("Column", -2, HorizontalAlignment.Left);
             errorListView.Columns.Add("Message", -2, HorizontalAlignment.Left);
+
+            //retrieve from settings the last state of embedded code
+            SetEmbeddedCodeButton(Properties.Settings.Default.EmbeddedCode);
+            
         }
 
         /// @brief Return last plugin succesfully loaded o saved.
@@ -431,7 +453,7 @@ namespace Gear.GUI
         /// Also update change state for the plugin module, marking as changed.
         /// @param[in] sender Object who called this on event.
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
-        private void RemoveButton_Click(object sender, EventArgs e)
+        private void RemoveReferenceButton_Click(object sender, EventArgs e)
         {
             if (referencesList.SelectedIndex != -1)
             {
@@ -746,6 +768,143 @@ namespace Gear.GUI
             else
                 return false;
         }
+
+        /// @brief Toggle the button state, updating the name & tooltip text.
+        /// @param[in] sender Object who called this on event.
+        /// @param[in] e `EventArgs` class with a list of argument to the event call.
+        /// @version 14.12.12 - Added.
+        private void embeddedCode_Click(object sender, EventArgs e)
+        {
+            SetEmbeddedCodeButton(embeddedCode.Checked);
+            //remember setting
+            Properties.Settings.Default.EmbeddedCode = embeddedCode.Checked;
+        }
+
+        /// @brief Update the name & tooltip text depending on each state.
+        /// @param[in] newValue Value to set.
+        /// @version 14.12.12 - Added.
+        private void SetEmbeddedCodeButton(bool newValue)
+        {
+            embeddedCode.Checked = newValue;
+            if (embeddedCode.Checked)
+            {
+                embeddedCode.Text = "Embedded";
+                embeddedCode.ToolTipText = "Embedded code in plugin file";
+            }
+            else
+            {
+                embeddedCode.Text = "Separated";
+                embeddedCode.ToolTipText = "Code in separated file from plugin";
+            }
+        }
+
+        /// @brief Add the selected Author or Link to the about properties list.
+        /// Also update change state for the plugin module, marking as changed.
+        /// @param[in] sender Object who called this on event.
+        /// @param[in] e `EventArgs` class with a list of argument to the event call.
+        /// @version 14.12.12 - Added.
+        private void addAuthorLinkButton_Click(object sender, EventArgs e)
+        {
+            if ((authorLinkName.Text != null) && (authorLinkName.Text.Length > 0) && (listProperties.SelectedIndices.Count > 0))
+            {
+                ListViewItem SelectedItem = null;    //selected item reference
+                foreach(ListViewItem item in listProperties.SelectedItems)
+                {
+                    SelectedItem = item;    //should be only one, so get the last
+                };
+                //get the group the selected item belongs
+                ListViewGroup group = SelectedItem.Group;
+                //filter only groups for properties with many items allowed (>1)
+                if ((group.Name == "Authors") || (group.Name == "Links"))
+                {
+                    if (SelectedItem.ForeColor == System.Drawing.SystemColors.InactiveCaption)
+                    {
+                        SelectedItem.Text = authorLinkName.Text;
+                        //set color to normal text
+                        SelectedItem.ForeColor = System.Drawing.SystemColors.WindowText;
+                    }
+                    else 
+                    { 
+                        //create new item with the text given and same group as item selected
+                        ListViewItem newItem = new ListViewItem(authorLinkName.Text, group);
+                        //set color to normal text
+                        newItem.ForeColor = System.Drawing.SystemColors.WindowText;
+                        //add to the list
+                        listProperties.Items.Add(newItem);
+                    }
+                    //clear the text box as we had inserted that text in the about property
+                    authorLinkName.Text = "";
+                    //mark as changed
+                    CodeChanged = true;
+                }
+            }
+        }
+
+        /// @brief Remove the selected author or Link of the about properties list.
+        /// Also update change state for the plugin module, marking as changed.
+        /// @param[in] sender Object who called this on event.
+        /// @param[in] e `EventArgs` class with a list of argument to the event call.
+        /// @version 14.12.12 - Added.
+        private void removeAuthorLinkButton_Click(object sender, EventArgs e)
+        {
+            if (listProperties.SelectedItems.Count > 0)
+            {
+                string ResetText = null;
+                ListViewItem ItemToDelete = null;   //selected item reference
+                foreach (ListViewItem item in listProperties.SelectedItems)
+                {
+                    ItemToDelete = item;     //should be only one, so get the last
+                };
+                //get the group where the selected item belongs
+                ListViewGroup group = ItemToDelete.Group;
+                //set default names for properties with many items allowed (>1)
+                switch (group.Name)
+                {
+                    case "Authors":
+                        ResetText = "Your name";
+                        break;
+                    case "Links":
+                        ResetText = "Web Link to more information";
+                        break;
+                    default:    //do nothing for properties with only one item allowed
+                        break;
+                }
+                if (ResetText != null)
+                {
+                    ListView.ListViewItemCollection ItemsInGroup = group.Items; 
+                    if (ItemsInGroup.Count > 1) //if there are many items
+                        listProperties.Items.Remove(ItemToDelete);  //delete it
+                    else
+                    {   
+                        //instead reset the text to default
+                        ItemToDelete.Text = ResetText;
+                        ItemToDelete.ForeColor = System.Drawing.SystemColors.InactiveCaption;
+                    }
+                    //mark as changed
+                    CodeChanged = true;
+                }
+            }
+        }
+
+        /// @brief .
+        /// @param[in] sender Object who called this on event.
+        /// @param[in] e `EventArgs` class with a list of argument to the event call.
+        /// @version 14.12.12 - Added.
+        private void listProperties_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void splitContainerMain_DoubleClick(object sender, EventArgs e)
+        {
+
+        }
+
+        private void splitContainerCodeErr_SplitterMoved(object sender, SplitterEventArgs e)
+        {
+
+        }
+
 
     }
 }
