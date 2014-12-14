@@ -129,14 +129,19 @@ namespace Gear.GUI
             //Setup error grid
             errorListView.FullRowSelect = true;
             errorListView.GridLines = true;
-
             errorListView.Columns.Add("Name", -2, HorizontalAlignment.Left);
             errorListView.Columns.Add("Line", -2, HorizontalAlignment.Left);
             errorListView.Columns.Add("Column", -2, HorizontalAlignment.Left);
             errorListView.Columns.Add("Message", -2, HorizontalAlignment.Left);
 
-            //retrieve from settings the last state of embedded code
+            //retrieve from settings the last state for embedded code
             SetEmbeddedCodeButton(Properties.Settings.Default.EmbeddedCode);
+
+            //setup the about properties with the default names.
+            foreach (ListViewItem item in listProperties.Items)
+            {
+                item.Text = GetDefaultAboutPropertyText(item.Group);
+            }
             
         }
 
@@ -272,10 +277,11 @@ namespace Gear.GUI
         public void SaveFile(string FileName, string version)
         {
             PluginPersistence.PluginData data = new PluginPersistence.PluginData();
+            string[] aux;
             //fill struct with data from screen controls
-            data.PluginSystemVersion = version;
-            //TODO [ASB]: PluginData.PluginVersion - obtain data from screen control
-            data.PluginVersion = version;
+            data.PluginSystemVersion = version; //version of plugin system
+            //TODO [ASB]: PluginData.PluginVersion - add try section & detect exception thrown
+            data.PluginVersion = GetElementsFromAboutProperty("Version")[0];    //always expect 1 element for Version
             //TODO [ASB]: PluginData.Authors - obtain data from screen control
             //string[] Authors = new string[<author list>.Lenght]
             //for(int i = 0; i < <author list>.Lenght; i++)
@@ -381,7 +387,8 @@ namespace Gear.GUI
                 if (m_SaveFileName != null)
                     dialog.InitialDirectory = Path.GetDirectoryName(m_SaveFileName);   //retrieve from last plugin edited
                 else
-                    if (Properties.Settings.Default.LastPlugin.Length > 0)
+                    if ((Properties.Settings.Default.LastPlugin != null) &&
+                        (Properties.Settings.Default.LastPlugin.Length > 0))
                         //retrieve from global last plugin
                         dialog.InitialDirectory = 
                             Path.GetDirectoryName(Properties.Settings.Default.LastPlugin);   
@@ -432,7 +439,8 @@ namespace Gear.GUI
                 //retrieve from last plugin edited
                 dialog.InitialDirectory = Path.GetDirectoryName(m_SaveFileName);   
             else
-                if (Properties.Settings.Default.LastPlugin.Length > 0)
+                if ((Properties.Settings.Default.LastPlugin != null) &&
+                    (Properties.Settings.Default.LastPlugin.Length > 0))
                     //retrieve from global last plugin
                     dialog.InitialDirectory = 
                         Path.GetDirectoryName(Properties.Settings.Default.LastPlugin);    
@@ -815,28 +823,26 @@ namespace Gear.GUI
                 //get the group the selected item belongs
                 ListViewGroup group = SelectedItem.Group;
                 //filter only groups for properties with many items allowed (>1)
-                if ((group.Name == "Authors") || (group.Name == "Links"))
+                if ( (SelectedItem.ForeColor == System.Drawing.SystemColors.InactiveCaption) ||
+                    ((group.Name != "Authors") && (group.Name != "Links")) )
                 {
-                    if (SelectedItem.ForeColor == System.Drawing.SystemColors.InactiveCaption)
-                    {
-                        SelectedItem.Text = authorLinkName.Text;
-                        //set color to normal text
-                        SelectedItem.ForeColor = System.Drawing.SystemColors.WindowText;
-                    }
-                    else 
-                    { 
-                        //create new item with the text given and same group as item selected
-                        ListViewItem newItem = new ListViewItem(authorLinkName.Text, group);
-                        //set color to normal text
-                        newItem.ForeColor = System.Drawing.SystemColors.WindowText;
-                        //add to the list
-                        listProperties.Items.Add(newItem);
-                    }
-                    //clear the text box as we had inserted that text in the about property
-                    authorLinkName.Text = "";
-                    //mark as changed
-                    CodeChanged = true;
+                    SelectedItem.Text = authorLinkName.Text;
+                    //set color to normal text
+                    SelectedItem.ForeColor = System.Drawing.SystemColors.WindowText;
                 }
+                else 
+                { 
+                    //create new item with the text given and same group as item selected
+                    ListViewItem newItem = new ListViewItem(authorLinkName.Text, group);
+                    //set color to normal text
+                    newItem.ForeColor = System.Drawing.SystemColors.WindowText;
+                    //add to the list
+                    listProperties.Items.Add(newItem);
+                }
+                //clear the text box as we had inserted that text in the about property
+                authorLinkName.Text = "";
+                //mark as changed
+                CodeChanged = true;
             }
         }
 
@@ -855,20 +861,9 @@ namespace Gear.GUI
                 {
                     ItemToDelete = item;     //should be only one, so get the last
                 };
-                //get the group where the selected item belongs
+                //get the group where the selected item belongs & the default name for it
                 ListViewGroup group = ItemToDelete.Group;
-                //set default names for properties with many items allowed (>1)
-                switch (group.Name)
-                {
-                    case "Authors":
-                        ResetText = "Your name";
-                        break;
-                    case "Links":
-                        ResetText = "Web Link to more information";
-                        break;
-                    default:    //do nothing for properties with only one item allowed
-                        break;
-                }
+                ResetText = GetDefaultAboutPropertyText(group);
                 if (ResetText != null)
                 {
                     ListView.ListViewItemCollection ItemsInGroup = group.Items; 
@@ -886,13 +881,128 @@ namespace Gear.GUI
             }
         }
 
-        /// @brief .
+        /// @brief Detect changes on selected item and adjust strip buttons Add & Remove for
+        /// about properties acordly.
         /// @param[in] sender Object who called this on event.
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         /// @version 14.12.12 - Added.
         private void listProperties_SelectedIndexChanged(object sender, EventArgs e)
         {
-            
+            ListViewItem SelectedItem = null;   //selected item reference
+            foreach (ListViewItem item in listProperties.SelectedItems)
+            {
+                SelectedItem = item;     //should be only one, so get the last
+            };
+            //set default names for properties with many items allowed (>1)
+            if (SelectedItem != null)
+            {
+                switch (SelectedItem.Group.Name)
+                {
+                    case "Authors":
+                    case "Links":
+                        removeAuthorLinkButton.Text = "Remove";
+                        addAuthorLinkButton.Text = "Add";
+                        break;
+                    default:
+                        removeAuthorLinkButton.Text = "Clear";
+                        addAuthorLinkButton.Text = "Change";
+                        break;
+                }
+            }
+        }
+
+        /// @brief Determine the default text for the group of about properties list
+        /// @param[in] group Group of about properties.
+        /// @returns Default text for the given group
+        /// @version 14.12.13 - Added.
+        private string GetDefaultAboutPropertyText(ListViewGroup group)
+        {
+            string tex = null;
+            switch (group.Name)
+            {
+                case "Authors":
+                    tex = "Your name";
+                    break;
+                case "ModifiedBy":
+                    tex = "Your name";
+                    break;
+                case "DateModified":
+                    tex = "Modified";
+                    break;
+                case "Version":
+                    tex = "1.0";
+                    break;
+                case "Description":
+                    tex = "Description for the plugin";
+                    break;
+                case "Usage":
+                    tex = "How to use the plugin";
+                    break;
+                case "Links":
+                    tex = "Web Link to more information";
+                    break;
+                default:
+                    tex = "Not recognized property";
+                    break;
+            }
+            return tex;
+        }
+
+        /// @brief Retrieve a list of elements for the given group from 
+        /// the about properties list.
+        /// @param groupName Name of the group to retrieve elements.
+        /// @returns Array of elements of the group.
+        /// @version 14.12.13 - Added.
+        private string[] GetElementsFromAboutProperty(string groupName)
+        {
+            string[] result = null;
+            foreach(ListViewGroup group in listProperties.Groups)
+            {
+                if (group.Name == groupName)
+                {
+                    ListView.ListViewItemCollection items = group.Items;
+                    if (items.Count > 0)
+                    {
+                        result = new string[items.Count];   //set the dimension of the array
+                        for(int i=0; i < items.Count; i++)
+                        {
+                            result[i] = items[i].Text;
+                            //check for default text for the group
+                            if (result[i] == GetDefaultAboutPropertyText(group))
+                            {
+                                result[i] = ""; //clear it
+                            }
+                        }
+                        break;  //stop searching
+                    }
+                    else
+                    {
+                        //TODO ASB : throw an exception to the caller: always have to exist all the about properties!
+                    }
+                }
+            }
+            if (result == null)
+            {
+                //TODO ASB : throw an exception to the caller: always have to exist all the about properties!
+            }
+            return result;
+        }
+
+        private void listProperties_AfterLabelEdit(object sender, LabelEditEventArgs e)
+        {
+            ListViewItem SelectedItem = null;    //selected item reference
+            foreach (ListViewItem item in listProperties.SelectedItems)
+            {
+                SelectedItem = item;    //should be only one, so get the last
+            };
+            if (SelectedItem.ForeColor == System.Drawing.SystemColors.InactiveCaption)
+            {
+                if (SelectedItem.Text != GetDefaultAboutPropertyText(SelectedItem.Group))
+                {
+                    SelectedItem.ForeColor = System.Drawing.SystemColors.WindowText;
+                }
+            }
+
         }
 
         private void splitContainerMain_DoubleClick(object sender, EventArgs e)
@@ -904,7 +1014,6 @@ namespace Gear.GUI
         {
 
         }
-
 
     }
 }

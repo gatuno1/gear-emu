@@ -55,9 +55,10 @@ namespace Gear.GUI
             System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("Author(s)", System.Windows.Forms.HorizontalAlignment.Center);
             System.Windows.Forms.ListViewGroup listViewGroup2 = new System.Windows.Forms.ListViewGroup("Modified By", System.Windows.Forms.HorizontalAlignment.Center);
             System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("Date Modified", System.Windows.Forms.HorizontalAlignment.Center);
-            System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("Description", System.Windows.Forms.HorizontalAlignment.Center);
-            System.Windows.Forms.ListViewGroup listViewGroup5 = new System.Windows.Forms.ListViewGroup("Usage", System.Windows.Forms.HorizontalAlignment.Center);
-            System.Windows.Forms.ListViewGroup listViewGroup6 = new System.Windows.Forms.ListViewGroup("Link(s)", System.Windows.Forms.HorizontalAlignment.Center);
+            System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("Version", System.Windows.Forms.HorizontalAlignment.Center);
+            System.Windows.Forms.ListViewGroup listViewGroup5 = new System.Windows.Forms.ListViewGroup("Description", System.Windows.Forms.HorizontalAlignment.Center);
+            System.Windows.Forms.ListViewGroup listViewGroup6 = new System.Windows.Forms.ListViewGroup("Usage", System.Windows.Forms.HorizontalAlignment.Center);
+            System.Windows.Forms.ListViewGroup listViewGroup7 = new System.Windows.Forms.ListViewGroup("Link(s)", System.Windows.Forms.HorizontalAlignment.Center);
             System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
             "Your name"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
             System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem(new string[] {
@@ -65,10 +66,12 @@ namespace Gear.GUI
             System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem(new string[] {
             "Modified"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
             System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem(new string[] {
-            "Description for the plugin"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
+            "1.0"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
             System.Windows.Forms.ListViewItem listViewItem5 = new System.Windows.Forms.ListViewItem(new string[] {
-            "How to use the plugin"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
+            "Description for the plugin"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
             System.Windows.Forms.ListViewItem listViewItem6 = new System.Windows.Forms.ListViewItem(new string[] {
+            "How to use the plugin"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
+            System.Windows.Forms.ListViewItem listViewItem7 = new System.Windows.Forms.ListViewItem(new string[] {
             "Web Link to more information"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
             this.toolStripMain = new System.Windows.Forms.ToolStrip();
             this.openButton = new System.Windows.Forms.ToolStripButton();
@@ -241,7 +244,7 @@ namespace Gear.GUI
             this.referencesList.FormattingEnabled = true;
             this.referencesList.Location = new System.Drawing.Point(0, 0);
             this.referencesList.Name = "referencesList";
-            this.referencesList.Size = new System.Drawing.Size(198, 80);
+            this.referencesList.Size = new System.Drawing.Size(198, 95);
             this.referencesList.TabIndex = 1;
             // 
             // toolStripReferences
@@ -252,7 +255,7 @@ namespace Gear.GUI
             this.addReferenceButton,
             this.removeReferenceButton});
             this.toolStripReferences.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
-            this.toolStripReferences.Location = new System.Drawing.Point(0, 80);
+            this.toolStripReferences.Location = new System.Drawing.Point(0, 95);
             this.toolStripReferences.Name = "toolStripReferences";
             this.toolStripReferences.Size = new System.Drawing.Size(198, 23);
             this.toolStripReferences.TabIndex = 0;
@@ -293,7 +296,7 @@ namespace Gear.GUI
             this.errorListView.MultiSelect = false;
             this.errorListView.Name = "errorListView";
             this.errorListView.ShowItemToolTips = true;
-            this.errorListView.Size = new System.Drawing.Size(432, 103);
+            this.errorListView.Size = new System.Drawing.Size(432, 118);
             this.errorListView.TabIndex = 5;
             this.errorListView.UseCompatibleStateImageBehavior = false;
             this.errorListView.View = System.Windows.Forms.View.Details;
@@ -308,7 +311,7 @@ namespace Gear.GUI
             this.codeEditorView.HideSelection = false;
             this.codeEditorView.Location = new System.Drawing.Point(0, 0);
             this.codeEditorView.Name = "codeEditorView";
-            this.codeEditorView.Size = new System.Drawing.Size(432, 310);
+            this.codeEditorView.Size = new System.Drawing.Size(432, 350);
             this.codeEditorView.TabIndex = 7;
             this.codeEditorView.Text = "";
             this.codeEditorView.WordWrap = false;
@@ -327,7 +330,7 @@ namespace Gear.GUI
             // splitContainerMain.Panel2
             // 
             this.splitContainerMain.Panel2.Controls.Add(this.splitContainerCodeErr);
-            this.splitContainerMain.Size = new System.Drawing.Size(634, 417);
+            this.splitContainerMain.Size = new System.Drawing.Size(634, 472);
             this.splitContainerMain.SplitterDistance = 198;
             this.splitContainerMain.TabIndex = 8;
             this.splitContainerMain.DoubleClick += new System.EventHandler(this.splitContainerMain_DoubleClick);
@@ -349,8 +352,8 @@ namespace Gear.GUI
             // 
             this.splitContainerPropRef.Panel2.Controls.Add(this.referencesList);
             this.splitContainerPropRef.Panel2.Controls.Add(this.toolStripReferences);
-            this.splitContainerPropRef.Size = new System.Drawing.Size(198, 417);
-            this.splitContainerPropRef.SplitterDistance = 310;
+            this.splitContainerPropRef.Size = new System.Drawing.Size(198, 472);
+            this.splitContainerPropRef.SplitterDistance = 350;
             this.splitContainerPropRef.TabIndex = 0;
             // 
             // listProperties
@@ -370,23 +373,28 @@ namespace Gear.GUI
             listViewGroup3.Header = "Date Modified";
             listViewGroup3.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
             listViewGroup3.Name = "DateModified";
-            listViewGroup4.Header = "Description";
+            listViewGroup4.Header = "Version";
             listViewGroup4.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
-            listViewGroup4.Name = "Description";
-            listViewGroup5.Header = "Usage";
+            listViewGroup4.Name = "Version";
+            listViewGroup5.Header = "Description";
             listViewGroup5.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
-            listViewGroup5.Name = "Usage";
-            listViewGroup6.Header = "Link(s)";
+            listViewGroup5.Name = "Description";
+            listViewGroup6.Header = "Usage";
             listViewGroup6.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
-            listViewGroup6.Name = "Links";
+            listViewGroup6.Name = "Usage";
+            listViewGroup7.Header = "Link(s)";
+            listViewGroup7.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
+            listViewGroup7.Name = "Links";
             this.listProperties.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
             listViewGroup1,
             listViewGroup2,
             listViewGroup3,
             listViewGroup4,
             listViewGroup5,
-            listViewGroup6});
+            listViewGroup6,
+            listViewGroup7});
             this.listProperties.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.listProperties.HideSelection = false;
             listViewItem1.Group = listViewGroup1;
             listViewItem1.StateImageIndex = 0;
             listViewItem1.ToolTipText = "The name of original author of the plugin.";
@@ -395,27 +403,31 @@ namespace Gear.GUI
             listViewItem3.Group = listViewGroup3;
             listViewItem3.ToolTipText = "When was the last modification.";
             listViewItem4.Group = listViewGroup4;
-            listViewItem4.ToolTipText = "What does the plugin.";
+            listViewItem4.ToolTipText = "Version number of the plugin";
             listViewItem5.Group = listViewGroup5;
-            listViewItem5.ToolTipText = "How it is supposed to be used the plugin.";
+            listViewItem5.ToolTipText = "What does the plugin.";
             listViewItem6.Group = listViewGroup6;
-            listViewItem6.ToolTipText = "Web links for the plugin.";
+            listViewItem6.ToolTipText = "How it is supposed to be used the plugin.";
+            listViewItem7.Group = listViewGroup7;
+            listViewItem7.ToolTipText = "Web links for the plugin.";
             this.listProperties.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
             listViewItem1,
             listViewItem2,
             listViewItem3,
             listViewItem4,
             listViewItem5,
-            listViewItem6});
+            listViewItem6,
+            listViewItem7});
             this.listProperties.LabelEdit = true;
             this.listProperties.Location = new System.Drawing.Point(0, 0);
             this.listProperties.MultiSelect = false;
             this.listProperties.Name = "listProperties";
             this.listProperties.ShowItemToolTips = true;
-            this.listProperties.Size = new System.Drawing.Size(198, 287);
+            this.listProperties.Size = new System.Drawing.Size(198, 327);
             this.listProperties.TabIndex = 0;
             this.listProperties.UseCompatibleStateImageBehavior = false;
             this.listProperties.View = System.Windows.Forms.View.Details;
+            this.listProperties.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listProperties_AfterLabelEdit);
             this.listProperties.SelectedIndexChanged += new System.EventHandler(this.listProperties_SelectedIndexChanged);
             // 
             // KeyColumn
@@ -431,7 +443,7 @@ namespace Gear.GUI
             this.addAuthorLinkButton,
             this.removeAuthorLinkButton});
             this.toolStripLinks.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
-            this.toolStripLinks.Location = new System.Drawing.Point(0, 287);
+            this.toolStripLinks.Location = new System.Drawing.Point(0, 327);
             this.toolStripLinks.Name = "toolStripLinks";
             this.toolStripLinks.Size = new System.Drawing.Size(198, 23);
             this.toolStripLinks.TabIndex = 1;
@@ -479,8 +491,8 @@ namespace Gear.GUI
             // splitContainerCodeErr.Panel2
             // 
             this.splitContainerCodeErr.Panel2.Controls.Add(this.errorListView);
-            this.splitContainerCodeErr.Size = new System.Drawing.Size(432, 417);
-            this.splitContainerCodeErr.SplitterDistance = 310;
+            this.splitContainerCodeErr.Size = new System.Drawing.Size(432, 472);
+            this.splitContainerCodeErr.SplitterDistance = 350;
             this.splitContainerCodeErr.TabIndex = 0;
             this.splitContainerCodeErr.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitContainerCodeErr_SplitterMoved);
             // 
@@ -488,7 +500,7 @@ namespace Gear.GUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(634, 442);
+            this.ClientSize = new System.Drawing.Size(634, 497);
             this.Controls.Add(this.splitContainerMain);
             this.Controls.Add(this.toolStripMain);
             this.Name = "PluginEditor";
