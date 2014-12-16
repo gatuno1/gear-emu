@@ -42,6 +42,7 @@ namespace Gear.PluginSupport
             public string[] Authors;
             public string Modifier;
             public string DateModified;
+            public string CulturalReference;
             public string Description;
             public string Usage;
             public string[] Links;
@@ -95,7 +96,9 @@ namespace Gear.PluginSupport
             return true;
         }
 
-        /// @brief Save a plugin to XML as version 1.0
+        /// @brief Save a plugin to XML as version 1.0.
+        /// @param filenameXml
+        /// @param Data
         /// @returns State of saving.
         static public bool SaveXML_v1_0(string filenameXml, PluginData Data)
         {
@@ -126,11 +129,14 @@ namespace Gear.PluginSupport
                     foreach (string s in Data.Authors)
                     {
                         childElement = xmlDoc.CreateElement("author");
-                        textElement = xmlDoc.CreateTextNode("");
-                        cdata = xmlDoc.CreateCDataSection(s);
                         instance.AppendChild(childElement);
-                        childElement.AppendChild(textElement);
-                        textElement.AppendChild(cdata);
+                        if (s.Length > 0)
+                        {
+                            textElement = xmlDoc.CreateTextNode("");
+                            childElement.AppendChild(textElement);
+                            cdata = xmlDoc.CreateCDataSection(s);
+                            childElement.AppendChild(cdata);
+                        }
                     }
                 }
                 else
@@ -141,42 +147,67 @@ namespace Gear.PluginSupport
                 //level 2 element - modified_by
                 childElement = xmlDoc.CreateElement("modified_by");
                 instance.AppendChild(childElement);
-                textElement = xmlDoc.CreateTextNode("");
-                childElement.AppendChild(textElement);
-                cdata = xmlDoc.CreateCDataSection(Data.Modifier);
-                childElement.AppendChild(cdata);
+                if (Data.Modifier.Length > 0)
+                {
+                    textElement = xmlDoc.CreateTextNode("");
+                    childElement.AppendChild(textElement);
+                    cdata = xmlDoc.CreateCDataSection(Data.Modifier);
+                    childElement.AppendChild(cdata);
+                }
                 //level 2 element - date_modified
                 childElement = xmlDoc.CreateElement("date_modified");
-                textElement = xmlDoc.CreateTextNode("");
-                cdata = xmlDoc.CreateCDataSection(Data.DateModified);
                 instance.AppendChild(childElement);
-                childElement.AppendChild(textElement);
-                childElement.AppendChild(cdata);
+                if (Data.DateModified.Length > 0)
+                {
+                    textElement = xmlDoc.CreateTextNode("");
+                    cdata = xmlDoc.CreateCDataSection(Data.DateModified);
+                    childElement.AppendChild(textElement);
+                    childElement.AppendChild(cdata);
+                }
+                //level 2 element - cultural_reference
+                childElement = xmlDoc.CreateElement("cultural_reference");
+                instance.AppendChild(childElement);
+                if (Data.CulturalReference.Length > 0)
+                {
+                    textElement = xmlDoc.CreateTextNode("");
+                    cdata = xmlDoc.CreateCDataSection(Data.CulturalReference);
+                    childElement.AppendChild(textElement);
+                    childElement.AppendChild(cdata);
+                }
                 //level 2 element - description
                 childElement = xmlDoc.CreateElement("description");
-                textElement = xmlDoc.CreateTextNode("");
-                cdata = xmlDoc.CreateCDataSection(Data.Description);
                 instance.AppendChild(childElement);
-                childElement.AppendChild(textElement);
-                childElement.AppendChild(cdata);
+                if (Data.Description.Length > 0)
+                {
+                    textElement = xmlDoc.CreateTextNode("");
+                    cdata = xmlDoc.CreateCDataSection(Data.Description);
+                    childElement.AppendChild(textElement);
+                    childElement.AppendChild(cdata);
+                }
                 //level 2 element - usage
                 childElement = xmlDoc.CreateElement("usage");
-                textElement = xmlDoc.CreateTextNode("");
-                cdata = xmlDoc.CreateCDataSection(Data.Usage);
                 instance.AppendChild(childElement);
-                childElement.AppendChild(textElement);
-                childElement.AppendChild(cdata);
+                if (Data.Usage.Length > 0)
+                {
+                    textElement = xmlDoc.CreateTextNode("");
+                    cdata = xmlDoc.CreateCDataSection(Data.Usage);
+                    childElement.AppendChild(textElement);
+                    childElement.AppendChild(cdata);
+                }
                 //level 2 elements - link
                 if (Data.Links != null)
                 {
                     foreach (string s in Data.Links)
                     {
                         childElement = xmlDoc.CreateElement("link");
-                        textElement = xmlDoc.CreateTextNode("");
-                        cdata = xmlDoc.CreateCDataSection(s);
                         instance.AppendChild(childElement);
-                        childElement.AppendChild(textElement);
-                        childElement.AppendChild(cdata);
+                        if (s.Length > 0)
+                        {
+                            textElement = xmlDoc.CreateTextNode("");
+                            cdata = xmlDoc.CreateCDataSection(s);
+                            childElement.AppendChild(textElement);
+                            childElement.AppendChild(cdata);
+                        }
                     }
                 }
                 else 
@@ -209,11 +240,19 @@ namespace Gear.PluginSupport
                 for (int i = 0; i < Data.UseAuxFiles.Rank; i++)
                 {
                     instance = xmlDoc.CreateElement("code");
-                    if (!Data.UseAuxFiles[i])
-                        instance.AppendChild(xmlDoc.CreateTextNode(Data.Codes[i]));
-                    else
-                        instance.SetAttribute("ref", Data.AuxFiles[i]);
                     root.AppendChild(instance);
+                    if (!Data.UseAuxFiles[i])
+                    {
+                        textElement = xmlDoc.CreateTextNode("");
+                        cdata = xmlDoc.CreateCDataSection(Data.Codes[i]);
+                        instance.AppendChild(textElement);
+                        instance.AppendChild(cdata);
+                    }
+                    else
+                    {
+                        instance.SetAttribute("ref", Data.AuxFiles[i]);
+                        //TODO ASB - add to save the code to another .CS file
+                    }
                 }
             else
             {

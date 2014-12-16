@@ -27,6 +27,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Text;
+using System.Globalization;
 using System.Windows.Forms;
 using System.Xml;
 using System.IO;
@@ -141,7 +142,11 @@ namespace Gear.GUI
             foreach (ListViewItem item in listProperties.Items)
             {
                 item.Text = GetDefaultAboutPropertyText(item.Group);
+                if ((item.Group.Name == "DateModified") || (item.Group.Name == "Version"))
+                    SetDefinedAboutProperty(item, true);
             }
+            //set the actual date
+
             
         }
 
@@ -273,33 +278,34 @@ namespace Gear.GUI
         /// @brief Save a XML file with the plugin information.
         /// @details Take care of update change state of the window. No need to do it in 
         /// methods who call this.
+        /// @param FileName
+        /// @param version
         /// @todo Correct method to implement new versioning plugin system.
         public void SaveFile(string FileName, string version)
         {
             PluginPersistence.PluginData data = new PluginPersistence.PluginData();
-            string[] aux;
             //fill struct with data from screen controls
             data.PluginSystemVersion = version; //version of plugin system
-            //TODO [ASB]: PluginData.PluginVersion - add try section & detect exception thrown
-            data.PluginVersion = GetElementsFromAboutProperty("Version")[0];    //always expect 1 element for Version
-            //TODO [ASB]: PluginData.Authors - obtain data from screen control
-            //string[] Authors = new string[<author list>.Lenght]
-            //for(int i = 0; i < <author list>.Lenght; i++)
-            //    Authors[i] = <author list>[i];
-            //data.Authors = Authors;
-            //TODO [ASB]: PluginData.Modifier - obtain data from screen control
-            data.Modifier = "Modifier test";
-            //TODO [ASB]: PluginData.DateModified - obtain data from screen control
-            data.DateModified = DateTime.Today.ToString("u");
-            //TODO [ASB]: PluginData.Description - obtain data from screen control
-            data.Description = "Test Description";
-            //TODO [ASB]: PluginData.Usage - obtain data from screen control
-            data.Usage = "Test Usage";
-            //TODO [ASB]: PluginData.Links - obtain data from screen control
-            //string[] links = new string[<lista links>.Count];
-            //for(int i = 0; i < <lista links>.Lenght; i++)
-            //    links[i] = <lista links>[i];
-            //data.Links = links;
+            //data.PluginVersion - version of the plugin itself
+            //TODO [ASB]: add try section & detect exception thrown
+            data.PluginVersion = 
+                GetElementsFromAboutProperty("Version",false)[0];    //always expect 1 element
+            //TODO [ASB]: add try section & detect exception thrown
+            data.Authors = GetElementsFromAboutProperty("Authors");
+            //TODO [ASB]: add try section & detect exception thrown
+            data.Modifier = GetElementsFromAboutProperty("ModifiedBy")[0];      //always expect 1 element
+            //TODO [ASB]: add try section & detect exception thrown
+            data.DateModified = 
+                GetElementsFromAboutProperty("DateModified",false)[0];//always expect 1 element
+            //cultural reference should be the one actually used in run time
+            data.CulturalReference = CultureInfo.CurrentCulture.Name;
+            //TODO [ASB]: add try section & detect exception thrown
+            data.Description = GetElementsFromAboutProperty("Description")[0];  //always expect 1 element
+            //TODO [ASB]: add try section & detect exception thrown
+            data.Usage = GetElementsFromAboutProperty("Usage")[0];              //always expect 1 element
+            //TODO [ASB]: add try section & detect exception thrown
+            data.Links = GetElementsFromAboutProperty("Links");
+
             data.InstanceName = instanceName.Text;
             string[] references;
             if (referencesList.Items.Count > 0)
@@ -313,8 +319,8 @@ namespace Gear.GUI
 	        {
                 case "1.0":
                     //TODO [ASB] : set the code to manage multiple files on user interface
-                    data.UseAuxFiles = new bool[1] { false };
-                    data.AuxFiles = new string[1] { "" };
+                    data.UseAuxFiles = new bool[1] { (!embeddedCode.Checked) };
+                    data.AuxFiles = new string[1] { ((!embeddedCode.Checked) ? FileName : "") };
                     data.Codes = new string[1] { codeEditorView.Text };
                     //update modified state for the plugin
                     CodeChanged = !PluginPersistence.SaveXML_v1_0(FileName, data);
@@ -823,19 +829,19 @@ namespace Gear.GUI
                 //get the group the selected item belongs
                 ListViewGroup group = SelectedItem.Group;
                 //filter only groups for properties with many items allowed (>1)
-                if ( (SelectedItem.ForeColor == System.Drawing.SystemColors.InactiveCaption) ||
+                if (!GetDefinedAboutProperty(SelectedItem) ||
                     ((group.Name != "Authors") && (group.Name != "Links")) )
                 {
                     SelectedItem.Text = authorLinkName.Text;
                     //set color to normal text
-                    SelectedItem.ForeColor = System.Drawing.SystemColors.WindowText;
+                    SetDefinedAboutProperty(SelectedItem, true);
                 }
                 else 
                 { 
                     //create new item with the text given and same group as item selected
                     ListViewItem newItem = new ListViewItem(authorLinkName.Text, group);
                     //set color to normal text
-                    newItem.ForeColor = System.Drawing.SystemColors.WindowText;
+                    SetDefinedAboutProperty(newItem, true);
                     //add to the list
                     listProperties.Items.Add(newItem);
                 }
@@ -873,7 +879,7 @@ namespace Gear.GUI
                     {   
                         //instead reset the text to default
                         ItemToDelete.Text = ResetText;
-                        ItemToDelete.ForeColor = System.Drawing.SystemColors.InactiveCaption;
+                        SetDefinedAboutProperty(ItemToDelete, false);
                     }
                     //mark as changed
                     CodeChanged = true;
@@ -927,7 +933,7 @@ namespace Gear.GUI
                     tex = "Your name";
                     break;
                 case "DateModified":
-                    tex = "Modified";
+                    tex = DateTime.Now.Date.GetDateTimeFormats('d')[0];
                     break;
                 case "Version":
                     tex = "1.0";
@@ -948,15 +954,52 @@ namespace Gear.GUI
             return tex;
         }
 
-        /// @brief Retrieve a list of elements for the given group from 
-        /// the about properties list.
+        /// @brief Set the visibility of the given property for About properties.
+        /// @param item About Propertie to set.
+        /// @param userDefined User defined (=true), or default value used (=false).
+        /// @version V.14.12.16 - Added
+        private void SetDefinedAboutProperty(ListViewItem item, bool userDefined)
+        {
+            if (item != null)
+            {
+                if (userDefined)
+                    item.ForeColor = System.Drawing.SystemColors.WindowText;
+                else
+                    item.ForeColor = System.Drawing.SystemColors.InactiveCaption;
+            }
+        }
+
+        /// @brief Get the visibility of the given property for About properties.
+        /// @param item About Propertie to set.
+        /// @returns User defined (=true), or default value used (=false).
+        /// @version V.14.12.16 - Added
+        private bool GetDefinedAboutProperty(ListViewItem item)
+        {
+            if (item != null)
+            {
+                if (item.ForeColor == System.Drawing.SystemColors.WindowText)
+                    return true;
+                else
+                    return false;
+            }
+            else   //the item is not defined
+            {   
+                //TODO ASB : define and throw an exception
+                return false;   //delete this line when add the exception thrown code
+            }
+                
+        }
+
+        /// @brief Retrieve a list of elements for the given group from the about properties list, 
+        /// but resetting the names depending of the given paramenter.
         /// @param groupName Name of the group to retrieve elements.
+        /// @param resetEmpty Boolean to reset the value if not user defined (=true), or not (=false).
         /// @returns Array of elements of the group.
         /// @version 14.12.13 - Added.
-        private string[] GetElementsFromAboutProperty(string groupName)
+        private string[] GetElementsFromAboutProperty(string groupName, bool resetEmpty)
         {
             string[] result = null;
-            foreach(ListViewGroup group in listProperties.Groups)
+            foreach (ListViewGroup group in listProperties.Groups)
             {
                 if (group.Name == groupName)
                 {
@@ -964,11 +1007,11 @@ namespace Gear.GUI
                     if (items.Count > 0)
                     {
                         result = new string[items.Count];   //set the dimension of the array
-                        for(int i=0; i < items.Count; i++)
+                        for (int i = 0; i < items.Count; i++)
                         {
                             result[i] = items[i].Text;
                             //check for default text for the group
-                            if (result[i] == GetDefaultAboutPropertyText(group))
+                            if (result[i] == GetDefaultAboutPropertyText(group) && resetEmpty)
                             {
                                 result[i] = ""; //clear it
                             }
@@ -988,18 +1031,28 @@ namespace Gear.GUI
             return result;
         }
 
+        /// @brief Retrieve a list of elements for the given group from the about properties list, 
+        /// clearing the values if they are not user defined.
+        /// @param groupName Name of the group to retrieve elements.
+        /// @returns Array of elements of the group.
+        /// @version 14.12.13 - Added.
+        private string[] GetElementsFromAboutProperty(string groupName)
+        {
+            return this.GetElementsFromAboutProperty(groupName, true);
+        }
+
         private void listProperties_AfterLabelEdit(object sender, LabelEditEventArgs e)
         {
             ListViewItem SelectedItem = null;    //selected item reference
             foreach (ListViewItem item in listProperties.SelectedItems)
             {
-                SelectedItem = item;    //should be only one, so get the last
+                SelectedItem = item;    //should be only one, so will get the last
             };
-            if (SelectedItem.ForeColor == System.Drawing.SystemColors.InactiveCaption)
+            if (GetDefinedAboutProperty(SelectedItem))
             {
                 if (SelectedItem.Text != GetDefaultAboutPropertyText(SelectedItem.Group))
                 {
-                    SelectedItem.ForeColor = System.Drawing.SystemColors.WindowText;
+                    SetDefinedAboutProperty(SelectedItem, true);
                 }
             }
 
