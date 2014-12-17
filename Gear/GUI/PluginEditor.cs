@@ -27,6 +27,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Windows.Forms;
 using System.Xml;
@@ -34,7 +35,6 @@ using System.IO;
 using System.CodeDom.Compiler;
 
 using Gear.PluginSupport;
-using System.Text.RegularExpressions;
 
 /// @copydoc Gear.GUI
 /// 
@@ -48,20 +48,20 @@ namespace Gear.GUI
         private string m_SaveFileName;
         /// @brief Version of the file for a plugin. 
         private string m_FormatVersion;
-        /// @brief Text for About properties
+        /// @brief Text for plugin Metadata
         /// @version V14.12.12 - Added
-        private string aboutText
+        private string metadataText
         {
             get 
             {
                 if (m_FormatVersion == null)
-                    return "Properties of plugin";
+                    return "Metadata of plugin";
                 else switch (m_FormatVersion)
                 {
                     case "0.0":
-                        return "No properties for old plugin format";
+                        return "No Metadata for old plugin format";
                     default:
-                        return "Properties of plugin v." + m_FormatVersion;
+                        return "Metadata of plugin V" + m_FormatVersion;
                 }
             }
         }
@@ -76,14 +76,15 @@ namespace Gear.GUI
         /// @version V14.07.17 - Added.
         private bool changeDetectEnabled;
         /// @brief Types of change detected.
-        /// To mantain consistency between class name in C# code and class name declared in the other field.
+        /// To mantain consistency between class name in C# code and class name declared in others objects.
         /// @version 14.07.25 - Added.
         private enum ChangeType : byte
         {
             none = 0,   //!< @brief No change detected.
             name,       //!< @brief Name class change detected.
             code,       //!< @brief Code change detected.
-            about       //!< @brief About properties change detected.
+            reference,  //!< @brief Reference change detected.
+            metadata    //!< @brief Metadata change detected.
         }
         /// @brief Store the last change detected.
         /// To determine changes, it includes only the C# code and class name.
@@ -138,15 +139,14 @@ namespace Gear.GUI
             //retrieve from settings the last state for embedded code
             SetEmbeddedCodeButton(Properties.Settings.Default.EmbeddedCode);
 
-            //setup the about properties with the default names.
-            foreach (ListViewItem item in listProperties.Items)
+            //setup the metadata with the default names.
+            foreach (ListViewItem item in pluginMetadataList.Items)
             {
-                item.Text = GetDefaultAboutPropertyText(item.Group);
+                item.Text = GetDefaultTextMetadataElement(item.Group);
                 if ((item.Group.Name == "DateModified") || (item.Group.Name == "Version"))
-                    SetDefinedAboutProperty(item, true);
+                    SetUserDefinedMetadataElement(item, true);
             }
-            //set the actual date
-
+            //
             
         }
 
@@ -166,7 +166,7 @@ namespace Gear.GUI
             set  
             {
                 m_CodeChanged = value;
-                UpdateTitle();
+                UpdateTitles();
             }
         }
 
@@ -183,16 +183,17 @@ namespace Gear.GUI
             set
             {
                 m_SaveFileName = value;
-                UpdateTitle();
+                UpdateTitles();
             }
         }
 
-        /// @brief Update title window, considering modified state.
+        /// @brief Update titles of window and metadata, considering modified state.
         /// @details Considering name of the plugin and showing modified state, to tell the user 
         /// if need to save.
-        private void UpdateTitle()
+        private void UpdateTitles()
         {
             this.Text = ("Plugin Editor: " + SaveFileName +  (CodeChanged ? " *" : ""));
+            pluginMetadataList.Columns[0].Text = metadataText;
         }
 
         /// @brief Load a plugin from File.
@@ -289,22 +290,22 @@ namespace Gear.GUI
             //data.PluginVersion - version of the plugin itself
             //TODO [ASB]: add try section & detect exception thrown
             data.PluginVersion = 
-                GetElementsFromAboutProperty("Version",false)[0];    //always expect 1 element
+                GetElementsFromMetadata("Version",false)[0];    //always expect 1 element
             //TODO [ASB]: add try section & detect exception thrown
-            data.Authors = GetElementsFromAboutProperty("Authors");
+            data.Authors = GetElementsFromMetadata("Authors");
             //TODO [ASB]: add try section & detect exception thrown
-            data.Modifier = GetElementsFromAboutProperty("ModifiedBy")[0];      //always expect 1 element
+            data.Modifier = GetElementsFromMetadata("ModifiedBy")[0];      //always expect 1 element
             //TODO [ASB]: add try section & detect exception thrown
             data.DateModified = 
-                GetElementsFromAboutProperty("DateModified",false)[0];//always expect 1 element
+                GetElementsFromMetadata("DateModified",false)[0];//always expect 1 element
             //cultural reference should be the one actually used in run time
             data.CulturalReference = CultureInfo.CurrentCulture.Name;
             //TODO [ASB]: add try section & detect exception thrown
-            data.Description = GetElementsFromAboutProperty("Description")[0];  //always expect 1 element
+            data.Description = GetElementsFromMetadata("Description")[0];  //always expect 1 element
             //TODO [ASB]: add try section & detect exception thrown
-            data.Usage = GetElementsFromAboutProperty("Usage")[0];              //always expect 1 element
+            data.Usage = GetElementsFromMetadata("Usage")[0];              //always expect 1 element
             //TODO [ASB]: add try section & detect exception thrown
-            data.Links = GetElementsFromAboutProperty("Links");
+            data.Links = GetElementsFromMetadata("Links");
 
             data.InstanceName = instanceName.Text;
             string[] references;
@@ -318,15 +319,17 @@ namespace Gear.GUI
             switch (version)
 	        {
                 case "1.0":
-                    //TODO [ASB] : set the code to manage multiple files on user interface
+                    //TODO ASB: manage multiple files from user interface
                     data.UseAuxFiles = new bool[1] { (!embeddedCode.Checked) };
-                    data.AuxFiles = new string[1] { ((!embeddedCode.Checked) ? FileName : "") };
+                    string separateFileName = Path.Combine(Path.GetDirectoryName(FileName),
+                        Path.GetFileNameWithoutExtension(FileName) + ".cs");
+                    data.AuxFiles = new string[1] { ((!embeddedCode.Checked) ? separateFileName : "") };
                     data.Codes = new string[1] { codeEditorView.Text };
                     //update modified state for the plugin
                     CodeChanged = !PluginPersistence.SaveXML_v1_0(FileName, data);
                     break;
                 case "0.0":
-                    //TODO [ASB] : set the code to manage multiple files on user interface
+                    //manage only one file on user interface
                     data.UseAuxFiles = new bool[1] { false };
                     data.AuxFiles = new string[1] { "" };
                     data.Codes = new string[1] { codeEditorView.Text };
@@ -416,7 +419,7 @@ namespace Gear.GUI
             else
                 SaveAsButton_Click(sender, e);
 
-            UpdateTitle();   //update title window
+            UpdateTitles();   //update title window
         }
 
         /// @brief Show dialog to save a plugin information into file, using GEAR plugin format.
@@ -459,49 +462,8 @@ namespace Gear.GUI
                 else
                     m_FormatVersion = "1.0";
                 SaveFile(dialog.FileName, m_FormatVersion);
-                UpdateTitle();   //update title window
+                UpdateTitles();   //update title window
             }
-        }
-
-        /// @brief Remove the selected reference of the list.
-        /// Also update change state for the plugin module, marking as changed.
-        /// @param[in] sender Object who called this on event.
-        /// @param[in] e `EventArgs` class with a list of argument to the event call.
-        private void RemoveReferenceButton_Click(object sender, EventArgs e)
-        {
-            if (referencesList.SelectedIndex != -1)
-            {
-                referencesList.Items.RemoveAt(referencesList.SelectedIndex);
-                CodeChanged = true;
-            }
-        }
-
-        /// @todo Document method PluginEditor.ErrorView_SelectedIndexChanged() 
-        /// @param[in] sender Object who called this on event.
-        /// @param[in] e `EventArgs` class with a list of argument to the event call.
-        private void ErrorView_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (errorListView.SelectedIndices.Count < 1)
-                return;
-
-            int index = errorListView.SelectedIndices[0];
-
-            ListViewItem lvi = errorListView.Items[index];
-
-            int line = Convert.ToInt32(lvi.SubItems[1].Text) - 1;
-            int column = Convert.ToInt32(lvi.SubItems[2].Text) - 1;
-
-            int i = 0;
-
-            while (line != codeEditorView.GetLineFromCharIndex(i++)) ;
-
-            i += column;
-
-            codeEditorView.SelectionStart = i;
-            codeEditorView.ScrollToCaret();
-            codeEditorView.Select();
-
-            return;
         }
 
         /// @brief Add a reference from the `ReferenceName`text box.
@@ -515,7 +477,45 @@ namespace Gear.GUI
                 referencesList.Items.Add(referenceName.Text);
                 referenceName.Text = "";
                 CodeChanged = true;
+                LastChange = ChangeType.reference;
             }
+        }
+
+        /// @brief Remove the selected reference of the list.
+        /// Also update change state for the plugin module, marking as changed.
+        /// @param[in] sender Object who called this on event.
+        /// @param[in] e `EventArgs` class with a list of argument to the event call.
+        private void RemoveReferenceButton_Click(object sender, EventArgs e)
+        {
+            if (referencesList.SelectedIndex != -1)
+            {
+                referencesList.Items.RemoveAt(referencesList.SelectedIndex);
+                CodeChanged = true;
+                LastChange = ChangeType.reference;
+            }
+        }
+
+        /// @brief Locate the offender code in code view, corresponding to the current error row.
+        /// @param[in] sender Object who called this on event.
+        /// @param[in] e `EventArgs` class with a list of argument to the event call.
+        private void ErrorView_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (errorListView.SelectedIndices.Count < 1)
+                return;
+
+            int index = errorListView.SelectedIndices[0];
+            ListViewItem lvi = errorListView.Items[index];
+            int line = Convert.ToInt32(lvi.SubItems[1].Text) - 1;
+            int column = Convert.ToInt32(lvi.SubItems[2].Text) - 1;
+
+            int i = 0;
+            while (line != codeEditorView.GetLineFromCharIndex(i++)) ;
+            i += column;
+            codeEditorView.SelectionStart = i;
+            codeEditorView.ScrollToCaret();
+            codeEditorView.Select();
+
+            return;
         }
 
         /// @brief Check syntax on the C# source code
@@ -812,116 +812,118 @@ namespace Gear.GUI
             }
         }
 
-        /// @brief Add the selected Author or Link to the about properties list.
+        /// @brief Add the text to the selected element of metadata list.
         /// Also update change state for the plugin module, marking as changed.
         /// @param[in] sender Object who called this on event.
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         /// @version 14.12.12 - Added.
-        private void addAuthorLinkButton_Click(object sender, EventArgs e)
+        private void addPluginMetadataButton_Click(object sender, EventArgs e)
         {
-            if ((authorLinkName.Text != null) && (authorLinkName.Text.Length > 0) && (listProperties.SelectedIndices.Count > 0))
+            if ((textPluginMetadataBox.Text != null) && (textPluginMetadataBox.Text.Length > 0) && (pluginMetadataList.SelectedIndices.Count > 0))
             {
                 ListViewItem SelectedItem = null;    //selected item reference
-                foreach(ListViewItem item in listProperties.SelectedItems)
+                foreach(ListViewItem item in pluginMetadataList.SelectedItems)
                 {
                     SelectedItem = item;    //should be only one, so get the last
                 };
                 //get the group the selected item belongs
                 ListViewGroup group = SelectedItem.Group;
-                //filter only groups for properties with many items allowed (>1)
-                if (!GetDefinedAboutProperty(SelectedItem) ||
+                //filter only groups for metadata elements with many items allowed (>1)
+                if (!IsUserDefinedMetadataElement(SelectedItem) ||
                     ((group.Name != "Authors") && (group.Name != "Links")) )
                 {
-                    SelectedItem.Text = authorLinkName.Text;
+                    SelectedItem.Text = textPluginMetadataBox.Text;
                     //set color to normal text
-                    SetDefinedAboutProperty(SelectedItem, true);
+                    SetUserDefinedMetadataElement(SelectedItem, true);
                 }
                 else 
                 { 
                     //create new item with the text given and same group as item selected
-                    ListViewItem newItem = new ListViewItem(authorLinkName.Text, group);
+                    ListViewItem newItem = new ListViewItem(textPluginMetadataBox.Text, group);
                     //set color to normal text
-                    SetDefinedAboutProperty(newItem, true);
+                    SetUserDefinedMetadataElement(newItem, true);
                     //add to the list
-                    listProperties.Items.Add(newItem);
+                    pluginMetadataList.Items.Add(newItem);
                 }
-                //clear the text box as we had inserted that text in the about property
-                authorLinkName.Text = "";
+                //clear the text box as we had inserted that text in the corresponding metadata element
+                textPluginMetadataBox.Text = "";
                 //mark as changed
                 CodeChanged = true;
+                LastChange = ChangeType.metadata;
             }
         }
 
-        /// @brief Remove the selected author or Link of the about properties list.
+        /// @brief Remove the selected author or Link of the metadata list.
         /// Also update change state for the plugin module, marking as changed.
         /// @param[in] sender Object who called this on event.
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         /// @version 14.12.12 - Added.
-        private void removeAuthorLinkButton_Click(object sender, EventArgs e)
+        private void removePluginMetadataButton_Click(object sender, EventArgs e)
         {
-            if (listProperties.SelectedItems.Count > 0)
+            if (pluginMetadataList.SelectedItems.Count > 0)
             {
                 string ResetText = null;
                 ListViewItem ItemToDelete = null;   //selected item reference
-                foreach (ListViewItem item in listProperties.SelectedItems)
+                foreach (ListViewItem item in pluginMetadataList.SelectedItems)
                 {
                     ItemToDelete = item;     //should be only one, so get the last
                 };
                 //get the group where the selected item belongs & the default name for it
                 ListViewGroup group = ItemToDelete.Group;
-                ResetText = GetDefaultAboutPropertyText(group);
+                ResetText = GetDefaultTextMetadataElement(group);
                 if (ResetText != null)
                 {
                     ListView.ListViewItemCollection ItemsInGroup = group.Items; 
                     if (ItemsInGroup.Count > 1) //if there are many items
-                        listProperties.Items.Remove(ItemToDelete);  //delete it
+                        pluginMetadataList.Items.Remove(ItemToDelete);  //delete it
                     else
                     {   
                         //instead reset the text to default
                         ItemToDelete.Text = ResetText;
-                        SetDefinedAboutProperty(ItemToDelete, false);
+                        SetUserDefinedMetadataElement(ItemToDelete, false);
                     }
                     //mark as changed
                     CodeChanged = true;
+                    LastChange = ChangeType.metadata;
                 }
             }
         }
 
         /// @brief Detect changes on selected item and adjust strip buttons Add & Remove for
-        /// about properties acordly.
+        /// metadata acordly.
         /// @param[in] sender Object who called this on event.
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         /// @version 14.12.12 - Added.
-        private void listProperties_SelectedIndexChanged(object sender, EventArgs e)
+        private void pluginMetadataList_SelectedIndexChanged(object sender, EventArgs e)
         {
             ListViewItem SelectedItem = null;   //selected item reference
-            foreach (ListViewItem item in listProperties.SelectedItems)
+            foreach (ListViewItem item in pluginMetadataList.SelectedItems)
             {
                 SelectedItem = item;     //should be only one, so get the last
             };
-            //set default names for properties with many items allowed (>1)
+            //set default names for metadata elements with many items allowed (>1)
             if (SelectedItem != null)
             {
                 switch (SelectedItem.Group.Name)
                 {
                     case "Authors":
                     case "Links":
-                        removeAuthorLinkButton.Text = "Remove";
-                        addAuthorLinkButton.Text = "Add";
+                        removePluginMetadataButton.Text = "Remove";
+                        addPluginMetadataButton.Text = "Add";
                         break;
                     default:
-                        removeAuthorLinkButton.Text = "Clear";
-                        addAuthorLinkButton.Text = "Change";
+                        removePluginMetadataButton.Text = "Clear";
+                        addPluginMetadataButton.Text = "Change";
                         break;
                 }
             }
         }
 
-        /// @brief Determine the default text for the group of about properties list
-        /// @param[in] group Group of about properties.
+        /// @brief Determine the default text for the group of metadata element given as parameter.
+        /// @param[in] group Group of metadata element.
         /// @returns Default text for the given group
         /// @version 14.12.13 - Added.
-        private string GetDefaultAboutPropertyText(ListViewGroup group)
+        private string GetDefaultTextMetadataElement(ListViewGroup group)
         {
             string tex = null;
             switch (group.Name)
@@ -948,17 +950,17 @@ namespace Gear.GUI
                     tex = "Web Link to more information";
                     break;
                 default:
-                    tex = "Not recognized property";
+                    tex = "Not recognized metadata element";
                     break;
             }
             return tex;
         }
 
-        /// @brief Set the visibility of the given property for About properties.
-        /// @param item About Propertie to set.
+        /// @brief Set the visibility of the given metadata element.
+        /// @param item Metadata element to set.
         /// @param userDefined User defined (=true), or default value used (=false).
         /// @version V.14.12.16 - Added
-        private void SetDefinedAboutProperty(ListViewItem item, bool userDefined)
+        private void SetUserDefinedMetadataElement(ListViewItem item, bool userDefined)
         {
             if (item != null)
             {
@@ -969,11 +971,11 @@ namespace Gear.GUI
             }
         }
 
-        /// @brief Get the visibility of the given property for About properties.
-        /// @param item About Propertie to set.
+        /// @brief Get the visibility of the given metadata element.
+        /// @param item Metadata element to set.
         /// @returns User defined (=true), or default value used (=false).
         /// @version V.14.12.16 - Added
-        private bool GetDefinedAboutProperty(ListViewItem item)
+        private bool IsUserDefinedMetadataElement(ListViewItem item)
         {
             if (item != null)
             {
@@ -990,16 +992,16 @@ namespace Gear.GUI
                 
         }
 
-        /// @brief Retrieve a list of elements for the given group from the about properties list, 
-        /// but resetting the names depending of the given paramenter.
+        /// @brief Retrieve a list of elements for the given group from the metadata list, 
+        /// but resetting the names depending of the given parameter.
         /// @param groupName Name of the group to retrieve elements.
         /// @param resetEmpty Boolean to reset the value if not user defined (=true), or not (=false).
         /// @returns Array of elements of the group.
         /// @version 14.12.13 - Added.
-        private string[] GetElementsFromAboutProperty(string groupName, bool resetEmpty)
+        private string[] GetElementsFromMetadata(string groupName, bool resetEmpty)
         {
             string[] result = null;
-            foreach (ListViewGroup group in listProperties.Groups)
+            foreach (ListViewGroup group in pluginMetadataList.Groups)
             {
                 if (group.Name == groupName)
                 {
@@ -1011,7 +1013,7 @@ namespace Gear.GUI
                         {
                             result[i] = items[i].Text;
                             //check for default text for the group
-                            if (result[i] == GetDefaultAboutPropertyText(group) && resetEmpty)
+                            if (result[i] == GetDefaultTextMetadataElement(group) && resetEmpty)
                             {
                                 result[i] = ""; //clear it
                             }
@@ -1020,41 +1022,70 @@ namespace Gear.GUI
                     }
                     else
                     {
-                        //TODO ASB : throw an exception to the caller: always have to exist all the about properties!
+                        //TODO ASB : throw an exception to the caller: always have to exist all the metadata elements!
                     }
                 }
             }
             if (result == null)
             {
-                //TODO ASB : throw an exception to the caller: always have to exist all the about properties!
+                //TODO ASB : throw an exception to the caller: always have to exist all the metadata elements!
             }
             return result;
         }
 
-        /// @brief Retrieve a list of elements for the given group from the about properties list, 
+        /// @brief Retrieve a list of elements for the given group from the metadata list, 
         /// clearing the values if they are not user defined.
         /// @param groupName Name of the group to retrieve elements.
         /// @returns Array of elements of the group.
         /// @version 14.12.13 - Added.
-        private string[] GetElementsFromAboutProperty(string groupName)
+        private string[] GetElementsFromMetadata(string groupName)
         {
-            return this.GetElementsFromAboutProperty(groupName, true);
+            return this.GetElementsFromMetadata(groupName, true);
         }
 
-        private void listProperties_AfterLabelEdit(object sender, LabelEditEventArgs e)
+        /// @brief Manage text appareance when the user edit on Metadata text.
+        /// @param[in] sender Object who called this on event.
+        /// @param[in] e `EventArgs` class with a list of argument to the event call.
+        /// @version 14.12.13 -Added.
+        private void pluginMetadataList_AfterLabelEdit(object sender, LabelEditEventArgs e)
         {
+            string labelValue;
             ListViewItem SelectedItem = null;    //selected item reference
-            foreach (ListViewItem item in listProperties.SelectedItems)
+            foreach (ListViewItem item in pluginMetadataList.SelectedItems)
             {
                 SelectedItem = item;    //should be only one, so will get the last
             };
-            if (GetDefinedAboutProperty(SelectedItem))
+            switch (e.Label)    //detect changes on edited text
             {
-                if (SelectedItem.Text != GetDefaultAboutPropertyText(SelectedItem.Group))
-                {
-                    SetDefinedAboutProperty(SelectedItem, true);
-                }
+                case null:      //nothing was changed
+                    labelValue = SelectedItem.Text; //use the last text
+                    break;
+                case "":        //text was cleared
+                    labelValue = GetDefaultTextMetadataElement(SelectedItem.Group);   //use default text
+                    CodeChanged = true;
+                    LastChange = ChangeType.metadata;
+                    break;
+                default:        //text was changed
+                    labelValue = e.Label;   //use the new text
+                    CodeChanged = true;
+                    LastChange = ChangeType.metadata;
+                    break;
             }
+            //compare new text edited by user with the default, to set visibility
+            if (labelValue != GetDefaultTextMetadataElement(SelectedItem.Group)) //are different?
+            {
+                //then change visibility to user defined
+                SetUserDefinedMetadataElement(SelectedItem, true);
+            }
+            else
+            {
+                //then change visibility to default text
+                SetUserDefinedMetadataElement(SelectedItem, false);
+            }
+        }
+
+        private void pluginMetadataList_ColumnClick(object sender, ColumnClickEventArgs e)
+        {
 
         }
 

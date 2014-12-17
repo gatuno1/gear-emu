@@ -1,8 +1,9 @@
 //Plugin template for plugin system v1.0
-//Name   : put your name here
-//Version: put the version of this plugin
-//Date   : date of this version
-//Purpose: write what do your plugin
+//Author     : put your name here
+//Date       : date of this version
+//Version    : put the version of this plugin
+//Description: write what do your plugin
+//Usage      : how to use this plugin
 
 //Assemblies needed for GEAR plugin system (do not delete them).
 using System;

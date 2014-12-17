@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using System.IO;
 
 /// @copydoc Gear.PluginSupport
 namespace Gear.PluginSupport
@@ -241,17 +242,19 @@ namespace Gear.PluginSupport
                 {
                     instance = xmlDoc.CreateElement("code");
                     root.AppendChild(instance);
-                    if (!Data.UseAuxFiles[i])
+                    if (!Data.UseAuxFiles[i])   //code embebed in XML file?
                     {
                         textElement = xmlDoc.CreateTextNode("");
                         cdata = xmlDoc.CreateCDataSection(Data.Codes[i]);
                         instance.AppendChild(textElement);
                         instance.AppendChild(cdata);
                     }
-                    else
+                    else      //code writen to a separate file
                     {
-                        instance.SetAttribute("ref", Data.AuxFiles[i]);
-                        //TODO ASB - add to save the code to another .CS file
+                        //write the reference to the .CS file
+                        instance.SetAttribute("ref", Path.GetFileName(Data.AuxFiles[i]));
+                        //save the code to a .CS file (same name, different extension)
+                        File.WriteAllText(Data.AuxFiles[i], Data.Codes[i], Encoding.UTF8);
                     }
                 }
             else
