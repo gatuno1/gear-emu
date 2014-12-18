@@ -660,9 +660,6 @@ namespace Gear.GUI
                 {
                     switch (LastChange)
                     {
-                        case ChangeType.none:
-                            Problem = "Lasting problem: " + LastProblem;
-                            break;
                         case ChangeType.code:
                             Problem = "Class name not found in changed code class definition.";
                             LastProblem = Problem;
@@ -671,6 +668,9 @@ namespace Gear.GUI
                             Problem = "Class Name changed but not found in code class definition:\n" +
                                 "    \"class <name> : PluginBase\".";
                             LastProblem = Problem;
+                            break;
+                        default:
+                            Problem = "Lasting problem: " + LastProblem;
                             break;
                     }
                     MessageBox.Show(
@@ -682,7 +682,7 @@ namespace Gear.GUI
 
                     if ((LastChange == ChangeType.name) || (LastChange == ChangeType.code))
                     {
-                        bool Selected = false;      //for detect if the pattern of class declaration was encountered
+                        bool Selected = false;      //to detect if the pattern of class declaration was encountered
                         if (len != 0)
                         {
                             codeEditorView.SelectionStart = start;
@@ -711,6 +711,20 @@ namespace Gear.GUI
             }
         }
 
+        private bool DetectClassName()
+        { 
+            //Look for a 'suspect' for class definition to show it to user later.
+            //This time the pattern "[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*" represent a C# identifier
+            Regex f = new Regex(@"\bclass\s+[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*\s*\:\s*PluginBase\b",
+                RegexOptions.Compiled);
+            Match n = f.Match(code);
+            if (n.Success)  //if a match is found
+            {
+                startPos = n.Index;
+                _length = n.Length;
+            }
+        }
+
         /// @brief Detect if class name is not defined the same in code text
         /// This search in code a definition as "class <nameClass> : PluginBase" coherent
         /// with the content "<nameClass>" on class name text box.
@@ -725,7 +739,8 @@ namespace Gear.GUI
             Regex r = new Regex(@"\bclass\s+" + name + @"\s*\:\s*PluginBase\b",
                 RegexOptions.Compiled);
             Match m = r.Match(code);    //try to find matches in code text
-            if (!m.Success) //if not found
+            bool success = m.Success;
+            if (!success) //if not found
             {
                 //Look for a 'suspect' for class definition to show it to user later.
                 //This time the pattern "[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*" represent a C# identifier
@@ -736,6 +751,7 @@ namespace Gear.GUI
                 {               
                     startPos = n.Index;
                     _length = n.Length;
+                    success = true;
                 }
                 else     //match not found
                 {
@@ -743,7 +759,7 @@ namespace Gear.GUI
                     _length = 0;    //check this on caller for no match found.
                 }
             }
-            return (!m.Success);
+            return (success);
         }
 
         /// @brief Event handler for closing plugin window.

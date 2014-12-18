@@ -119,8 +119,8 @@ namespace Gear.PluginSupport
             XmlElement root = xmlDoc.CreateElement("plugin");
             root.SetAttribute("plugin_system_version", Data.PluginSystemVersion);
             xmlDoc.AppendChild(root);
-            //level 1 element - about
-            instance = xmlDoc.CreateElement("about");
+            //level 1 element - metadata
+            instance = xmlDoc.CreateElement("metadata");
             instance.SetAttribute("version", Data.PluginVersion);
             root.AppendChild(instance);
             {
@@ -245,14 +245,16 @@ namespace Gear.PluginSupport
                     if (!Data.UseAuxFiles[i])   //code embebed in XML file?
                     {
                         textElement = xmlDoc.CreateTextNode("");
-                        cdata = xmlDoc.CreateCDataSection(Data.Codes[i]);
                         instance.AppendChild(textElement);
+                        instance.SetAttribute("order", Convert.ToString(i + 1));
+                        cdata = xmlDoc.CreateCDataSection(Data.Codes[i]);
                         instance.AppendChild(cdata);
                     }
                     else      //code writen to a separate file
                     {
                         //write the reference to the .CS file
                         instance.SetAttribute("ref", Path.GetFileName(Data.AuxFiles[i]));
+                        instance.SetAttribute("order", Convert.ToString(i + 1));
                         //save the code to a .CS file (same name, different extension)
                         File.WriteAllText(Data.AuxFiles[i], Data.Codes[i], Encoding.UTF8);
                     }

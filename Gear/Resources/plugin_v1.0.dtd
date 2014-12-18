@@ -1,8 +1,8 @@
-<!ELEMENT plugin (about?, instance, reference*, code+)>
+<!ELEMENT plugin (metadata?, instance, reference*, code+)>
     <!ATTLIST plugin plugin_system_version CDATA "0.0">
 
-    <!ELEMENT about (author+, modified_by, date_modified, cultural_reference, description, usage, link+)>
-        <!ATTLIST about version CDATA #REQUIRED>
+    <!ELEMENT metadata (author+, modified_by, date_modified, cultural_reference, description, usage, link+)>
+        <!ATTLIST metadata version CDATA #REQUIRED>
 
         <!ELEMENT author (#PCDATA)>
         <!ELEMENT modified_by (#PCDATA)>
