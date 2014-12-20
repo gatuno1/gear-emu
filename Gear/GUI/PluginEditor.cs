@@ -81,7 +81,7 @@ namespace Gear.GUI
         private enum ChangeType : byte
         {
             none = 0,   //!< @brief No change detected.
-            name,       //!< @brief Name class change detected.
+            //name,       //!< @brief Name class change detected.
             code,       //!< @brief Code change detected.
             reference,  //!< @brief Reference change detected.
             metadata    //!< @brief Metadata change detected.
@@ -93,6 +93,12 @@ namespace Gear.GUI
         /// @brief Store the last consistency problem detected.
         /// @version 14.07.25 - Added.
         private string LastProblem;
+        /// @brief Regex for looking for class name.
+        /// @version 14.12.19 - Added
+        private Regex ClassNameExpression;
+        /// @brief Regex for syntax highlight.
+        /// @version 14.12.19 - Added
+        private Regex SyntaxExpression;
 
         /// @brief Default constructor.
         /// Init class, defines columns for error grid, setting on changes detection initially, and 
@@ -146,7 +152,12 @@ namespace Gear.GUI
                 if ((item.Group.Name == "DateModified") || (item.Group.Name == "Version"))
                     SetUserDefinedMetadataElement(item, true);
             }
-            //
+            //regex for class name instance
+            ClassNameExpression = new Regex(
+                @"\bclass\s+[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*\s*\:\s*PluginBase\b",
+                RegexOptions.Compiled);
+            //regex for syntax highlighting
+            SyntaxExpression = new Regex("\\n", RegexOptions.Compiled);
             
         }
 
@@ -347,20 +358,55 @@ namespace Gear.GUI
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         private void CheckSource_Click(object sender, EventArgs e)
         {
-            if ((codeEditorView.TextLength > 0) && IsConsistent())
+            if (String.IsNullOrEmpty(codeEditorView.Text))
             {
-                string[] refs = new string[referencesList.Items.Count];
-                int i = 0;
-
-                errorListView.Items.Clear();
-                foreach (string s in referencesList.Items)
-                    refs[i++] = s;
-
-                if (ModuleCompiler.LoadModule(codeEditorView.Text, instanceName.Text, refs, null) != null)
-                    MessageBox.Show("Script compiled without errors.", "Plugin Editor - Check source.");
-                else
+                MessageBox.Show("No source code to check. Please add code.",
+                    "Plugin Editor - Check source.", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Exclamation);
+            }
+            else
+            {
+                string aux = null;
+                if (DetectClassName(codeEditorView.Text, out aux))  //class name detected?
                 {
-                    ModuleCompiler.EnumerateErrors(EnumErrors);
+                    int i = 0;
+                    instanceName.Text = aux;        //show the name found in the screen field
+                    errorListView.Items.Clear();    //clear error list, if any
+                    //prepare reference list
+                    string[] refs = new string[referencesList.Items.Count];
+                    foreach (string s in referencesList.Items)
+                        refs[i++] = s;
+                    try
+                    {
+                        if (ModuleCompiler.LoadModule(codeEditorView.Text, 
+                            instanceName.Text, refs, null) != null)
+                            MessageBox.Show("Plugin compiled without errors.", 
+                                "Plugin Editor - Check source.",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Information);
+                        else
+                        {
+                            ModuleCompiler.EnumerateErrors(EnumErrors);
+                        }
+                    }
+                    catch
+                    {
+                        MessageBox.Show("Compile Error: " + e.ToString(),
+                            "Plugin Editor - Check source.",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+                    }
+                }
+                else   //not detected class name
+                {
+                    instanceName.Text = "Not found!";
+                    MessageBox.Show("Cannot detect main plugin class name. " +
+                        "Please use \"class <YourPluginName> : PluginBase {...\" " +
+                        "declaration on your source code.",
+                        "Plugin Editor - Check source.",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                 }
             }
         }
@@ -530,8 +576,7 @@ namespace Gear.GUI
             changeDetectEnabled = false;    //not enable change detection
             // Foreach line in input,
             // identify key words and format them when adding to the rich text box.
-            Regex r = new Regex("\\n", RegexOptions.Compiled);
-            String[] lines = r.Split(codeEditorView.Text);
+            String[] lines = SyntaxExpression.Split(codeEditorView.Text);
             codeEditorView.SelectAll();
             codeEditorView.Enabled = false;
             foreach (string l in lines)
@@ -630,8 +675,8 @@ namespace Gear.GUI
         /// @version V14.07.17 - Added.
         private void instanceName_TextChanged(object sender, EventArgs e)
         {
-            CodeChanged = true;
-            LastChange = ChangeType.name;
+            //CodeChanged = true;
+            //LastChange = ChangeType.name;
         }
 
         /// @brief Update the name on the text box after leave the control.
@@ -640,7 +685,7 @@ namespace Gear.GUI
         /// @version V14.07.17 - Added.
         private void instanceName_Leave(object sender, EventArgs e)
         {
-            instanceName.Text = instanceName.Text.Trim();   //trim spaces at both ends
+            //instanceName.Text = instanceName.Text.Trim();   //trim spaces at both ends
         }
 
 
@@ -648,81 +693,99 @@ namespace Gear.GUI
         /// If the class name isn't the same that in class declaration in code, show the user a message,
         /// and show the problem in code text box or class name text box.
         /// @version V14.07.17 - Added.
-        private bool IsConsistent()
+        //private bool IsConsistent()
+        //{
+        //    int start = 0, len = 0;
+        //    //Test if there is inconsistency in class name product of the change in this control...
+        //    if (DetectDiffClassName(instanceName.Text, codeEditorView.Text, ref start, ref len))
+        //    {
+        //        //...there is inconsistency
+        //        string Problem = "";
+        //        if ((instanceName.TextLength != 0) && (codeEditorView.TextLength != 0))
+        //        {
+        //            switch (LastChange)
+        //            {
+        //                case ChangeType.code:
+        //                    Problem = "Class name not found in changed code class definition.";
+        //                    LastProblem = Problem;
+        //                    break;
+        //                case ChangeType.name:
+        //                    Problem = "Class Name changed but not found in code class definition:\n" +
+        //                        "    \"class <name> : PluginBase\".";
+        //                    LastProblem = Problem;
+        //                    break;
+        //                default:
+        //                    Problem = "Lasting problem: " + LastProblem;
+        //                    break;
+        //            }
+        //            MessageBox.Show(
+        //                "Problem detected: class name \"" + instanceName.Text +
+        //                    "\" inconsistent with code.\n" + Problem,
+        //                "Plugin Editor - Validation.",
+        //                MessageBoxButtons.OK,
+        //                MessageBoxIcon.Warning);
+
+        //            if ((LastChange == ChangeType.name) || (LastChange == ChangeType.code))
+        //            {
+        //                bool Selected = false;      //to detect if the pattern of class declaration was encountered
+        //                if (len != 0)
+        //                {
+        //                    codeEditorView.SelectionStart = start;
+        //                    codeEditorView.SelectionLength = len;
+        //                    Selected = true;        //signal that it was encountered
+        //                }
+        //                if (LastChange == ChangeType.name)
+        //                {
+        //                    instanceName.SelectAll();
+        //                    instanceName.Focus();
+        //                }
+        //                else
+        //                {
+        //                    if (!Selected)      //if not detected the pattern of class declararion
+        //                        codeEditorView.SelectAll();    //select all
+        //                    codeEditorView.Focus();
+        //                }
+        //            }
+        //        }
+        //        return false;   //not consistent
+        //    }
+        //    else
+        //    {
+        //        LastChange = ChangeType.none;
+        //        return true;    //the class name definition is consistent 
+        //    }
+        //}
+
+        /// @brief Detect the plugin class name from the code text given as parameter.
+        /// @param code Text of the source code of plugin to look for the class name declaration.
+        /// @param match Name of the plugin class found. If not, it will be null.
+        /// @returns If a match had found =True, else =False. 
+        private bool DetectClassName(string code, out string match)
         {
-            int start = 0, len = 0;
-            //Test if there is inconsistency in class name product of the change in this control...
-            if (DetectDiffClassName(instanceName.Text, codeEditorView.Text, ref start, ref len))
-            {
-                //...there is inconsistency
-                string Problem = "";
-                if ((instanceName.TextLength != 0) && (codeEditorView.TextLength != 0))
-                {
-                    switch (LastChange)
-                    {
-                        case ChangeType.code:
-                            Problem = "Class name not found in changed code class definition.";
-                            LastProblem = Problem;
-                            break;
-                        case ChangeType.name:
-                            Problem = "Class Name changed but not found in code class definition:\n" +
-                                "    \"class <name> : PluginBase\".";
-                            LastProblem = Problem;
-                            break;
-                        default:
-                            Problem = "Lasting problem: " + LastProblem;
-                            break;
-                    }
-                    MessageBox.Show(
-                        "Problem detected: class name \"" + instanceName.Text +
-                            "\" inconsistent with code.\n" + Problem,
-                        "Plugin Editor - Validation.",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-
-                    if ((LastChange == ChangeType.name) || (LastChange == ChangeType.code))
-                    {
-                        bool Selected = false;      //to detect if the pattern of class declaration was encountered
-                        if (len != 0)
-                        {
-                            codeEditorView.SelectionStart = start;
-                            codeEditorView.SelectionLength = len;
-                            Selected = true;        //signal that it was encountered
-                        }
-                        if (LastChange == ChangeType.name)
-                        {
-                            instanceName.SelectAll();
-                            instanceName.Focus();
-                        }
-                        else
-                        {
-                            if (!Selected)      //if not detected the pattern of class declararion
-                                codeEditorView.SelectAll();    //select all
-                            codeEditorView.Focus();
-                        }
-                    }
-                }
-                return false;   //not consistent
-            }
-            else
-            {
-                LastChange = ChangeType.none;
-                return true;    //the class name definition is consistent 
-            }
-        }
-
-        private bool DetectClassName()
-        { 
+            string aux = null;
+            match = null;
             //Look for a 'suspect' for class definition to show it to user later.
-            //This time the pattern "[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*" represent a C# identifier
-            Regex f = new Regex(@"\bclass\s+[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*\s*\:\s*PluginBase\b",
-                RegexOptions.Compiled);
-            Match n = f.Match(code);
+            Match n = ClassNameExpression.Match(code);
             if (n.Success)  //if a match is found
             {
-                startPos = n.Index;
-                _length = n.Length;
+                aux = code.Substring(n.Index, n.Length).Trim();
+                //TODO ASB : replace '" + name + @"' below with the appropiate pattern to detect the name of the class only
+                Regex r = new Regex(@"\bclass\s+" + name + @"\s*\:\s*PluginBase\b",
+                RegexOptions.Compiled);
+                Match m = r.Match(code);    //try to find matches in code text
+                bool success = m.Success
+                if (String.IsNullOrEmpty(aux))
+                {
+                    return false;
+                }
+                else
+                {
+                    match = aux;
+                    return true;
+                }
             }
+            else
+                return false;
         }
 
         /// @brief Detect if class name is not defined the same in code text
@@ -733,34 +796,34 @@ namespace Gear.GUI
         /// @param[out] startPos Return the start position of class definition suspect.
         /// @param[out] _length Return the lenght of class definition 'suspect' if found; =0 if not found.
         /// @returns Differences encountered (=true) of class name are ok in both sides (=false).
-        private bool DetectDiffClassName(string name, string code, ref int startPos, ref int _length)
-        {
-            //look for class definition inside the code, with the name given
-            Regex r = new Regex(@"\bclass\s+" + name + @"\s*\:\s*PluginBase\b",
-                RegexOptions.Compiled);
-            Match m = r.Match(code);    //try to find matches in code text
-            bool success = m.Success;
-            if (!success) //if not found
-            {
-                //Look for a 'suspect' for class definition to show it to user later.
-                //This time the pattern "[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*" represent a C# identifier
-                Regex f = new Regex(@"\bclass\s+[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*\s*\:\s*PluginBase\b",
-                    RegexOptions.Compiled);
-                Match n = f.Match(code);
-                if (n.Success)  //if a match is found
-                {               
-                    startPos = n.Index;
-                    _length = n.Length;
-                    success = true;
-                }
-                else     //match not found
-                {
-                    startPos = 0;
-                    _length = 0;    //check this on caller for no match found.
-                }
-            }
-            return (success);
-        }
+        //private bool DetectDiffClassName(string name, string code, ref int startPos, ref int _length)
+        //{
+        //    //look for class definition inside the code, with the name given
+        //    Regex r = new Regex(@"\bclass\s+" + name + @"\s*\:\s*PluginBase\b",
+        //        RegexOptions.Compiled);
+        //    Match m = r.Match(code);    //try to find matches in code text
+        //    bool success = m.Success;
+        //    if (!success) //if not found
+        //    {
+        //        //Look for a 'suspect' for class definition to show it to user later.
+        //        //This time the pattern "[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*" represent a C# identifier
+        //        Regex f = new Regex(@"\bclass\s+[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*\s*\:\s*PluginBase\b",
+        //            RegexOptions.Compiled);
+        //        Match n = f.Match(code);
+        //        if (n.Success)  //if a match is found
+        //        {               
+        //            startPos = n.Index;
+        //            _length = n.Length;
+        //            success = true;
+        //        }
+        //        else     //match not found
+        //        {
+        //            startPos = 0;
+        //            _length = 0;    //check this on caller for no match found.
+        //        }
+        //    }
+        //    return (success);
+        //}
 
         /// @brief Event handler for closing plugin window.
         /// If code, references or class name have changed and them are not saved, a Dialog is 
@@ -835,7 +898,8 @@ namespace Gear.GUI
         /// @version 14.12.12 - Added.
         private void addPluginMetadataButton_Click(object sender, EventArgs e)
         {
-            if ((textPluginMetadataBox.Text != null) && (textPluginMetadataBox.Text.Length > 0) && (pluginMetadataList.SelectedIndices.Count > 0))
+            if ( !String.IsNullOrEmpty(textPluginMetadataBox.Text) &&
+                (pluginMetadataList.SelectedIndices.Count > 0))
             {
                 ListViewItem SelectedItem = null;    //selected item reference
                 foreach(ListViewItem item in pluginMetadataList.SelectedItems)
