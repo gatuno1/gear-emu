@@ -154,7 +154,7 @@ namespace Gear.GUI
             }
             //regex for class name instance
             ClassNameExpression = new Regex(
-                @"\bclass\s+[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*\s*\:\s*PluginBase\b",
+                @"\bclass\s+(?<classname>[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*)\s*\:\s*PluginBase\b",
                 RegexOptions.Compiled);
             //regex for syntax highlighting
             SyntaxExpression = new Regex("\\n", RegexOptions.Compiled);
@@ -765,15 +765,11 @@ namespace Gear.GUI
             string aux = null;
             match = null;
             //Look for a 'suspect' for class definition to show it to user later.
-            Match n = ClassNameExpression.Match(code);
-            if (n.Success)  //if a match is found
+            Match suspect = ClassNameExpression.Match(code);
+            if (suspect.Success)  //if a match is found
             {
-                aux = code.Substring(n.Index, n.Length).Trim();
-                //TODO ASB : replace '" + name + @"' below with the appropiate pattern to detect the name of the class only
-                Regex r = new Regex(@"\bclass\s+" + name + @"\s*\:\s*PluginBase\b",
-                RegexOptions.Compiled);
-                Match m = r.Match(code);    //try to find matches in code text
-                bool success = m.Success
+                //detect class name from the detected groups
+                aux = suspect.Groups["classname"].Value;  
                 if (String.IsNullOrEmpty(aux))
                 {
                     return false;
