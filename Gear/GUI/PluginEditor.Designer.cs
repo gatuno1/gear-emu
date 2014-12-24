@@ -202,8 +202,6 @@ namespace Gear.GUI
             this.instanceName.Size = new System.Drawing.Size(100, 25);
             this.instanceName.ToolTipText = "Name of the Class for the plugin\r\nMust be the same as the class inherited from Pl" +
     "uginBase.";
-            this.instanceName.Leave += new System.EventHandler(this.instanceName_Leave);
-            this.instanceName.TextChanged += new System.EventHandler(this.instanceName_TextChanged);
             // 
             // toolStripSeparator2
             // 

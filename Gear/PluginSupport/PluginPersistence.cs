@@ -30,34 +30,41 @@ using System.IO;
 /// @copydoc Gear.PluginSupport
 namespace Gear.PluginSupport
 {
-    /// @brief Some Methods to save and retrieve plugin from files
+    /// @brief Methods to save and retrieve plugin from files, managing version of files.
+    /// @version 14.11.26 - Added.
     static class PluginPersistence
     {
-        ///@brief
-        ///
+        /// @brief Struct to transmit Metadata of the plugin.
+        /// @version 14.11.26 - Added.
         public struct PluginData
         {
-            public string PluginSystemVersion;
-            public string PluginVersion;
+            public string PluginSystemVersion;  //!< @brief Version of plugin system.
+            public string PluginVersion;        //!< @brief Version of the plugin itself.
 
-            public string[] Authors;
-            public string Modifier;
-            public string DateModified;
-            public string CulturalReference;
-            public string Description;
-            public string Usage;
-            public string[] Links;
+            public string[] Authors;            //!< @brief List of authors.
+            public string Modifier;             //!< @brief Last author of modifications.
+            public string DateModified;         //!< @brief Date of modifications,
+            public string CulturalReference;    //!< @brief To store the cultural reference of dates.
+            public string Description;          //!< @brief Description of the plugin.
+            public string Usage;                //!< @brief Guides to use the plugin.
+            public string[] Links;              //!< @brief Links supporting the plugin.
 
-            public string InstanceName;
-            public string[] References;
-
+            public string InstanceName;         //!< @brief Class name of the plugin definition.
+            public string[] References;         //!< @brief Auxiliary references to compile the plugin.
+            
+            //!< @brief Flag to write the code in external file or embedded in XML file.
             public bool[] UseAuxFiles;
+            //!< @brief Name of external file with C# code of the plugin.
             public string[] AuxFiles;
+            //!< @brief Text of the C# code of the plugin.
             public string[] Codes;
         }
 
         /// @brief Save a plugin to XML as version 0.0
+        /// @param[in] filenameXml File name in XML format, version 0.0
+        /// @param[in] Data Metadata of the plugin.
         /// @returns State of saving.
+        /// @version 14.11.26 - Added.
         static public bool SaveXML_v0_0(string filenameXml, PluginData Data)
         {
             XmlDocument xmlDoc = new XmlDocument();
@@ -98,9 +105,10 @@ namespace Gear.PluginSupport
         }
 
         /// @brief Save a plugin to XML as version 1.0.
-        /// @param filenameXml
-        /// @param Data
-        /// @returns State of saving.
+        /// @param[in] filenameXml File name in XML format, version 1.0
+        /// @param[in] Data Metadata of the plugin.
+        /// @returns State of saving, success (=true) or fail (=false).
+        /// @version 14.11.26 - Added.
         static public bool SaveXML_v1_0(string filenameXml, PluginData Data)
         {
             XmlDocument xmlDoc = new XmlDocument();

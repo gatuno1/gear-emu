@@ -24,8 +24,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-
-//using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 using System.Reflection;
 
@@ -34,8 +32,7 @@ namespace Gear.PluginSupport
 {
     public delegate void ErrorEnumProc(System.CodeDom.Compiler.CompilerError e);
 
-    /// @brief Compile a PluginBase Module, keeping the errors if they appeares.
-    /// 
+    /// @brief Compile a PluginBase Module to memory, returning eventual errors.
     static class ModuleCompiler
     {
         /// @brief Collection for error list on compile a dynamic plugin.

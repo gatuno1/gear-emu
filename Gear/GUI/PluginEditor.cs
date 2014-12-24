@@ -40,7 +40,7 @@ using Gear.PluginSupport;
 /// 
 namespace Gear.GUI
 {
-    /// @todo Document Gear.GUI.PluginEditor
+    /// @brief Form to edit or create GEAR plugins.
     public partial class PluginEditor : Form
     {
         /// @brief File name of current plugin on editor window.
@@ -76,12 +76,12 @@ namespace Gear.GUI
         /// @version V14.07.17 - Added.
         private bool changeDetectEnabled;
         /// @brief Types of change detected.
-        /// To mantain consistency between class name in C# code and class name declared in others objects.
+        /// To mantain consistency between class name in C# code and class name declared in 
+        /// others objects.
         /// @version 14.07.25 - Added.
         private enum ChangeType : byte
         {
             none = 0,   //!< @brief No change detected.
-            //name,       //!< @brief Name class change detected.
             code,       //!< @brief Code change detected.
             reference,  //!< @brief Reference change detected.
             metadata    //!< @brief Metadata change detected.
@@ -90,9 +90,6 @@ namespace Gear.GUI
         /// To determine changes, it includes only the C# code and class name.
         /// @version 14.07.25 - Added.
         private ChangeType LastChange;
-        /// @brief Store the last consistency problem detected.
-        /// @version 14.07.25 - Added.
-        private string LastProblem;
         /// @brief Regex for looking for class name.
         /// @version 14.12.19 - Added
         private Regex ClassNameExpression;
@@ -126,7 +123,6 @@ namespace Gear.GUI
             changeDetectEnabled = true;
             CodeChanged = false;
             LastChange = ChangeType.none;
-            LastProblem = "None";
 
             // setting default font
             defaultFont = new Font(FontFamily.GenericMonospace, 10, FontStyle.Regular);
@@ -153,8 +149,7 @@ namespace Gear.GUI
                     SetUserDefinedMetadataElement(item, true);
             }
             //regex for class name instance
-            ClassNameExpression = new Regex(
-                @"\bclass\s+(?<classname>[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*)\s*\:\s*PluginBase\b",
+            ClassNameExpression = new Regex(@"\bclass\s+(?<classname>[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*)\s*\:\s*PluginBase\b",
                 RegexOptions.Compiled);
             //regex for syntax highlighting
             SyntaxExpression = new Regex("\\n", RegexOptions.Compiled);
@@ -162,7 +157,7 @@ namespace Gear.GUI
         }
 
         /// @brief Return last plugin succesfully loaded o saved.
-        /// @details Handy to remember last plugin directory.
+        /// @details Useful to remember last plugin directory.
         /// @version V14.07.17 - Added.
         public string GetLastPlugin
         {
@@ -288,11 +283,10 @@ namespace Gear.GUI
         }
 
         /// @brief Save a XML file with the plugin information.
-        /// @details Take care of update change state of the window. No need to do it in 
-        /// methods who call this.
-        /// @param FileName
-        /// @param version
-        /// @todo Correct method to implement new versioning plugin system.
+        /// @details Take care of update change state of the window. It use methods from
+        /// Gear.PluginSupport.PluginPersistence class.
+        /// @param[in] FileName Name of the file to save.
+        /// @param[in] version String with the version of plugin system to use for saving.
         public void SaveFile(string FileName, string version)
         {
             PluginPersistence.PluginData data = new PluginPersistence.PluginData();
@@ -667,99 +661,11 @@ namespace Gear.GUI
             }
         }
 
-        /// @brief Update change state for instance name.
-        /// When the text of the text box changes, marks the code as modified, to 
-        /// prevent unaverted loses at closure of the window.
-        /// @param[in] sender Object who called this on event.
-        /// @param[in] e `EventArgs` class with a list of argument to the event call.
-        /// @version V14.07.17 - Added.
-        private void instanceName_TextChanged(object sender, EventArgs e)
-        {
-            //CodeChanged = true;
-            //LastChange = ChangeType.name;
-        }
-
-        /// @brief Update the name on the text box after leave the control.
-        /// @param[in] sender Object who called this on event.
-        /// @param[in] e `EventArgs` class with a list of argument to the event call.
-        /// @version V14.07.17 - Added.
-        private void instanceName_Leave(object sender, EventArgs e)
-        {
-            //instanceName.Text = instanceName.Text.Trim();   //trim spaces at both ends
-        }
-
-
-        /// @brief Inform user if there inconsistency in class name declared.
-        /// If the class name isn't the same that in class declaration in code, show the user a message,
-        /// and show the problem in code text box or class name text box.
-        /// @version V14.07.17 - Added.
-        //private bool IsConsistent()
-        //{
-        //    int start = 0, len = 0;
-        //    //Test if there is inconsistency in class name product of the change in this control...
-        //    if (DetectDiffClassName(instanceName.Text, codeEditorView.Text, ref start, ref len))
-        //    {
-        //        //...there is inconsistency
-        //        string Problem = "";
-        //        if ((instanceName.TextLength != 0) && (codeEditorView.TextLength != 0))
-        //        {
-        //            switch (LastChange)
-        //            {
-        //                case ChangeType.code:
-        //                    Problem = "Class name not found in changed code class definition.";
-        //                    LastProblem = Problem;
-        //                    break;
-        //                case ChangeType.name:
-        //                    Problem = "Class Name changed but not found in code class definition:\n" +
-        //                        "    \"class <name> : PluginBase\".";
-        //                    LastProblem = Problem;
-        //                    break;
-        //                default:
-        //                    Problem = "Lasting problem: " + LastProblem;
-        //                    break;
-        //            }
-        //            MessageBox.Show(
-        //                "Problem detected: class name \"" + instanceName.Text +
-        //                    "\" inconsistent with code.\n" + Problem,
-        //                "Plugin Editor - Validation.",
-        //                MessageBoxButtons.OK,
-        //                MessageBoxIcon.Warning);
-
-        //            if ((LastChange == ChangeType.name) || (LastChange == ChangeType.code))
-        //            {
-        //                bool Selected = false;      //to detect if the pattern of class declaration was encountered
-        //                if (len != 0)
-        //                {
-        //                    codeEditorView.SelectionStart = start;
-        //                    codeEditorView.SelectionLength = len;
-        //                    Selected = true;        //signal that it was encountered
-        //                }
-        //                if (LastChange == ChangeType.name)
-        //                {
-        //                    instanceName.SelectAll();
-        //                    instanceName.Focus();
-        //                }
-        //                else
-        //                {
-        //                    if (!Selected)      //if not detected the pattern of class declararion
-        //                        codeEditorView.SelectAll();    //select all
-        //                    codeEditorView.Focus();
-        //                }
-        //            }
-        //        }
-        //        return false;   //not consistent
-        //    }
-        //    else
-        //    {
-        //        LastChange = ChangeType.none;
-        //        return true;    //the class name definition is consistent 
-        //    }
-        //}
-
         /// @brief Detect the plugin class name from the code text given as parameter.
-        /// @param code Text of the source code of plugin to look for the class name declaration.
-        /// @param match Name of the plugin class found. If not, it will be null.
-        /// @returns If a match had found =True, else =False. 
+        /// @param[in] code Text of the source code of plugin to look for the class name declaration.
+        /// @param[out] match Name of the plugin class found. If not, it will be null.
+        /// @returns If a match had found =True, else =False.
+        /// @version 14.12.20 - Added.
         private bool DetectClassName(string code, out string match)
         {
             string aux = null;
@@ -784,43 +690,6 @@ namespace Gear.GUI
                 return false;
         }
 
-        /// @brief Detect if class name is not defined the same in code text
-        /// This search in code a definition as "class <nameClass> : PluginBase" coherent
-        /// with the content "<nameClass>" on class name text box.
-        /// @param[in] name `string` with the class name
-        /// @param[in] code `string` with the c# code
-        /// @param[out] startPos Return the start position of class definition suspect.
-        /// @param[out] _length Return the lenght of class definition 'suspect' if found; =0 if not found.
-        /// @returns Differences encountered (=true) of class name are ok in both sides (=false).
-        //private bool DetectDiffClassName(string name, string code, ref int startPos, ref int _length)
-        //{
-        //    //look for class definition inside the code, with the name given
-        //    Regex r = new Regex(@"\bclass\s+" + name + @"\s*\:\s*PluginBase\b",
-        //        RegexOptions.Compiled);
-        //    Match m = r.Match(code);    //try to find matches in code text
-        //    bool success = m.Success;
-        //    if (!success) //if not found
-        //    {
-        //        //Look for a 'suspect' for class definition to show it to user later.
-        //        //This time the pattern "[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*" represent a C# identifier
-        //        Regex f = new Regex(@"\bclass\s+[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*\s*\:\s*PluginBase\b",
-        //            RegexOptions.Compiled);
-        //        Match n = f.Match(code);
-        //        if (n.Success)  //if a match is found
-        //        {               
-        //            startPos = n.Index;
-        //            _length = n.Length;
-        //            success = true;
-        //        }
-        //        else     //match not found
-        //        {
-        //            startPos = 0;
-        //            _length = 0;    //check this on caller for no match found.
-        //        }
-        //    }
-        //    return (success);
-        //}
-
         /// @brief Event handler for closing plugin window.
         /// If code, references or class name have changed and them are not saved, a Dialog is 
         /// presented to the user to proceed or abort the closing.
@@ -839,8 +708,8 @@ namespace Gear.GUI
         }
 
         /// @brief Ask the user to not loose changes.
-        /// @param fileName Filename to show in dialog
-        /// @returns Boolean to close (true) or not (false)
+        /// @param[in] fileName Filename to show in dialog.
+        /// @returns Boolean to close (=true) or not (=false).
         /// @version V14.07.17 - Added.
         private bool CloseAnyway(string fileName)
         {
@@ -1033,8 +902,8 @@ namespace Gear.GUI
         }
 
         /// @brief Set the visibility of the given metadata element.
-        /// @param item Metadata element to set.
-        /// @param userDefined User defined (=true), or default value used (=false).
+        /// @param[in] item Metadata element to set.
+        /// @param[in] userDefined User defined (=true), or default value used (=false).
         /// @version V.14.12.16 - Added
         private void SetUserDefinedMetadataElement(ListViewItem item, bool userDefined)
         {
@@ -1048,7 +917,7 @@ namespace Gear.GUI
         }
 
         /// @brief Get the visibility of the given metadata element.
-        /// @param item Metadata element to set.
+        /// @param[in] item Metadata element to set.
         /// @returns User defined (=true), or default value used (=false).
         /// @version V.14.12.16 - Added
         private bool IsUserDefinedMetadataElement(ListViewItem item)
@@ -1070,8 +939,8 @@ namespace Gear.GUI
 
         /// @brief Retrieve a list of elements for the given group from the metadata list, 
         /// but resetting the names depending of the given parameter.
-        /// @param groupName Name of the group to retrieve elements.
-        /// @param resetEmpty Boolean to reset the value if not user defined (=true), or not (=false).
+        /// @param[in] groupName Name of the group to retrieve elements.
+        /// @param[in] resetEmpty Boolean to reset the value if not user defined (=true), or not (=false).
         /// @returns Array of elements of the group.
         /// @version 14.12.13 - Added.
         private string[] GetElementsFromMetadata(string groupName, bool resetEmpty)
@@ -1111,7 +980,7 @@ namespace Gear.GUI
 
         /// @brief Retrieve a list of elements for the given group from the metadata list, 
         /// clearing the values if they are not user defined.
-        /// @param groupName Name of the group to retrieve elements.
+        /// @param[in] groupName Name of the group to retrieve elements.
         /// @returns Array of elements of the group.
         /// @version 14.12.13 - Added.
         private string[] GetElementsFromMetadata(string groupName)
@@ -1162,17 +1031,17 @@ namespace Gear.GUI
 
         private void pluginMetadataList_ColumnClick(object sender, ColumnClickEventArgs e)
         {
-
+            
         }
 
         private void splitContainerMain_DoubleClick(object sender, EventArgs e)
         {
-
+            //TODO ASB : add code to minimize/restore the references.
         }
 
         private void splitContainerCodeErr_SplitterMoved(object sender, SplitterEventArgs e)
         {
-
+            //TODO ASB : add code to minimize/restore the error list.
         }
 
     }
