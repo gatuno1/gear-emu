@@ -182,7 +182,7 @@ namespace Gear.GUI
         {
             get
             {
-                if (m_SaveFileName != null)
+                if (!String.IsNullOrEmpty(m_SaveFileName))
                     return new FileInfo(m_SaveFileName).Name;
                 else return "<New plugin>";
             }
@@ -202,7 +202,7 @@ namespace Gear.GUI
             pluginMetadataList.Columns[0].Text = metadataText;
         }
 
-        /// @brief Load a plugin from File.
+        /// @brief Load a plugin from File, updating the screen.
         /// @note This method take care of update change state of the window. 
         /// @todo Correct method to implement new plugin system.
         public bool OpenFile(string FileName, bool displayErrors)
@@ -282,9 +282,9 @@ namespace Gear.GUI
             }
         }
 
-        /// @brief Save a XML file with the plugin information.
+        /// @brief Take the plugin information from screen and call the persistence to store in a file.
         /// @details Take care of update change state of the window. It use methods from
-        /// Gear.PluginSupport.PluginPersistence class.
+        /// Gear.PluginSupport.PluginPersistence class to store in file.
         /// @param[in] FileName Name of the file to save.
         /// @param[in] version String with the version of plugin system to use for saving.
         public void SaveFile(string FileName, string version)
@@ -433,11 +433,10 @@ namespace Gear.GUI
                 OpenFileDialog dialog = new OpenFileDialog();
                 dialog.Filter = "Gear plug-in component (*.xml)|*.xml|All Files (*.*)|*.*";
                 dialog.Title = "Open Gear Plug-in...";
-                if (m_SaveFileName != null)
+                if (!String.IsNullOrEmpty(m_SaveFileName))
                     dialog.InitialDirectory = Path.GetDirectoryName(m_SaveFileName);   //retrieve from last plugin edited
                 else
-                    if ((Properties.Settings.Default.LastPlugin != null) &&
-                        (Properties.Settings.Default.LastPlugin.Length > 0))
+                    if (!String.IsNullOrEmpty(Properties.Settings.Default.LastPlugin))
                         //retrieve from global last plugin
                         dialog.InitialDirectory = 
                             Path.GetDirectoryName(Properties.Settings.Default.LastPlugin);   
@@ -484,12 +483,11 @@ namespace Gear.GUI
                         break;
                 };
             dialog.Title = "Save Gear Plug-in...";
-            if (m_SaveFileName != null)
+            if (!String.IsNullOrEmpty(m_SaveFileName))
                 //retrieve from last plugin edited
                 dialog.InitialDirectory = Path.GetDirectoryName(m_SaveFileName);   
             else
-                if ((Properties.Settings.Default.LastPlugin != null) &&
-                    (Properties.Settings.Default.LastPlugin.Length > 0))
+                if (!String.IsNullOrEmpty(Properties.Settings.Default.LastPlugin))
                     //retrieve from global last plugin
                     dialog.InitialDirectory = 
                         Path.GetDirectoryName(Properties.Settings.Default.LastPlugin);    
@@ -512,7 +510,7 @@ namespace Gear.GUI
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         private void addReferenceButton_Click(object sender, EventArgs e)
         {
-            if ((referenceName.Text != null) && (referenceName.Text.Length > 0))
+            if (!string.IsNullOrEmpty(referenceName.Text))
             {
                 referencesList.Items.Add(referenceName.Text);
                 referenceName.Text = "";
@@ -816,7 +814,7 @@ namespace Gear.GUI
                 //get the group where the selected item belongs & the default name for it
                 ListViewGroup group = ItemToDelete.Group;
                 ResetText = GetDefaultTextMetadataElement(group);
-                if (ResetText != null)
+                if (!String.IsNullOrEmpty(ResetText))
                 {
                     ListView.ListViewItemCollection ItemsInGroup = group.Items; 
                     if (ItemsInGroup.Count > 1) //if there are many items

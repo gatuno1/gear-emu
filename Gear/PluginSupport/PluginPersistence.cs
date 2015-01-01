@@ -279,5 +279,25 @@ namespace Gear.PluginSupport
             return true;
         }
 
+        /// @brief Load a plugin from XML as version 0.0.
+        /// @param[in] filenameXml File name in XML format, version 0.0
+        /// @param[in] Data Metadata of the plugin.
+        /// @returns State of loading.
+        /// @version 14.12.27 - Added.
+        static public bool LoadXML_v0_0(string filenameXml, PluginData Data)
+        {
+
+        }
+
+        /// @brief Load a plugin from XML as version 1.0.
+        /// @param[in] filenameXml File name in XML format, version 0.0
+        /// @param[in] Data Metadata of the plugin.
+        /// @returns State of loading.
+        /// @version 14.12.27 - Added.
+        static public bool LoadXML_v1_0(string filenameXml, PluginData Data)
+        {
+
+        }
+    
     }
 }
