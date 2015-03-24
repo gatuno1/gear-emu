@@ -1,0 +1,21 @@
+<!ELEMENT plugin (metadata?, instance, reference*, code+)>
+    <!ATTLIST plugin plugin_system_version CDATA "0.0">
+
+    <!ELEMENT metadata (author+, modified_by, date_modified, cultural_reference, description, usage, link+)>
+        <!ATTLIST metadata version CDATA #REQUIRED>
+
+        <!ELEMENT author (#PCDATA)>
+        <!ELEMENT modified_by (#PCDATA)>
+        <!ELEMENT date_modified (#PCDATA)>
+        <!ELEMENT cultural_reference (#PCDATA)>
+        <!ELEMENT description (#PCDATA)>
+        <!ELEMENT usage (#PCDATA)>
+        <!ELEMENT link (#PCDATA)>
+
+    <!ELEMENT instance (#PCDATA)> 
+        <!ATTLIST instance class CDATA #REQUIRED>
+    <!ELEMENT reference (#PCDATA)>
+        <!ATTLIST reference name CDATA #IMPLIED>	
+    <!ELEMENT code (#PCDATA)>
+        <!ATTLIST code ref CDATA #IMPLIED>
+        <!ATTLIST code order CDATA "-1">
