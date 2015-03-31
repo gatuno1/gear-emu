@@ -574,7 +574,7 @@ namespace Gear.GUI
         }
 
         /// @brief Update change state for code text box.
-        /// It marks as changed, to prevent unaverted loses at closure of the window.
+        /// It marks as changed, to prevent inadvertent loses at closure of the window.
         /// @param[in] sender Object who called this on event.
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         /// @version V15.03.26 - Added.
@@ -589,7 +589,7 @@ namespace Gear.GUI
 
         /// @brief Update change state for instance name.
         /// When the text of the text box changes, marks the code as modified, to 
-        /// prevent unaverted loses at closure of the window.
+        /// prevent inadvertent loses at closure of the window.
         /// @param[in] sender Object who called this on event.
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         /// @version V15.03.26 - Added.
@@ -661,7 +661,7 @@ namespace Gear.GUI
                         }
                         else
                         {
-                            if (!Selected)      //if not detected the pattern of class declararion
+                            if (!Selected)      //if not detected the pattern of class declaration
                                 codeEditorView.SelectAll();    //select all
                             codeEditorView.Focus();
                         }
