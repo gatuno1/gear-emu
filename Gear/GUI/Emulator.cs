@@ -109,7 +109,7 @@ namespace Gear.GUI
             plugin.Dock = DockStyle.Fill;
             plugin.Parent = t;
             documentsTab.SelectedTab = t;
-            //Mantain the close button availability
+            //Maintain the close button availability
             if (plugin.IsClosable)
             {
                 closeButton.Enabled = true;
@@ -191,7 +191,7 @@ namespace Gear.GUI
         }
 
         /// @brief Load a plugin from XML file.
-        /// @details Try to open the xml definition for the plugin from the file name given as 
+        /// @details Try to open the XML definition for the plugin from the file name given as 
         /// parameter. Then extract information from the XML (class name, auxiliary references 
         /// and source code to compile), trying to compile the C# source code (based on 
         /// Gear.PluginSupport.PluginBase class) and returning the new class instance. If the 
@@ -568,8 +568,8 @@ namespace Gear.GUI
     }
 }
 
-// vínculo a Referencia de MSCGEN: http://www.mcternan.me.uk/mscgen/
-// Vínculo a referencia de DOXYGEN commands: http://www.stack.nl/~dimitri/doxygen/manual/commands.html
+// Reference link to MSCGEN: http://www.mcternan.me.uk/mscgen/
+// Reference link to DOXYGEN commands: http://www.stack.nl/~dimitri/doxygen/manual/commands.html
 //
 /// @defgroup PluginDetails Details about Loading a Plugin
 /// 

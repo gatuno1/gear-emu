@@ -127,7 +127,7 @@ namespace Gear.EmulationCore
         protected volatile uint PC;         //!< Program Cursor
         protected volatile int BreakPointCogCursor; //!< Breakpoint Address
 
-        protected int StateCount;           //!< Arguement for the current state
+        protected int StateCount;           //!< Argument for the current state
         protected CogRunState State;        //!< Current COG state
         protected CogRunState NextState;    //!< Next state COG state
 
@@ -183,7 +183,7 @@ namespace Gear.EmulationCore
         }
 
         /// @brief Property to return complete OUT pins (P0..P63)
-        /// Analyse all sources of pin changes in the cog: OUTA, OUTB, the two counters 
+        /// Analyze all sources of pin changes in the cog: OUTA, OUTB, the two counters 
         /// and the video generator.
         public ulong OUT
         {
@@ -198,7 +198,7 @@ namespace Gear.EmulationCore
         }
 
         /// @brief Property to return only OUTA pins.
-        /// Analyse all sources of pin changes in the cog for OUTA pins (P31..P0): the two 
+        /// Analyze all sources of pin changes in the cog for OUTA pins (P31..P0): the two 
         /// counters and the video generator.
         public uint OUTA
         {
@@ -212,7 +212,7 @@ namespace Gear.EmulationCore
         }
 
         /// @brief Property to return only OUTB pins.
-        /// Analyse all sources of pin changes in the cog for OUTB pins (P63..P32): the 
+        /// Analyze all sources of pin changes in the cog for OUTB pins (P63..P32): the 
         /// two counters and the video generator.
         public uint OUTB
         {
@@ -496,7 +496,7 @@ namespace Gear.EmulationCore
         /// @param[in] data Data to write in address
         /// @note PAR address is a special case, because unless Propeller Manual V1.2 
         /// specifications says it is a read-only register, there are claims that in reality it 
-        /// is writeable as explains 
+        /// is writable as explains 
         /// <a href="http://forums.parallax.com/showthread.php/115909-PASM-simulator-debugger)">
         /// Forum thread "PASM simulator / debugger?</a>.
         /// @par They claims that some parallax video drivers in PASM changes the PAR register, 

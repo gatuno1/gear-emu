@@ -144,15 +144,15 @@ namespace Gear.EmulationCore
         //!< @todo Document member Gear.EmulationCore.PropellerCPU.pinChange
         private bool pinChange;
 
-        /// @brief Emulation Time in secounds units.
+        /// @brief Emulation Time in seconds units.
         private double Time;
 
         /// @brief Reference to the emulator instance running this CPU.
         private Emulator emulator;
 
-        /// @brief Versionated List of Handlers for clock ticks on plugins.
+        /// @brief List of Handlers for clock ticks on plugins.
         private List<PluginBase> TickHandlers;      
-        /// @brief Versionated List of Handlers for Pin changes on plugins.
+        /// @brief List of Handlers for Pin changes on plugins.
         private List<PluginBase> PinHandlers;
         /// @brief List of active PlugIns (include system ones, like cog views, etc).
         private List<PluginBase> PlugIns;          
@@ -160,7 +160,7 @@ namespace Gear.EmulationCore
         //Expose constants declarations of P1 Chip to use on the emulation. 
         /// @brief Cogs implemented in emulator for P1 Chip.
         public const int TOTAL_COGS      = 8;
-        /// @brief Number of lock availables in P1 Chip.
+        /// @brief Number of locks availably in P1 Chip.
         public const int TOTAL_LOCKS     = 8;
         /// @brief Number of pins of P1 Chip.
         public const int TOTAL_PINS      = 64;
@@ -201,7 +201,7 @@ namespace Gear.EmulationCore
             ClockSources = new ClockSource[TOTAL_COGS];
             CoreClockSource = new SystemXtal();
 
-            // Put rom it top part of main ram.
+            // Put ROM it top part of main RAM.
             Resources.BiosImage.CopyTo(Memory, TOTAL_MEMORY - TOTAL_RAM);
         }
 
@@ -652,7 +652,7 @@ namespace Gear.EmulationCore
             WriteWord(InitFrame - 4, ReadWord(12)); // Local
             WriteWord(InitFrame - 2, ReadWord(14)); // Stack
 
-            // Boot parameter is Inital PC in the lo word, and the stack frame in the hi word
+            // Boot parameter is Initial PC in the lo word, and the stack frame in the hi word
             ClockSources[0] = new PLLGroup();
 
             Cogs[0] = new InterpretedCog(this, InitFrame, CoreFreq, (PLLGroup)ClockSources[0]);
@@ -677,7 +677,7 @@ namespace Gear.EmulationCore
 
         /// @brief Advance one clock step.
         /// @details Inside it calls the OnClock() method for each plugin as clock advances. Also 
-        /// update the pins, by efect of calling each cog and source of clocks.
+        /// update the pins, by effect of calling each cog and source of clocks.
         public bool Step()
         {
             ulong pinsPrev;
