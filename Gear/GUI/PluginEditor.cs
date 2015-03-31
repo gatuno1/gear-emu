@@ -45,6 +45,8 @@ namespace Gear.GUI
         /// @brief File name of current plugin on editor window.
         /// @note Include full path and name to the file.
         private string m_SaveFileName;
+        /// @brief Version of the file for a plugin. 
+        private string m_FormatVersion;
         /// @brief Default font for editor code.
         /// @version V14.07.03 - Added.
         private Font defaultFont;    
@@ -94,6 +96,7 @@ namespace Gear.GUI
             }
 
             m_SaveFileName = null;
+            m_FormatVersion = null;
             changeDetectEnabled = true;
             CodeChanged = false;
             LastChange = ChangeType.none;
@@ -192,7 +195,7 @@ namespace Gear.GUI
                     switch (tr.Name.ToLower())
                     {
                         case "reference":
-                            if (!tr.IsEmptyElement)     //prevent empty element generates error
+                            if (tr.HasAttributes)     //prevent empty element generates error
                                 referencesList.Items.Add(tr.GetAttribute("name"));
                             break;
                         case "instance":
@@ -244,32 +247,61 @@ namespace Gear.GUI
         /// @details Take care of update change state of the window. No need to do it in 
         /// methods who call this.
         /// @todo Correct method to implement new versioning plugin system.
-        public void SaveFile(string FileName)
+        public void SaveFile(string FileName, string version)
         {
-            XmlDocument xmlDoc = new XmlDocument();
-
-            XmlElement root = xmlDoc.CreateElement("plugin");
-            xmlDoc.AppendChild(root);
-
-            XmlElement instance = xmlDoc.CreateElement("instance");
-            instance.SetAttribute("class", instanceName.Text);
-            root.AppendChild(instance);
-
-            foreach (string s in referencesList.Items)
+            PluginPersistence.PluginData data = new PluginPersistence.PluginData();
+            //fill struct with data from screen controls
+            data.PluginSystemVersion = version;
+            //TODO [ASB]: PluginData.PluginVersion - obtain data from screen control
+            data.PluginVersion = version;
+            //TODO [ASB]: PluginData.Authors - obtain data from screen control
+            //string[] Authors = new string[<author list>.Lenght]
+            //for(int i = 0; i < <author list>.Length; i++)
+            //    Authors[i] = <author list>[i];
+            //data.Authors = Authors;
+            //TODO [ASB]: PluginData.Modifier - obtain data from screen control
+            data.Modifier = "Modifier test";
+            //TODO [ASB]: PluginData.DateModified - obtain data from screen control
+            data.DateModified = DateTime.Today.ToString("u");
+            //TODO [ASB]: PluginData.Description - obtain data from screen control
+            data.Description = "Test Description";
+            //TODO [ASB]: PluginData.Usage - obtain data from screen control
+            data.Usage = "Test Usage";
+            //TODO [ASB]: PluginData.Links - obtain data from screen control
+            //string[] links = new string[<list links>.Count];
+            //for(int i = 0; i < <list links>.Length; i++)
+            //    links[i] = <list links>[i];
+            //data.Links = links;
+            data.InstanceName = instanceName.Text;
+            string[] references;
+            if (referencesList.Items.Count > 0)
             {
-                instance = xmlDoc.CreateElement("reference");
-                instance.SetAttribute("name", s);
-                root.AppendChild(instance);
+                references = new string[referencesList.Items.Count];
+                for (int i = 0; i < referencesList.Items.Count; i++)
+                    references[i] = referencesList.Items[i].ToString();
+                data.References = references;
+            }
+            switch (version)
+            {
+                case "1.0":
+                    //TODO [ASB] : set the code to manage multiple files on user interface
+                    data.UseAuxFiles = new bool[1] { false };
+                    data.AuxFiles = new string[1] { "" };
+                    data.Codes = new string[1] { codeEditorView.Text };
+                    //update modified state for the plugin
+                    CodeChanged = !PluginPersistence.SaveXML_v1_0(FileName, data);
+                    break;
+                case "0.0":
+                    //TODO [ASB] : set the code to manage multiple files on user interface
+                    data.UseAuxFiles = new bool[1] { false };
+                    data.AuxFiles = new string[1] { "" };
+                    data.Codes = new string[1] { codeEditorView.Text };
+                    //update modified state for the plugin
+                    CodeChanged = !PluginPersistence.SaveXML_v0_0(FileName,data);
+                    break;
             }
 
-            instance = xmlDoc.CreateElement("code");
-            instance.AppendChild(xmlDoc.CreateTextNode(codeEditorView.Text));
-            root.AppendChild(instance);
-
-            xmlDoc.Save(FileName);
-
             m_SaveFileName = FileName;
-            CodeChanged = false;    //update modified state for the plugin
         }
 
         /// @brief Method to compile C# source code to check errors on it.
@@ -345,8 +377,8 @@ namespace Gear.GUI
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         private void SaveButton_Click(object sender, EventArgs e)
         {
-            if (m_SaveFileName != null)
-                SaveFile(m_SaveFileName);
+            if ((m_SaveFileName != null) & (m_FormatVersion != null))
+                SaveFile(m_SaveFileName, m_FormatVersion);
             else
                 SaveAsButton_Click(sender, e);
 
@@ -359,20 +391,39 @@ namespace Gear.GUI
         private void SaveAsButton_Click(object sender, EventArgs e)
         {
             SaveFileDialog dialog = new SaveFileDialog();
-            dialog.Filter = "Gear plug-in component (*.xml)|*.xml|All Files (*.*)|*.*";
+            dialog.Filter = "New format Gear plug-in (*.xml)|*.xml|" +
+                "Old format Gear plug-in (*.xml)|*.xml|" +
+                "All Files (*.*)|*.*";
+            if (m_FormatVersion == null)
+                dialog.FilterIndex = 1; //default if not format selected
+            else
+                switch (m_FormatVersion)
+                {
+                    case "0.0":
+                        dialog.FilterIndex = 2;
+                        break;
+                    case "1.0":
+                        dialog.FilterIndex = 1;
+                        break;
+                };
             dialog.Title = "Save Gear Plug-in...";
             if (m_SaveFileName != null)
-                dialog.InitialDirectory = Path.GetDirectoryName(m_SaveFileName);   //retrieve from last plugin edited
+                //retrieve from last plugin edited
+                dialog.InitialDirectory = Path.GetDirectoryName(m_SaveFileName);   
             else
-                if ((Properties.Settings.Default.LastPlugin != null) &&
-                    (Properties.Settings.Default.LastPlugin.Length > 0))
+                if (Properties.Settings.Default.LastPlugin.Length > 0)
                     //retrieve from global last plugin
                     dialog.InitialDirectory = 
                         Path.GetDirectoryName(Properties.Settings.Default.LastPlugin);    
 
             if (dialog.ShowDialog(this) == DialogResult.OK)
             {
-                SaveFile(dialog.FileName);
+                //select the version to use for saving the plugin
+                if (dialog.FilterIndex == 2)
+                    m_FormatVersion = "0.0";
+                else
+                    m_FormatVersion = "1.0";
+                SaveFile(dialog.FileName, m_FormatVersion);
                 UpdateTitle();   //update title window
             }
         }
@@ -437,7 +488,7 @@ namespace Gear.GUI
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         /// @since V14.07.03 - Added.
         /// @note Experimental highlighting. Probably changes in the future.
-        // Sintax highlighting
+        // Syntax highlighting
         private void syntaxButton_Click(object sender, EventArgs e)
         {
             int restore_pos = codeEditorView.SelectionStart;    //remember last position

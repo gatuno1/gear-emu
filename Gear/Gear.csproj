@@ -159,6 +159,7 @@
     <Compile Include="GUI\SpinView.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="PluginSupport\PluginPersistence.cs" />
     <Compile Include="PluginSupport\PluginBase.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -196,6 +197,9 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <Content Include="Resources\plugin_v1.0.dtd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="Resources\StartupROM.bin" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
