@@ -1,8 +1,9 @@
 //Plugin template for plugin system v1.0
-//Name   : put your name here
-//Version: put the version of this plugin
-//Date   : date of this version
-//Purpose: write what do your plugin
+//Author     : put your name here
+//Date       : date of this version
+//Version    : put the version of this plugin
+//Description: write what do your plugin
+//Usage      : how to use this plugin
 
 //Assemblies needed for GEAR plugin system (do not delete them).
 using System;
@@ -29,7 +30,7 @@ class YourClassName : PluginBase
         
     }
 
-    //Title to be shown in tab, change the string as you needing.
+    //Title to be shown in tab, change the string as you need.
     public override string Title
     { 
         get { return "PluginBase"; }    //change to your plugin name

@@ -24,8 +24,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-
-//using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 using System.Reflection;
 
@@ -34,8 +32,7 @@ namespace Gear.PluginSupport
 {
     public delegate void ErrorEnumProc(System.CodeDom.Compiler.CompilerError e);
 
-    /// @brief Compile a PluginBase Module, keeping the errors if they appears.
-    /// 
+    /// @brief Compile a PluginBase Module to memory, returning eventual errors.
     static class ModuleCompiler
     {
         /// @brief Collection for error list on compile a dynamic plugin.
@@ -70,6 +67,7 @@ namespace Gear.PluginSupport
         /// @param[in] obj Reference to a PropellerCPU of this instance, to be passed as a 
         /// parameter to the constructor of the new plugin class instance.
         /// @returns New Plugin class instance compiled (on success), or NULL (on fail).
+        /// @throws Any compiling exception is detected and thrown again to the caller of this method.
         /// @note There are some references already added, so you don't need to include on your plugins: 
         /// @li `using System;` @li `using System.Data;` @li `using System.Drawing;`
         /// @li `using System.Windows.Forms;` @li `using System.Xml;`
@@ -103,35 +101,41 @@ namespace Gear.PluginSupport
             }
 
             //compile plugin with parameters
-            object target = results.CompiledAssembly.CreateInstance(           
-                module,                                         //name of class
-                false,                                          //=false: case sensitive
-                BindingFlags.Public | BindingFlags.Instance,    //flags to delimit the candidates
-                null,                                           //default binder object
-                new object[] { obj },                           //parameter lists
-                null,                                           //default culture
-                null                                            //default activation object
-            );
-
-            if (target == null)
+            try
             {
-                CompilerError c = new CompilerError("", 0, 0, "CS0103",
-                    "The name '" + module + "' does not exist in the current context." +
-                    " Does the class name is the same that is declared in c# code?");
-                m_Errors = new CompilerErrorCollection(new CompilerError[] { c });
-                return null;
-            }
-            else if (!(target is PluginBase))
-            {
-                CompilerError c = new CompilerError("", 0, 0, "CS0029",
-                    "Cannot implicitly convert type '" + target.GetType().FullName +
-                    "' to 'Gear.PluginSupport.BusModule'");
-                m_Errors = new CompilerErrorCollection(new CompilerError[] { c });
-                return null;
-            }
+                object target = results.CompiledAssembly.CreateInstance(
+                    module,                                         //name of class
+                    false,                                          //=false: case sensitive
+                    BindingFlags.Public | BindingFlags.Instance,    //flags to delimit the candidates
+                    null,                                           //default binder object
+                    new object[] { obj },                           //parameter lists
+                    null,                                           //default culture
+                    null                                            //default activation object
+                );
+                if (target == null)
+                {
+                    CompilerError c = new CompilerError("", 0, 0, "CS0103",
+                        "The name '" + module + "' does not exist in the current context." +
+                        " Does the class name is the same that is declared in c# code?");
+                    m_Errors = new CompilerErrorCollection(new CompilerError[] { c });
+                    return null;
+                }
+                else if (!(target is PluginBase))
+                {
+                    CompilerError c = new CompilerError("", 0, 0, "CS0029",
+                        "Cannot implicitly convert type '" + target.GetType().FullName +
+                        "' to 'Gear.PluginSupport.BusModule'");
+                    m_Errors = new CompilerErrorCollection(new CompilerError[] { c });
+                    return null;
+                }
 
-            m_Errors = null;
-            return (PluginBase)target;
+                m_Errors = null;
+                return (PluginBase)target;
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Exception generated when compiling plugin class into memory. " + "Message: \"" + e.Message + "\"", e);
+            }
         }
     }
 }

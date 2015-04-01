@@ -25,37 +25,46 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using System.IO;
 
 /// @copydoc Gear.PluginSupport
 namespace Gear.PluginSupport
 {
-    /// @brief Some Methods to save and retrieve plugin from files
+    /// @brief Methods to save and retrieve plugin from files, managing version of files.
+    /// @version v15.03.26 - Added.
     static class PluginPersistence
     {
-        ///@brief
-        ///
+        /// @brief Struct to transmit Metadata of the plugin.
+        /// @version v15.03.26 - Added.
         public struct PluginData
         {
-            public string PluginSystemVersion;
-            public string PluginVersion;
+            public string PluginSystemVersion;  //!< @brief Version of plugin system.
+            public string PluginVersion;        //!< @brief Version of the plugin itself.
 
-            public string[] Authors;
-            public string Modifier;
-            public string DateModified;
-            public string Description;
-            public string Usage;
-            public string[] Links;
+            public string[] Authors;            //!< @brief List of authors.
+            public string Modifier;             //!< @brief Last author of modifications.
+            public string DateModified;         //!< @brief Date of modifications,
+            public string CulturalReference;    //!< @brief To store the cultural reference of dates.
+            public string Description;          //!< @brief Description of the plugin.
+            public string Usage;                //!< @brief Guides to use the plugin.
+            public string[] Links;              //!< @brief Links supporting the plugin.
 
-            public string InstanceName;
-            public string[] References;
-
+            public string InstanceName;         //!< @brief Class name of the plugin definition.
+            public string[] References;         //!< @brief Auxiliary references to compile the plugin.
+            
+            //!< @brief Flag to write the code in external file or embedded in XML file.
             public bool[] UseAuxFiles;
+            //!< @brief Name of external file with C# code of the plugin.
             public string[] AuxFiles;
+            //!< @brief Text of the C# code of the plugin.
             public string[] Codes;
         }
 
         /// @brief Save a plugin to XML as version 0.0
+        /// @param[in] filenameXml File name in XML format, version 0.0
+        /// @param[in] Data Metadata of the plugin.
         /// @returns State of saving.
+        /// @version v15.03.26 - Added.
         static public bool SaveXML_v0_0(string filenameXml, PluginData Data)
         {
             XmlDocument xmlDoc = new XmlDocument();
@@ -88,15 +97,18 @@ namespace Gear.PluginSupport
             else 
                 instance.SetAttribute("ref",Data.AuxFiles[0]);
             root.AppendChild(instance);
-            //saving xml document
+            //saving XML document
             xmlDoc.Save(filenameXml);
 
             //TODO [ASB] : catch exceptions and return false if any.
             return true;
         }
 
-        /// @brief Save a plugin to XML as version 1.0
-        /// @returns State of saving.
+        /// @brief Save a plugin to XML as version 1.0.
+        /// @param[in] filenameXml File name in XML format, version 1.0
+        /// @param[in] Data Metadata of the plugin.
+        /// @returns State of saving, success (=true) or fail (=false).
+        /// @version v15.03.26 - Added.
         static public bool SaveXML_v1_0(string filenameXml, PluginData Data)
         {
             XmlDocument xmlDoc = new XmlDocument();
@@ -115,8 +127,8 @@ namespace Gear.PluginSupport
             XmlElement root = xmlDoc.CreateElement("plugin");
             root.SetAttribute("plugin_system_version", Data.PluginSystemVersion);
             xmlDoc.AppendChild(root);
-            //level 1 element - about
-            instance = xmlDoc.CreateElement("about");
+            //level 1 element - metadata
+            instance = xmlDoc.CreateElement("metadata");
             instance.SetAttribute("version", Data.PluginVersion);
             root.AppendChild(instance);
             {
@@ -126,11 +138,14 @@ namespace Gear.PluginSupport
                     foreach (string s in Data.Authors)
                     {
                         childElement = xmlDoc.CreateElement("author");
-                        textElement = xmlDoc.CreateTextNode("");
-                        cdata = xmlDoc.CreateCDataSection(s);
                         instance.AppendChild(childElement);
-                        childElement.AppendChild(textElement);
-                        textElement.AppendChild(cdata);
+                        if (s.Length > 0)
+                        {
+                            textElement = xmlDoc.CreateTextNode("");
+                            childElement.AppendChild(textElement);
+                            cdata = xmlDoc.CreateCDataSection(s);
+                            childElement.AppendChild(cdata);
+                        }
                     }
                 }
                 else
@@ -141,42 +156,67 @@ namespace Gear.PluginSupport
                 //level 2 element - modified_by
                 childElement = xmlDoc.CreateElement("modified_by");
                 instance.AppendChild(childElement);
-                textElement = xmlDoc.CreateTextNode("");
-                childElement.AppendChild(textElement);
-                cdata = xmlDoc.CreateCDataSection(Data.Modifier);
-                childElement.AppendChild(cdata);
+                if (Data.Modifier.Length > 0)
+                {
+                    textElement = xmlDoc.CreateTextNode("");
+                    childElement.AppendChild(textElement);
+                    cdata = xmlDoc.CreateCDataSection(Data.Modifier);
+                    childElement.AppendChild(cdata);
+                }
                 //level 2 element - date_modified
                 childElement = xmlDoc.CreateElement("date_modified");
-                textElement = xmlDoc.CreateTextNode("");
-                cdata = xmlDoc.CreateCDataSection(Data.DateModified);
                 instance.AppendChild(childElement);
-                childElement.AppendChild(textElement);
-                childElement.AppendChild(cdata);
+                if (Data.DateModified.Length > 0)
+                {
+                    textElement = xmlDoc.CreateTextNode("");
+                    cdata = xmlDoc.CreateCDataSection(Data.DateModified);
+                    childElement.AppendChild(textElement);
+                    childElement.AppendChild(cdata);
+                }
+                //level 2 element - cultural_reference
+                childElement = xmlDoc.CreateElement("cultural_reference");
+                instance.AppendChild(childElement);
+                if (Data.CulturalReference.Length > 0)
+                {
+                    textElement = xmlDoc.CreateTextNode("");
+                    cdata = xmlDoc.CreateCDataSection(Data.CulturalReference);
+                    childElement.AppendChild(textElement);
+                    childElement.AppendChild(cdata);
+                }
                 //level 2 element - description
                 childElement = xmlDoc.CreateElement("description");
-                textElement = xmlDoc.CreateTextNode("");
-                cdata = xmlDoc.CreateCDataSection(Data.Description);
                 instance.AppendChild(childElement);
-                childElement.AppendChild(textElement);
-                childElement.AppendChild(cdata);
+                if (Data.Description.Length > 0)
+                {
+                    textElement = xmlDoc.CreateTextNode("");
+                    cdata = xmlDoc.CreateCDataSection(Data.Description);
+                    childElement.AppendChild(textElement);
+                    childElement.AppendChild(cdata);
+                }
                 //level 2 element - usage
                 childElement = xmlDoc.CreateElement("usage");
-                textElement = xmlDoc.CreateTextNode("");
-                cdata = xmlDoc.CreateCDataSection(Data.Usage);
                 instance.AppendChild(childElement);
-                childElement.AppendChild(textElement);
-                childElement.AppendChild(cdata);
+                if (Data.Usage.Length > 0)
+                {
+                    textElement = xmlDoc.CreateTextNode("");
+                    cdata = xmlDoc.CreateCDataSection(Data.Usage);
+                    childElement.AppendChild(textElement);
+                    childElement.AppendChild(cdata);
+                }
                 //level 2 elements - link
                 if (Data.Links != null)
                 {
                     foreach (string s in Data.Links)
                     {
                         childElement = xmlDoc.CreateElement("link");
-                        textElement = xmlDoc.CreateTextNode("");
-                        cdata = xmlDoc.CreateCDataSection(s);
                         instance.AppendChild(childElement);
-                        childElement.AppendChild(textElement);
-                        childElement.AppendChild(cdata);
+                        if (s.Length > 0)
+                        {
+                            textElement = xmlDoc.CreateTextNode("");
+                            cdata = xmlDoc.CreateCDataSection(s);
+                            childElement.AppendChild(textElement);
+                            childElement.AppendChild(cdata);
+                        }
                     }
                 }
                 else 
@@ -209,23 +249,57 @@ namespace Gear.PluginSupport
                 for (int i = 0; i < Data.UseAuxFiles.Rank; i++)
                 {
                     instance = xmlDoc.CreateElement("code");
-                    if (!Data.UseAuxFiles[i])
-                        instance.AppendChild(xmlDoc.CreateTextNode(Data.Codes[i]));
-                    else
-                        instance.SetAttribute("ref", Data.AuxFiles[i]);
                     root.AppendChild(instance);
+                    if (!Data.UseAuxFiles[i])   //code embedded in XML file?
+                    {
+                        textElement = xmlDoc.CreateTextNode("");
+                        instance.AppendChild(textElement);
+                        instance.SetAttribute("order", Convert.ToString(i + 1));
+                        cdata = xmlDoc.CreateCDataSection(Data.Codes[i]);
+                        instance.AppendChild(cdata);
+                    }
+                    else      //code written to a separate file
+                    {
+                        //write the reference to the .CS file
+                        instance.SetAttribute("ref", Path.GetFileName(Data.AuxFiles[i]));
+                        instance.SetAttribute("order", Convert.ToString(i + 1));
+                        //save the code to a .CS file (same name, different extension)
+                        File.WriteAllText(Data.AuxFiles[i], Data.Codes[i], Encoding.UTF8);
+                    }
                 }
             else
             {
                 instance = xmlDoc.CreateElement("code");
                 root.AppendChild(instance);
             }
-            //saving xml document
+            //saving XML document
             xmlDoc.Save(filenameXml);
 
             //TODO [ASB] : catch exceptions and return false if any.
             return true;
         }
 
+        /// @brief Load a plugin from XML as version 0.0.
+        /// @param[in] filenameXml File name in XML format, version 0.0
+        /// @param[in] Data Metadata of the plugin.
+        /// @returns State of loading.
+        /// @version v15.03.26 - Added.
+        static public bool LoadXML_v0_0(string filenameXml, PluginData Data)
+        {
+            //TODO [ASB] : complete code to load XML v0
+            return false;
+        }
+
+        /// @brief Load a plugin from XML as version 1.0.
+        /// @param[in] filenameXml File name in XML format, version 0.0
+        /// @param[in] Data Metadata of the plugin.
+        /// @returns State of loading.
+        /// @version v15.03.26 - Added.
+        static public bool LoadXML_v1_0(string filenameXml, PluginData Data)
+        {
+            //TODO [ASB] : complete code to load XML v1
+            return false;
+        }
+    
     }
 }

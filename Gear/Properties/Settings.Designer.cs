@@ -94,5 +94,17 @@ namespace Gear.Properties {
                 this["LastTickMarkGrid"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool EmbeddedCode {
+            get {
+                return ((bool)(this["EmbeddedCode"]));
+            }
+            set {
+                this["EmbeddedCode"] = value;
+            }
+        }
     }
 }

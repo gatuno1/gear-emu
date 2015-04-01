@@ -52,18 +52,27 @@ namespace Gear.GUI
             System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
             System.Windows.Forms.ToolStripLabel classNameLabel;
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PluginEditor));
-            System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("Author", System.Windows.Forms.HorizontalAlignment.Center);
+            System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("Author(s)", System.Windows.Forms.HorizontalAlignment.Center);
             System.Windows.Forms.ListViewGroup listViewGroup2 = new System.Windows.Forms.ListViewGroup("Modified By", System.Windows.Forms.HorizontalAlignment.Center);
             System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("Date Modified", System.Windows.Forms.HorizontalAlignment.Center);
-            System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("Description", System.Windows.Forms.HorizontalAlignment.Center);
-            System.Windows.Forms.ListViewGroup listViewGroup5 = new System.Windows.Forms.ListViewGroup("Usage", System.Windows.Forms.HorizontalAlignment.Center);
-            System.Windows.Forms.ListViewGroup listViewGroup6 = new System.Windows.Forms.ListViewGroup("Links", System.Windows.Forms.HorizontalAlignment.Center);
-            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem("Your Name");
-            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("Your Name");
-            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("Modified");
-            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem("Description for the plugin");
-            System.Windows.Forms.ListViewItem listViewItem5 = new System.Windows.Forms.ListViewItem("How to use the plugin");
-            System.Windows.Forms.ListViewItem listViewItem6 = new System.Windows.Forms.ListViewItem("Web Link to more information");
+            System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("Version", System.Windows.Forms.HorizontalAlignment.Center);
+            System.Windows.Forms.ListViewGroup listViewGroup5 = new System.Windows.Forms.ListViewGroup("Description", System.Windows.Forms.HorizontalAlignment.Center);
+            System.Windows.Forms.ListViewGroup listViewGroup6 = new System.Windows.Forms.ListViewGroup("Usage", System.Windows.Forms.HorizontalAlignment.Center);
+            System.Windows.Forms.ListViewGroup listViewGroup7 = new System.Windows.Forms.ListViewGroup("Link(s)", System.Windows.Forms.HorizontalAlignment.Center);
+            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
+            "Your name"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
+            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem(new string[] {
+            "Your name"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
+            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem(new string[] {
+            "Modified"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
+            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem(new string[] {
+            "1.0"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
+            System.Windows.Forms.ListViewItem listViewItem5 = new System.Windows.Forms.ListViewItem(new string[] {
+            "Description for the plugin"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
+            System.Windows.Forms.ListViewItem listViewItem6 = new System.Windows.Forms.ListViewItem(new string[] {
+            "How to use the plugin"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
+            System.Windows.Forms.ListViewItem listViewItem7 = new System.Windows.Forms.ListViewItem(new string[] {
+            "Web Link to more information"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
             this.toolStripMain = new System.Windows.Forms.ToolStrip();
             this.openButton = new System.Windows.Forms.ToolStripButton();
             this.saveButton = new System.Windows.Forms.ToolStripButton();
@@ -72,7 +81,9 @@ namespace Gear.GUI
             this.instanceName = new System.Windows.Forms.ToolStripTextBox();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.syntaxButton = new System.Windows.Forms.ToolStripButton();
-            this.referenceStrip = new System.Windows.Forms.Panel();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.embeddedCode = new System.Windows.Forms.ToolStripButton();
+            this.referencePanel = new System.Windows.Forms.Panel();
             this.referencesList = new System.Windows.Forms.ListBox();
             this.toolStripReferences = new System.Windows.Forms.ToolStrip();
             this.referenceName = new System.Windows.Forms.ToolStripTextBox();
@@ -80,25 +91,27 @@ namespace Gear.GUI
             this.removeReferenceButton = new System.Windows.Forms.ToolStripButton();
             this.errorListView = new System.Windows.Forms.ListView();
             this.codeEditorView = new System.Windows.Forms.RichTextBox();
-            this.errorSplitter = new Gear.GUI.CollapsibleSplitter();
-            this.referencesSplitter = new Gear.GUI.CollapsibleSplitter();
-            this.AboutSplitter = new Gear.GUI.CollapsibleSplitter();
-            this.panelAbout = new System.Windows.Forms.Panel();
-            this.listProperties = new System.Windows.Forms.ListView();
+            this.metadataPanel = new System.Windows.Forms.Panel();
+            this.pluginMetadataList = new System.Windows.Forms.ListView();
             this.keyColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.toolStripLinks = new System.Windows.Forms.ToolStrip();
-            this.linkName = new System.Windows.Forms.ToolStripTextBox();
-            this.addLinkButton = new System.Windows.Forms.ToolStripButton();
-            this.removeLinkButton = new System.Windows.Forms.ToolStripButton();
-            this.panelDetails = new System.Windows.Forms.Panel();
+            this.textPluginMetadataBox = new System.Windows.Forms.ToolStripTextBox();
+            this.addPluginMetadataButton = new System.Windows.Forms.ToolStripButton();
+            this.removePluginMetadataButton = new System.Windows.Forms.ToolStripButton();
+            this.detailsPanel = new System.Windows.Forms.Panel();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.errorSplitter = new Gear.GUI.CollapsibleSplitter();
+            this.referencesSplitter = new Gear.GUI.CollapsibleSplitter();
+            this.metadataSplitter = new Gear.GUI.CollapsibleSplitter();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             classNameLabel = new System.Windows.Forms.ToolStripLabel();
             this.toolStripMain.SuspendLayout();
-            this.referenceStrip.SuspendLayout();
+            this.referencePanel.SuspendLayout();
             this.toolStripReferences.SuspendLayout();
-            this.panelAbout.SuspendLayout();
+            this.metadataPanel.SuspendLayout();
             this.toolStripLinks.SuspendLayout();
-            this.panelDetails.SuspendLayout();
+            this.detailsPanel.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // toolStripSeparator1
@@ -110,8 +123,9 @@ namespace Gear.GUI
             // 
             classNameLabel.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             classNameLabel.Name = "classNameLabel";
-            classNameLabel.Size = new System.Drawing.Size(69, 22);
-            classNameLabel.Text = "Class Name";
+            classNameLabel.Size = new System.Drawing.Size(99, 22);
+            classNameLabel.Text = "Main Class Name";
+            classNameLabel.ToolTipText = "Plugin Main Class Name";
             // 
             // toolStripMain
             // 
@@ -124,7 +138,9 @@ namespace Gear.GUI
             this.instanceName,
             classNameLabel,
             this.toolStripSeparator2,
-            this.syntaxButton});
+            this.syntaxButton,
+            this.toolStripSeparator3,
+            this.embeddedCode});
             this.toolStripMain.Location = new System.Drawing.Point(0, 0);
             this.toolStripMain.Name = "toolStripMain";
             this.toolStripMain.Size = new System.Drawing.Size(634, 25);
@@ -178,11 +194,10 @@ namespace Gear.GUI
             // 
             this.instanceName.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.instanceName.Name = "instanceName";
+            this.instanceName.ReadOnly = true;
             this.instanceName.Size = new System.Drawing.Size(100, 25);
             this.instanceName.ToolTipText = "Name of the Class for the plugin\r\nMust be the same as the class inherited from Pl" +
     "uginBase.";
-            this.instanceName.Leave += new System.EventHandler(this.instanceName_Leave);
-            this.instanceName.TextChanged += new System.EventHandler(this.instanceName_TextChanged);
             // 
             // toolStripSeparator2
             // 
@@ -195,28 +210,47 @@ namespace Gear.GUI
             this.syntaxButton.Image = ((System.Drawing.Image)(resources.GetObject("syntaxButton.Image")));
             this.syntaxButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.syntaxButton.Name = "syntaxButton";
-            this.syntaxButton.Size = new System.Drawing.Size(95, 22);
-            this.syntaxButton.Text = "Sintax Highlight";
-            this.syntaxButton.ToolTipText = "Sintax Highlight the code";
+            this.syntaxButton.Size = new System.Drawing.Size(98, 22);
+            this.syntaxButton.Text = "Syntax Highlight";
+            this.syntaxButton.ToolTipText = "Syntax Highlight the code";
             this.syntaxButton.Click += new System.EventHandler(this.syntaxButton_Click);
             // 
-            // referenceStrip
+            // toolStripSeparator3
             // 
-            this.referenceStrip.Controls.Add(this.referencesList);
-            this.referenceStrip.Controls.Add(this.toolStripReferences);
-            this.referenceStrip.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.referenceStrip.Location = new System.Drawing.Point(0, 337);
-            this.referenceStrip.Name = "referenceStrip";
-            this.referenceStrip.Size = new System.Drawing.Size(200, 80);
-            this.referenceStrip.TabIndex = 1;
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            // 
+            // embeddedCode
+            // 
+            this.embeddedCode.Checked = true;
+            this.embeddedCode.CheckOnClick = true;
+            this.embeddedCode.CheckState = System.Windows.Forms.CheckState.Indeterminate;
+            this.embeddedCode.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.embeddedCode.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.embeddedCode.Name = "embeddedCode";
+            this.embeddedCode.Size = new System.Drawing.Size(68, 22);
+            this.embeddedCode.Text = "Embedded";
+            this.embeddedCode.Click += new System.EventHandler(this.embeddedCode_Click);
+            // 
+            // referencePanel
+            // 
+            this.referencePanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.referencePanel.Controls.Add(this.groupBox1);
+            this.referencePanel.Controls.Add(this.toolStripReferences);
+            this.referencePanel.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.referencePanel.Location = new System.Drawing.Point(0, 287);
+            this.referencePanel.Name = "referencePanel";
+            this.referencePanel.Size = new System.Drawing.Size(200, 130);
+            this.referencePanel.TabIndex = 1;
             // 
             // referencesList
             // 
+            this.referencesList.ColumnWidth = 55;
             this.referencesList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.referencesList.FormattingEnabled = true;
-            this.referencesList.Location = new System.Drawing.Point(0, 0);
+            this.referencesList.Location = new System.Drawing.Point(3, 16);
             this.referencesList.Name = "referencesList";
-            this.referencesList.Size = new System.Drawing.Size(200, 57);
+            this.referencesList.Size = new System.Drawing.Size(194, 86);
             this.referencesList.TabIndex = 1;
             // 
             // toolStripReferences
@@ -226,17 +260,17 @@ namespace Gear.GUI
             this.referenceName,
             this.addReferenceButton,
             this.removeReferenceButton});
-            this.toolStripReferences.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
-            this.toolStripReferences.Location = new System.Drawing.Point(0, 57);
+            this.toolStripReferences.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
+            this.toolStripReferences.Location = new System.Drawing.Point(0, 105);
             this.toolStripReferences.Name = "toolStripReferences";
-            this.toolStripReferences.Size = new System.Drawing.Size(200, 23);
+            this.toolStripReferences.Size = new System.Drawing.Size(200, 25);
             this.toolStripReferences.TabIndex = 0;
             this.toolStripReferences.Text = "toolStrip2";
             // 
             // referenceName
             // 
             this.referenceName.Name = "referenceName";
-            this.referenceName.Size = new System.Drawing.Size(100, 23);
+            this.referenceName.Size = new System.Drawing.Size(90, 25);
             this.referenceName.ToolTipText = "Reference Name to add";
             // 
             // addReferenceButton
@@ -245,7 +279,7 @@ namespace Gear.GUI
             this.addReferenceButton.Image = ((System.Drawing.Image)(resources.GetObject("addReferenceButton.Image")));
             this.addReferenceButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.addReferenceButton.Name = "addReferenceButton";
-            this.addReferenceButton.Size = new System.Drawing.Size(33, 19);
+            this.addReferenceButton.Size = new System.Drawing.Size(33, 22);
             this.addReferenceButton.Text = "Add";
             this.addReferenceButton.ToolTipText = "Add a new Reference";
             this.addReferenceButton.Click += new System.EventHandler(this.addReferenceButton_Click);
@@ -259,7 +293,7 @@ namespace Gear.GUI
             this.removeReferenceButton.Size = new System.Drawing.Size(54, 19);
             this.removeReferenceButton.Text = "Remove";
             this.removeReferenceButton.ToolTipText = "Remove selected Reference";
-            this.removeReferenceButton.Click += new System.EventHandler(this.RemoveButton_Click);
+            this.removeReferenceButton.Click += new System.EventHandler(this.RemoveReferenceButton_Click);
             // 
             // errorListView
             // 
@@ -289,6 +323,159 @@ namespace Gear.GUI
             this.codeEditorView.WordWrap = false;
             this.codeEditorView.TextChanged += new System.EventHandler(this.codeEditorView_TextChanged);
             // 
+            // metadataPanel
+            // 
+            this.metadataPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.metadataPanel.Controls.Add(this.pluginMetadataList);
+            this.metadataPanel.Controls.Add(this.toolStripLinks);
+            this.metadataPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.metadataPanel.Location = new System.Drawing.Point(0, 0);
+            this.metadataPanel.Name = "metadataPanel";
+            this.metadataPanel.Size = new System.Drawing.Size(200, 279);
+            this.metadataPanel.TabIndex = 4;
+            // 
+            // pluginMetadataList
+            // 
+            this.pluginMetadataList.Alignment = System.Windows.Forms.ListViewAlignment.Default;
+            this.pluginMetadataList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.keyColumn});
+            this.pluginMetadataList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pluginMetadataList.FullRowSelect = true;
+            this.pluginMetadataList.GridLines = true;
+            listViewGroup1.Header = "Author(s)";
+            listViewGroup1.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
+            listViewGroup1.Name = "Authors";
+            listViewGroup2.Header = "Modified By";
+            listViewGroup2.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
+            listViewGroup2.Name = "ModifiedBy";
+            listViewGroup3.Header = "Date Modified";
+            listViewGroup3.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
+            listViewGroup3.Name = "DateModified";
+            listViewGroup4.Header = "Version";
+            listViewGroup4.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
+            listViewGroup4.Name = "Version";
+            listViewGroup5.Header = "Description";
+            listViewGroup5.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
+            listViewGroup5.Name = "Description";
+            listViewGroup6.Header = "Usage";
+            listViewGroup6.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
+            listViewGroup6.Name = "Usage";
+            listViewGroup7.Header = "Link(s)";
+            listViewGroup7.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
+            listViewGroup7.Name = "Links";
+            this.pluginMetadataList.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
+            listViewGroup1,
+            listViewGroup2,
+            listViewGroup3,
+            listViewGroup4,
+            listViewGroup5,
+            listViewGroup6,
+            listViewGroup7});
+            this.pluginMetadataList.HideSelection = false;
+            listViewItem1.Group = listViewGroup1;
+            listViewItem1.StateImageIndex = 0;
+            listViewItem1.ToolTipText = "The name of original author of the plugin.";
+            listViewItem2.Group = listViewGroup2;
+            listViewItem2.ToolTipText = "The name of the last modifier.";
+            listViewItem3.Group = listViewGroup3;
+            listViewItem3.ToolTipText = "When the last modification was made.";
+            listViewItem4.Group = listViewGroup4;
+            listViewItem4.ToolTipText = "Version number of the plugin";
+            listViewItem5.Group = listViewGroup5;
+            listViewItem5.ToolTipText = "What does the plugin.";
+            listViewItem6.Group = listViewGroup6;
+            listViewItem6.ToolTipText = "How it is supposed to be used the plugin.";
+            listViewItem7.Group = listViewGroup7;
+            listViewItem7.ToolTipText = "Web links for the plugin.";
+            this.pluginMetadataList.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
+            listViewItem1,
+            listViewItem2,
+            listViewItem3,
+            listViewItem4,
+            listViewItem5,
+            listViewItem6,
+            listViewItem7});
+            this.pluginMetadataList.LabelEdit = true;
+            this.pluginMetadataList.Location = new System.Drawing.Point(0, 0);
+            this.pluginMetadataList.MultiSelect = false;
+            this.pluginMetadataList.Name = "pluginMetadataList";
+            this.pluginMetadataList.ShowItemToolTips = true;
+            this.pluginMetadataList.Size = new System.Drawing.Size(200, 254);
+            this.pluginMetadataList.TabIndex = 3;
+            this.pluginMetadataList.UseCompatibleStateImageBehavior = false;
+            this.pluginMetadataList.View = System.Windows.Forms.View.Details;
+            this.pluginMetadataList.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.pluginMetadataList_AfterLabelEdit);
+            this.pluginMetadataList.SelectedIndexChanged += new System.EventHandler(this.pluginMetadataList_SelectedIndexChanged);
+            // 
+            // keyColumn
+            // 
+            this.keyColumn.Text = "Metadata of plugin";
+            this.keyColumn.Width = 195;
+            // 
+            // toolStripLinks
+            // 
+            this.toolStripLinks.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.toolStripLinks.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.textPluginMetadataBox,
+            this.addPluginMetadataButton,
+            this.removePluginMetadataButton});
+            this.toolStripLinks.Location = new System.Drawing.Point(0, 254);
+            this.toolStripLinks.Name = "toolStripLinks";
+            this.toolStripLinks.Size = new System.Drawing.Size(200, 25);
+            this.toolStripLinks.TabIndex = 4;
+            this.toolStripLinks.Text = "toolStrip1";
+            // 
+            // textPluginMetadataBox
+            // 
+            this.textPluginMetadataBox.Name = "textPluginMetadataBox";
+            this.textPluginMetadataBox.Size = new System.Drawing.Size(90, 25);
+            this.textPluginMetadataBox.ToolTipText = "Author/Link Name to add";
+            // 
+            // addPluginMetadataButton
+            // 
+            this.addPluginMetadataButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.addPluginMetadataButton.Image = ((System.Drawing.Image)(resources.GetObject("addPluginMetadataButton.Image")));
+            this.addPluginMetadataButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.addPluginMetadataButton.Name = "addPluginMetadataButton";
+            this.addPluginMetadataButton.Size = new System.Drawing.Size(33, 22);
+            this.addPluginMetadataButton.Text = "Add";
+            this.addPluginMetadataButton.ToolTipText = "Add a new Author/Link";
+            this.addPluginMetadataButton.Click += new System.EventHandler(this.addPluginMetadataButton_Click);
+            // 
+            // removePluginMetadataButton
+            // 
+            this.removePluginMetadataButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.removePluginMetadataButton.Image = ((System.Drawing.Image)(resources.GetObject("removePluginMetadataButton.Image")));
+            this.removePluginMetadataButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.removePluginMetadataButton.Name = "removePluginMetadataButton";
+            this.removePluginMetadataButton.Size = new System.Drawing.Size(54, 22);
+            this.removePluginMetadataButton.Text = "Remove";
+            this.removePluginMetadataButton.ToolTipText = "Remove selected Author/Link";
+            this.removePluginMetadataButton.Click += new System.EventHandler(this.removePluginMetadataButton_Click);
+            // 
+            // detailsPanel
+            // 
+            this.detailsPanel.Controls.Add(this.metadataPanel);
+            this.detailsPanel.Controls.Add(this.metadataSplitter);
+            this.detailsPanel.Controls.Add(this.referencePanel);
+            this.detailsPanel.Dock = System.Windows.Forms.DockStyle.Left;
+            this.detailsPanel.Location = new System.Drawing.Point(0, 25);
+            this.detailsPanel.Name = "detailsPanel";
+            this.detailsPanel.Size = new System.Drawing.Size(200, 417);
+            this.detailsPanel.TabIndex = 2;
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.groupBox1.Controls.Add(this.referencesList);
+            this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBox1.Location = new System.Drawing.Point(0, 0);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(200, 105);
+            this.groupBox1.TabIndex = 2;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "References List";
+            // 
             // errorSplitter
             // 
             this.errorSplitter.AnimationDelay = 20;
@@ -302,7 +489,7 @@ namespace Gear.GUI
             this.errorSplitter.Name = "collapsibleSplitter2";
             this.errorSplitter.TabIndex = 6;
             this.errorSplitter.TabStop = false;
-            this.errorSplitter.UseAnimations = false;
+            this.errorSplitter.UseAnimations = true;
             this.errorSplitter.VisualStyle = Gear.GUI.VisualStyles.Mozilla;
             // 
             // referencesSplitter
@@ -310,160 +497,30 @@ namespace Gear.GUI
             this.referencesSplitter.AnimationDelay = 20;
             this.referencesSplitter.AnimationStep = 20;
             this.referencesSplitter.BorderStyle3D = System.Windows.Forms.Border3DStyle.RaisedOuter;
-            this.referencesSplitter.ControlToHide = this.referenceStrip;
+            this.referencesSplitter.ControlToHide = this.detailsPanel;
             this.referencesSplitter.ExpandParentForm = false;
             this.referencesSplitter.Location = new System.Drawing.Point(200, 25);
             this.referencesSplitter.Name = "collapsibleSplitter1";
             this.referencesSplitter.TabIndex = 3;
             this.referencesSplitter.TabStop = false;
-            this.referencesSplitter.UseAnimations = false;
+            this.referencesSplitter.UseAnimations = true;
             this.referencesSplitter.VisualStyle = Gear.GUI.VisualStyles.Mozilla;
             // 
-            // AboutSplitter
+            // metadataSplitter
             // 
-            this.AboutSplitter.AnimationDelay = 20;
-            this.AboutSplitter.AnimationStep = 20;
-            this.AboutSplitter.BorderStyle3D = System.Windows.Forms.Border3DStyle.RaisedOuter;
-            this.AboutSplitter.ControlToHide = this.panelAbout;
-            this.AboutSplitter.Cursor = System.Windows.Forms.Cursors.HSplit;
-            this.AboutSplitter.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.AboutSplitter.ExpandParentForm = false;
-            this.AboutSplitter.Location = new System.Drawing.Point(0, 329);
-            this.AboutSplitter.Name = "AboutSplitter";
-            this.AboutSplitter.TabIndex = 2;
-            this.AboutSplitter.TabStop = false;
-            this.AboutSplitter.UseAnimations = false;
-            this.AboutSplitter.VisualStyle = Gear.GUI.VisualStyles.Mozilla;
-            // 
-            // panelAbout
-            // 
-            this.panelAbout.Controls.Add(this.listProperties);
-            this.panelAbout.Controls.Add(this.toolStripLinks);
-            this.panelAbout.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panelAbout.Location = new System.Drawing.Point(0, 0);
-            this.panelAbout.Name = "panelAbout";
-            this.panelAbout.Size = new System.Drawing.Size(200, 329);
-            this.panelAbout.TabIndex = 4;
-            // 
-            // listProperties
-            // 
-            this.listProperties.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.keyColumn});
-            this.listProperties.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listProperties.FullRowSelect = true;
-            this.listProperties.GridLines = true;
-            listViewGroup1.Header = "Author";
-            listViewGroup1.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
-            listViewGroup1.Name = "Author";
-            listViewGroup2.Header = "Modified By";
-            listViewGroup2.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
-            listViewGroup2.Name = "ModifiedBy";
-            listViewGroup3.Header = "Date Modified";
-            listViewGroup3.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
-            listViewGroup3.Name = "DateModified";
-            listViewGroup4.Header = "Description";
-            listViewGroup4.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
-            listViewGroup4.Name = "Description";
-            listViewGroup5.Header = "Usage";
-            listViewGroup5.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
-            listViewGroup5.Name = "Usage";
-            listViewGroup6.Header = "Links";
-            listViewGroup6.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
-            listViewGroup6.Name = "Links";
-            this.listProperties.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
-            listViewGroup1,
-            listViewGroup2,
-            listViewGroup3,
-            listViewGroup4,
-            listViewGroup5,
-            listViewGroup6});
-            this.listProperties.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.listProperties.HideSelection = false;
-            listViewItem1.Checked = true;
-            listViewItem1.Group = listViewGroup1;
-            listViewItem1.StateImageIndex = 1;
-            listViewItem1.ToolTipText = "The name of original author of the plugin.";
-            listViewItem2.Group = listViewGroup2;
-            listViewItem2.ToolTipText = "The name of the last modifier.";
-            listViewItem3.Group = listViewGroup3;
-            listViewItem3.ToolTipText = "When was made the last modification.";
-            listViewItem4.Group = listViewGroup4;
-            listViewItem4.ToolTipText = "What does the plugin.";
-            listViewItem5.Group = listViewGroup5;
-            listViewItem5.ToolTipText = "How it is supposed to be used the plugin.";
-            listViewItem6.Group = listViewGroup6;
-            listViewItem6.ToolTipText = "Web links for the plugin.";
-            this.listProperties.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem1,
-            listViewItem2,
-            listViewItem3,
-            listViewItem4,
-            listViewItem5,
-            listViewItem6});
-            this.listProperties.LabelEdit = true;
-            this.listProperties.Location = new System.Drawing.Point(0, 0);
-            this.listProperties.MultiSelect = false;
-            this.listProperties.Name = "listProperties";
-            this.listProperties.ShowItemToolTips = true;
-            this.listProperties.Size = new System.Drawing.Size(200, 304);
-            this.listProperties.TabIndex = 3;
-            this.listProperties.UseCompatibleStateImageBehavior = false;
-            this.listProperties.View = System.Windows.Forms.View.Details;
-            // 
-            // keyColumn
-            // 
-            this.keyColumn.Text = "Properties of plugin v.x";
-            this.keyColumn.Width = 195;
-            // 
-            // toolStripLinks
-            // 
-            this.toolStripLinks.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.toolStripLinks.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.linkName,
-            this.addLinkButton,
-            this.removeLinkButton});
-            this.toolStripLinks.Location = new System.Drawing.Point(0, 304);
-            this.toolStripLinks.Name = "toolStripLinks";
-            this.toolStripLinks.Size = new System.Drawing.Size(200, 25);
-            this.toolStripLinks.TabIndex = 4;
-            this.toolStripLinks.Text = "toolStrip1";
-            // 
-            // linkName
-            // 
-            this.linkName.Name = "linkName";
-            this.linkName.Size = new System.Drawing.Size(80, 25);
-            this.linkName.ToolTipText = "Link Name to add";
-            // 
-            // addLinkButton
-            // 
-            this.addLinkButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.addLinkButton.Image = ((System.Drawing.Image)(resources.GetObject("addLinkButton.Image")));
-            this.addLinkButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.addLinkButton.Name = "addLinkButton";
-            this.addLinkButton.Size = new System.Drawing.Size(33, 22);
-            this.addLinkButton.Text = "Add";
-            this.addLinkButton.ToolTipText = "Add a new Link";
-            // 
-            // removeLinkButton
-            // 
-            this.removeLinkButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.removeLinkButton.Image = ((System.Drawing.Image)(resources.GetObject("removeLinkButton.Image")));
-            this.removeLinkButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.removeLinkButton.Name = "removeLinkButton";
-            this.removeLinkButton.Size = new System.Drawing.Size(54, 22);
-            this.removeLinkButton.Text = "Remove";
-            this.removeLinkButton.ToolTipText = "Remove selected Link";
-            // 
-            // panelDetails
-            // 
-            this.panelDetails.Controls.Add(this.panelAbout);
-            this.panelDetails.Controls.Add(this.AboutSplitter);
-            this.panelDetails.Controls.Add(this.referenceStrip);
-            this.panelDetails.Dock = System.Windows.Forms.DockStyle.Left;
-            this.panelDetails.Location = new System.Drawing.Point(0, 25);
-            this.panelDetails.Name = "panelDetails";
-            this.panelDetails.Size = new System.Drawing.Size(200, 417);
-            this.panelDetails.TabIndex = 2;
+            this.metadataSplitter.AnimationDelay = 20;
+            this.metadataSplitter.AnimationStep = 20;
+            this.metadataSplitter.BorderStyle3D = System.Windows.Forms.Border3DStyle.RaisedOuter;
+            this.metadataSplitter.ControlToHide = this.referencePanel;
+            this.metadataSplitter.Cursor = System.Windows.Forms.Cursors.HSplit;
+            this.metadataSplitter.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.metadataSplitter.ExpandParentForm = false;
+            this.metadataSplitter.Location = new System.Drawing.Point(0, 279);
+            this.metadataSplitter.Name = "metadataSplitter";
+            this.metadataSplitter.TabIndex = 2;
+            this.metadataSplitter.TabStop = false;
+            this.metadataSplitter.UseAnimations = true;
+            this.metadataSplitter.VisualStyle = Gear.GUI.VisualStyles.Mozilla;
             // 
             // PluginEditor
             // 
@@ -474,22 +531,23 @@ namespace Gear.GUI
             this.Controls.Add(this.errorSplitter);
             this.Controls.Add(this.errorListView);
             this.Controls.Add(this.referencesSplitter);
-            this.Controls.Add(this.panelDetails);
+            this.Controls.Add(this.detailsPanel);
             this.Controls.Add(this.toolStripMain);
             this.Name = "PluginEditor";
             this.Text = "Plugin Editor";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.PluginEditor_FormClosing);
             this.toolStripMain.ResumeLayout(false);
             this.toolStripMain.PerformLayout();
-            this.referenceStrip.ResumeLayout(false);
-            this.referenceStrip.PerformLayout();
+            this.referencePanel.ResumeLayout(false);
+            this.referencePanel.PerformLayout();
             this.toolStripReferences.ResumeLayout(false);
             this.toolStripReferences.PerformLayout();
-            this.panelAbout.ResumeLayout(false);
-            this.panelAbout.PerformLayout();
+            this.metadataPanel.ResumeLayout(false);
+            this.metadataPanel.PerformLayout();
             this.toolStripLinks.ResumeLayout(false);
             this.toolStripLinks.PerformLayout();
-            this.panelDetails.ResumeLayout(false);
+            this.detailsPanel.ResumeLayout(false);
+            this.groupBox1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -501,7 +559,7 @@ namespace Gear.GUI
         private System.Windows.Forms.ToolStripButton openButton;
         private System.Windows.Forms.ToolStripButton saveButton;
         private System.Windows.Forms.ToolStripButton checkButton;
-        private System.Windows.Forms.Panel referenceStrip;
+        private System.Windows.Forms.Panel referencePanel;
         private System.Windows.Forms.ListBox referencesList;
         private System.Windows.Forms.ToolStrip toolStripReferences;
         private System.Windows.Forms.ToolStripTextBox referenceName;
@@ -515,14 +573,17 @@ namespace Gear.GUI
         private System.Windows.Forms.RichTextBox codeEditorView;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripButton syntaxButton;
-        private CollapsibleSplitter AboutSplitter;
-        private System.Windows.Forms.Panel panelAbout;
-        private System.Windows.Forms.ListView listProperties;
-        private System.Windows.Forms.Panel panelDetails;
+        private CollapsibleSplitter metadataSplitter;
+        private System.Windows.Forms.Panel metadataPanel;
+        private System.Windows.Forms.ListView pluginMetadataList;
+        private System.Windows.Forms.Panel detailsPanel;
         private System.Windows.Forms.ToolStrip toolStripLinks;
-        private System.Windows.Forms.ToolStripTextBox linkName;
-        private System.Windows.Forms.ToolStripButton addLinkButton;
-        private System.Windows.Forms.ToolStripButton removeLinkButton;
+        private System.Windows.Forms.ToolStripTextBox textPluginMetadataBox;
+        private System.Windows.Forms.ToolStripButton addPluginMetadataButton;
+        private System.Windows.Forms.ToolStripButton removePluginMetadataButton;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripButton embeddedCode;
         private System.Windows.Forms.ColumnHeader keyColumn;
+        private System.Windows.Forms.GroupBox groupBox1;
     }
 }
