@@ -96,7 +96,7 @@ namespace Gear.GUI
             TreeNode root = objectView.Nodes.Add("Spin");
             TreeNode node;
 
-            node = root.Nodes.Add(String.Format("System Frequency: {0}mhz", Chip.ReadLong(0)));
+            node = root.Nodes.Add(String.Format("System Frequency: {0} MHz", Chip.ReadLong(0)));
             node.Tag = (int)0;
             node = root.Nodes.Add(String.Format("Clock Mode: {0:X2}", Chip.ReadByte(4)));
             node.Tag = (int)4;
@@ -231,21 +231,21 @@ namespace Gear.GUI
             this.objectView.Indent = 15;
             this.objectView.Location = new System.Drawing.Point(0, 25);
             this.objectView.Name = "objectView";
-            this.objectView.Size = new System.Drawing.Size(193, 424);
+            this.objectView.Size = new System.Drawing.Size(210, 424);
             this.objectView.TabIndex = 0;
             this.objectView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.SelectChanged);
             //
             // hexView
             //
             this.hexView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.hexView.Location = new System.Drawing.Point(193, 25);
+            this.hexView.Location = new System.Drawing.Point(210, 25);
             this.hexView.Name = "hexView";
-            this.hexView.Size = new System.Drawing.Size(415, 424);
+            this.hexView.Size = new System.Drawing.Size(398, 424);
             this.hexView.TabIndex = 1;
-            this.hexView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.hexView_MouseClick);
-            this.hexView.Paint += new System.Windows.Forms.PaintEventHandler(this.OnPaint);
             this.hexView.SizeChanged += new System.EventHandler(this.OnSize);
-            //
+            this.hexView.Paint += new System.Windows.Forms.PaintEventHandler(this.OnPaint);
+            this.hexView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.hexView_MouseClick);
+            // 
             // toolStrip1
             //
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -262,7 +262,7 @@ namespace Gear.GUI
             this.analizeButton.Image = ((System.Drawing.Image)(resources.GetObject("analizeButton.Image")));
             this.analizeButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.analizeButton.Name = "analizeButton";
-            this.analizeButton.Size = new System.Drawing.Size(57, 22);
+            this.analizeButton.Size = new System.Drawing.Size(60, 22);
             this.analizeButton.Text = "Reanalize";
             this.analizeButton.Click += new System.EventHandler(this.analizeButton_Click);
             //
@@ -279,8 +279,8 @@ namespace Gear.GUI
             this.scrollPosition.Scroll += new System.Windows.Forms.ScrollEventHandler(this.OnScroll);
             //
             // splitter1
-            //
-            this.splitter1.Location = new System.Drawing.Point(193, 25);
+            // 
+            this.splitter1.Location = new System.Drawing.Point(210, 25);
             this.splitter1.Name = "splitter1";
             this.splitter1.Size = new System.Drawing.Size(3, 424);
             this.splitter1.TabIndex = 2;
