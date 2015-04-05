@@ -84,6 +84,7 @@ namespace Gear.GUI
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.embeddedCode = new System.Windows.Forms.ToolStripButton();
             this.referencePanel = new System.Windows.Forms.Panel();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.referencesList = new System.Windows.Forms.ListBox();
             this.toolStripReferences = new System.Windows.Forms.ToolStrip();
             this.referenceName = new System.Windows.Forms.ToolStripTextBox();
@@ -99,7 +100,6 @@ namespace Gear.GUI
             this.addPluginMetadataButton = new System.Windows.Forms.ToolStripButton();
             this.removePluginMetadataButton = new System.Windows.Forms.ToolStripButton();
             this.detailsPanel = new System.Windows.Forms.Panel();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.errorSplitter = new Gear.GUI.CollapsibleSplitter();
             this.referencesSplitter = new Gear.GUI.CollapsibleSplitter();
             this.metadataSplitter = new Gear.GUI.CollapsibleSplitter();
@@ -107,11 +107,11 @@ namespace Gear.GUI
             classNameLabel = new System.Windows.Forms.ToolStripLabel();
             this.toolStripMain.SuspendLayout();
             this.referencePanel.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.toolStripReferences.SuspendLayout();
             this.metadataPanel.SuspendLayout();
             this.toolStripLinks.SuspendLayout();
             this.detailsPanel.SuspendLayout();
-            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // toolStripSeparator1
@@ -243,6 +243,18 @@ namespace Gear.GUI
             this.referencePanel.Size = new System.Drawing.Size(200, 130);
             this.referencePanel.TabIndex = 1;
             // 
+            // groupBox1
+            // 
+            this.groupBox1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.groupBox1.Controls.Add(this.referencesList);
+            this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBox1.Location = new System.Drawing.Point(0, 0);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(200, 105);
+            this.groupBox1.TabIndex = 2;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "References List";
+            // 
             // referencesList
             // 
             this.referencesList.ColumnWidth = 55;
@@ -290,7 +302,7 @@ namespace Gear.GUI
             this.removeReferenceButton.Image = ((System.Drawing.Image)(resources.GetObject("removeReferenceButton.Image")));
             this.removeReferenceButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.removeReferenceButton.Name = "removeReferenceButton";
-            this.removeReferenceButton.Size = new System.Drawing.Size(54, 19);
+            this.removeReferenceButton.Size = new System.Drawing.Size(54, 22);
             this.removeReferenceButton.Text = "Remove";
             this.removeReferenceButton.ToolTipText = "Remove selected Reference";
             this.removeReferenceButton.Click += new System.EventHandler(this.RemoveReferenceButton_Click);
@@ -464,18 +476,6 @@ namespace Gear.GUI
             this.detailsPanel.Size = new System.Drawing.Size(200, 417);
             this.detailsPanel.TabIndex = 2;
             // 
-            // groupBox1
-            // 
-            this.groupBox1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.groupBox1.Controls.Add(this.referencesList);
-            this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox1.Location = new System.Drawing.Point(0, 0);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(200, 105);
-            this.groupBox1.TabIndex = 2;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "References List";
-            // 
             // errorSplitter
             // 
             this.errorSplitter.AnimationDelay = 20;
@@ -540,6 +540,7 @@ namespace Gear.GUI
             this.toolStripMain.PerformLayout();
             this.referencePanel.ResumeLayout(false);
             this.referencePanel.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
             this.toolStripReferences.ResumeLayout(false);
             this.toolStripReferences.PerformLayout();
             this.metadataPanel.ResumeLayout(false);
@@ -547,7 +548,6 @@ namespace Gear.GUI
             this.toolStripLinks.ResumeLayout(false);
             this.toolStripLinks.PerformLayout();
             this.detailsPanel.ResumeLayout(false);
-            this.groupBox1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 

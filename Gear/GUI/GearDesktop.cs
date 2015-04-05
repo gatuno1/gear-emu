@@ -51,8 +51,7 @@ namespace Gear.GUI
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "Propeller Runtime Image (*.binary;*.eeprom)|*.binary;*.eeprom|All Files (*.*)|*.*";
             openFileDialog.Title = "Open Propeller Binary...";
-            if ((Properties.Settings.Default.LastBinary != null) &&
-                (Properties.Settings.Default.LastBinary.Length > 0))
+            if (!String.IsNullOrEmpty(Properties.Settings.Default.LastBinary))
                 //retrieve last binary location
                 openFileDialog.InitialDirectory = 
                     Path.GetDirectoryName(Properties.Settings.Default.LastBinary);   
@@ -127,8 +126,7 @@ namespace Gear.GUI
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "Gear plug-in component (*.xml)|*.xml|All Files (*.*)|*.*";
             openFileDialog.Title = "Open Gear Plug-in...";
-            if ((Properties.Settings.Default.LastPlugin != null) &&
-                (Properties.Settings.Default.LastPlugin.Length > 0))
+            if (!String.IsNullOrEmpty(Properties.Settings.Default.LastPlugin))
                 openFileDialog.InitialDirectory = 
                     Path.GetDirectoryName(Properties.Settings.Default.LastPlugin);
 

@@ -202,11 +202,43 @@ namespace Gear.GUI
             pluginMetadataList.Columns[0].Text = metadataText;
         }
 
-        /// @brief Load a plugin from File, updating the screen.
+        /// @brief Load a plugin from File in Plugin Editor, updating the screen.
         /// @note This method take care of update change state of the window. 
-        /// @todo Correct method to implement new plugin system.
+        /// @param[in] FileName Name of the file to open.
+        /// @param[in] version String with the version of plugin system to use for 
+        /// saving.
+        /// @version v15.03.26 - modified to validate XML & plugin version and load it
+        /// with the appropiate method.
         public bool OpenFile(string FileName, bool displayErrors)
         {
+            //create the structure to fill from file
+            PluginData pluginCandidate = new PluginData();
+            //Determine if the XML is valid, and for which DTD version
+            if (!pluginCandidate.ValidateXMLPluginFile(FileName))
+            {
+                //@todo [ASB] show a dialog with the errors in XML definition of plugin
+                return false;
+            }
+            else
+            {   
+                bool IsSuccess = true;
+                //as is valid, we have the version to look for the correct method to 
+                // load it
+                switch (pluginCandidate.PluginVersion)
+                {
+                    case "0.0" :
+                        IsSuccess = 
+                            PluginPersistence.LoadXML_v0_0(FileName,pluginCandidate);
+                        break;
+                    case "1.0":
+                        IsSuccess = 
+                            PluginPersistence.LoadXML_v1_0(FileName, pluginCandidate);
+                        break;
+                }
+                return IsSuccess;
+            }
+
+/*
             XmlReaderSettings settings = new XmlReaderSettings();
             settings.IgnoreComments = true;
             settings.IgnoreProcessingInstructions = true;
@@ -280,6 +312,7 @@ namespace Gear.GUI
             {
                 tr.Close();
             }
+ */ 
         }
 
         /// @brief Take the plugin information from screen and call the persistence to store in a file.
@@ -289,7 +322,7 @@ namespace Gear.GUI
         /// @param[in] version String with the version of plugin system to use for saving.
         public void SaveFile(string FileName, string version)
         {
-            PluginPersistence.PluginData data = new PluginPersistence.PluginData();
+            PluginData data = new PluginData();
             //fill struct with data from screen controls
             data.PluginSystemVersion = version; //version of plugin system
             //data.PluginVersion - version of the plugin itself
@@ -453,7 +486,7 @@ namespace Gear.GUI
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         private void SaveButton_Click(object sender, EventArgs e)
         {
-            if ((m_SaveFileName != null) & (m_FormatVersion != null))
+            if (!String.IsNullOrEmpty(m_SaveFileName) & (m_FormatVersion != null))
                 SaveFile(m_SaveFileName, m_FormatVersion);
             else
                 SaveAsButton_Click(sender, e);
@@ -744,12 +777,12 @@ namespace Gear.GUI
             if (embeddedCode.Checked)
             {
                 embeddedCode.Text = "Embedded";
-                embeddedCode.ToolTipText = "Embedded code in plugin file";
+                embeddedCode.ToolTipText = "Embedded code in XML plugin file.";
             }
             else
             {
                 embeddedCode.Text = "Separated";
-                embeddedCode.ToolTipText = "Code in separated file from plugin";
+                embeddedCode.ToolTipText = "Code in separated file from XML plugin file.";
             }
         }
 

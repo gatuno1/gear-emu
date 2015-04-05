@@ -25,40 +25,97 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using System.Xml.Schema;
 using System.IO;
 
 /// @copydoc Gear.PluginSupport
 namespace Gear.PluginSupport
 {
+    /// @brief Class to hold metadata of the plugin.
+    /// @version v15.03.26 - Added.
+    public class PluginData
+    {
+        public string PluginSystemVersion;  //!< @brief Version of plugin system.
+        public string PluginVersion;        //!< @brief Version of the plugin itself.
+
+        public string[] Authors;            //!< @brief List of authors.
+        public string Modifier;             //!< @brief Last author of modifications.
+        public string DateModified;         //!< @brief Date of modifications,
+        public string CulturalReference;    //!< @brief To store the cultural reference of dates.
+        public string Description;          //!< @brief Description of the plugin.
+        public string Usage;                //!< @brief Guides to use the plugin.
+        public string[] Links;              //!< @brief Links supporting the plugin.
+
+        public string InstanceName;         //!< @brief Class name of the plugin definition.
+        public string[] References;         //!< @brief Auxiliary references to compile the plugin.
+
+        /// @brief Flag to write the code in external file or embedded in XML file.
+        public bool[] UseAuxFiles;
+        /// @brief Name of external file with C# code of the plugin.
+        public string[] AuxFiles;
+        /// @brief Text of the C# code of the plugin.
+        public string[] Codes;
+        /// @brief Hold the result for a validity test of related XML file.
+        bool isValid;
+        /// @brief List of errors in the validation of XML file.
+        List<string> ValidationErrors;
+
+        /// @brief default constructor for PluginData
+        /// @version v15.03.26 - Added.
+        public PluginData()
+        {
+            isValid = true;
+            ValidationErrors = new List<string>();
+        }
+
+        /// @brief Handle the error in the validation, saving the messages and setting 
+        /// the validation state.
+        /// @param[in] sender Reference to the object where the exception was raised.
+        /// @param[in] args Class with the validation details event.
+        /// @version v15.03.26 - Added.
+        void ValidateXMLEventHandler(object sender, ValidationEventArgs args)
+        {
+            isValid = false;
+            ///@todo [ASB] complete the description of errors and saving on ValidationErrors
+            /*
+            Console.WriteLine("Evento de validación: [{0}]{1}\nLine:{2}, Position:{3}.",
+                args.Severity,
+                args.Message,
+                args.Exception.LineNumber,
+                args.Exception.LinePosition
+            );
+            */
+        }
+
+        /// @brief Load the XML file for the plugin to determine if is valid against 
+        /// the possibles and valid DTD definition for plugins.
+        /// @param[in] filenameXml File name to check validity.
+        /// @returns True if the XML is valid against a DTD definition for plugins.
+        /// @version v15.03.26 - Added.
+        public bool ValidateXMLPluginFile(string filenameXml)
+        {
+            //Settings to be used to validate the XML
+            XmlReaderSettings settings = new XmlReaderSettings();
+            settings.DtdProcessing = DtdProcessing.Parse;   //need to look for DTD definition
+            settings.ValidationType = ValidationType.DTD;   //validate XML against DTD
+            settings.IgnoreComments = true;
+            settings.IgnoreProcessingInstructions = true;
+            settings.IgnoreWhitespace = true;
+            settings.ValidationEventHandler += new ValidationEventHandler(ValidateXMLEventHandler);
+            //New XML reader
+            XmlReader XR = XmlReader.Create(filenameXml, settings);
+
+            ///@todo [ASB] complete the iteration on the XML validating the structure.
+
+            return isValid;   //delete this with the correct logic
+        }
+    } 
+
+    
     /// @brief Methods to save and retrieve plugin from files, managing version of files.
     /// @version v15.03.26 - Added.
     static class PluginPersistence
     {
-        /// @brief Struct to transmit Metadata of the plugin.
-        /// @version v15.03.26 - Added.
-        public struct PluginData
-        {
-            public string PluginSystemVersion;  //!< @brief Version of plugin system.
-            public string PluginVersion;        //!< @brief Version of the plugin itself.
-
-            public string[] Authors;            //!< @brief List of authors.
-            public string Modifier;             //!< @brief Last author of modifications.
-            public string DateModified;         //!< @brief Date of modifications,
-            public string CulturalReference;    //!< @brief To store the cultural reference of dates.
-            public string Description;          //!< @brief Description of the plugin.
-            public string Usage;                //!< @brief Guides to use the plugin.
-            public string[] Links;              //!< @brief Links supporting the plugin.
-
-            public string InstanceName;         //!< @brief Class name of the plugin definition.
-            public string[] References;         //!< @brief Auxiliary references to compile the plugin.
-            
-            //!< @brief Flag to write the code in external file or embedded in XML file.
-            public bool[] UseAuxFiles;
-            //!< @brief Name of external file with C# code of the plugin.
-            public string[] AuxFiles;
-            //!< @brief Text of the C# code of the plugin.
-            public string[] Codes;
-        }
 
         /// @brief Save a plugin to XML as version 0.0
         /// @param[in] filenameXml File name in XML format, version 0.0
@@ -300,6 +357,6 @@ namespace Gear.PluginSupport
             //TODO [ASB] : complete code to load XML v1
             return false;
         }
-    
+
     }
 }
