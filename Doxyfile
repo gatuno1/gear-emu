@@ -351,7 +351,7 @@ IDL_PROPERTY_SUPPORT   = YES
 # all members of a group must be documented explicitly.
 # The default value is: NO.
 
-DISTRIBUTE_GROUP_DOC   = NO
+DISTRIBUTE_GROUP_DOC   = YES
 
 # Set the SUBGROUPING tag to YES to allow class member groups of the same type
 # (for instance a group of public functions) to be put as a subgroup of that
@@ -492,7 +492,7 @@ HIDE_FRIEND_COMPOUNDS  = NO
 # blocks will be appended to the function's detailed documentation block.
 # The default value is: NO.
 
-HIDE_IN_BODY_DOCS      = YES
+HIDE_IN_BODY_DOCS      = NO
 
 # The INTERNAL_DOCS tag determines if documentation that is typed after a
 # \internal command is included. If the tag is set to NO then the documentation
@@ -962,7 +962,7 @@ INLINE_SOURCES         = NO
 # Fortran comments will always remain visible.
 # The default value is: YES.
 
-STRIP_CODE_COMMENTS    = YES
+STRIP_CODE_COMMENTS    = NO
 
 # If the REFERENCED_BY_RELATION tag is set to YES then for each documented
 # function all documented functions referencing it will be listed.
@@ -1439,7 +1439,7 @@ GENERATE_TREEVIEW      = YES
 # Minimum value: 0, maximum value: 20, default value: 4.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-ENUM_VALUES_PER_LINE   = 4
+ENUM_VALUES_PER_LINE   = 2
 
 # If the treeview is enabled (see GENERATE_TREEVIEW) then this tag can be used
 # to set the initial width (in pixels) of the frame in which the tree is shown.
@@ -2057,7 +2057,7 @@ GENERATE_TAGFILE       =
 # class index. If set to NO only the inherited external classes will be listed.
 # The default value is: NO.
 
-ALLEXTERNALS           = NO
+ALLEXTERNALS           = YES
 
 # If the EXTERNAL_GROUPS tag is set to YES all external groups will be listed in
 # the modules index. If set to NO, only the current project's groups will be
@@ -2131,7 +2131,7 @@ HAVE_DOT               = YES
 # Minimum value: 0, maximum value: 32, default value: 0.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-DOT_NUM_THREADS        = 2
+DOT_NUM_THREADS        = 4
 
 # When you want a differently looking font n the dot files that doxygen
 # generates you can specify the font name using DOT_FONTNAME. You need to make
@@ -2306,7 +2306,7 @@ DOTFILE_DIRS           =
 # contain msc files that are included in the documentation (see the \mscfile
 # command).
 
-MSCFILE_DIRS           = Doc/mcsgen-files
+MSCFILE_DIRS           = .\Doc\mcsgen-files
 
 # The DIAFILE_DIRS tag can be used to specify one or more directories that
 # contain dia files that are included in the documentation (see the \diafile
