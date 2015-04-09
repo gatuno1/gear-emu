@@ -30,8 +30,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 
-/// @brief Contains definitions related to GUI objects (controlling objects) namespace.
-/// @namespace Gear.GUI
+/// @brief Contains the definitions of %GUI objects (controlling objects).
 namespace Gear.GUI
 {
     /// @brief Implements the graphical Desktop to the emulator, plugin editor and related windows.

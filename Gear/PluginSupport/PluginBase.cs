@@ -26,10 +26,10 @@ using System.Windows.Forms;
 
 using Gear.EmulationCore;
 
-
-///@brief Name space for Plugin support.
-/// Contains the classes that defines the plugin system: the plugin class structure itself, 
-/// the loading of plugins from XML files, the compiling and instantation of a plugin class. 
+/// @brief Name space for Plugin support.
+/// @details Contains the classes that defines the plugin system: the plugin class  
+/// structure itself, the loading of plugins from XML files, the compiling and instantation 
+/// of a plugin class. 
 namespace Gear.PluginSupport
 {
     /// @brief Base class for plugin support.

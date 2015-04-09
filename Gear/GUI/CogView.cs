@@ -32,8 +32,6 @@ using System.Windows.Forms;
 using Gear.EmulationCore;
 using Gear.PluginSupport;
 
-/// @copydoc Gear.GUI
-/// 
 namespace Gear.GUI
 {
     public partial class CogView : Gear.PluginSupport.PluginBase

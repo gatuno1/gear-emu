@@ -27,9 +27,10 @@ using System.Text;
 
 namespace Gear.EmulationCore
 {
-    /// @brief Counter Modes.
-    /// 
-    /// Source: Table 6 - Counter Modes (CTRMODE Field Values), %Propeller P8X32A Datasheet V1.4.0.
+    /// @brief Counter modes of operation.
+    /// @remark Source: Table 6 - Counter Modes (CTRMODE Field Values), %Propeller 
+    /// P8X32A Datasheet V1.4.0.
+    /// @version v14.7.3 - Missing logic modes implemented (LOGIC_NEVER ... LOGIC_ALWAYS)
     public enum CounterMode : uint
     {
         DISABLED,                   //!< %00000 | Counter disabled (off)
@@ -73,6 +74,8 @@ namespace Gear.EmulationCore
         LOGIC_ALWAYS                //!< %11111 | LOGIC always
     }
 
+    /// @todo document Gear.EmulationCore.FreqGenerator
+    /// 
     public class FreqGenerator
     {
         private uint Control;

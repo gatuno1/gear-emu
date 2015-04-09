@@ -95,6 +95,7 @@ namespace Gear.EmulationCore
         WAITVID = 0xFC000000
     }
 
+    /// @brief Derived class from Cog, to emulate running PASM code.
     class NativeCog : Cog
     {
         // Decode fields
@@ -118,8 +119,8 @@ namespace Gear.EmulationCore
         protected bool CarryResult;
         protected bool ZeroResult;
 
-        protected bool Carry;               // Carry Flag
-        protected bool Zero;                // Zero Flag
+        protected bool Carry;               //!< Carry Flag
+        protected bool Zero;                //!< Zero Flag
 
         public bool CarryFlag
         {
@@ -133,6 +134,12 @@ namespace Gear.EmulationCore
             set { Zero = value; }
         }
 
+        /// @brief Default constructor for the derived class.
+        /// @param host
+        /// @param programAddress
+        /// @param paramAddress
+        /// @param frequency
+        /// @param pll
         public NativeCog(PropellerCPU host,
             uint programAddress, uint paramAddress, uint frequency,
             PLLGroup pll)
@@ -142,6 +149,8 @@ namespace Gear.EmulationCore
             Zero = false;
         }
 
+        /// @brief Determine what effect will be executed after this operation.
+        /// @details The possibles are Write Result, Zero flag or Carry flag.
         private void WriteBackResult()
         {
             if (WriteResult)
@@ -165,6 +174,9 @@ namespace Gear.EmulationCore
             Operation = ReadLong(0);
         }
 
+        /// @brief Determine if the Hub is accesable in that moment of time, setting the state 
+        /// accordly.
+        /// @version v15.03.26 - corrected zero and carry values for missing HUBOPS.
         public override void HubAccessable()
         {
             switch (State)
@@ -174,46 +186,34 @@ namespace Gear.EmulationCore
                         ref ZeroResult);
                     WriteBackResult();
                     return;
+
                 case CogRunState.HUB_RDBYTE:
                     if (WriteResult)
-                    {
                         DataResult = Hub.ReadByte(SourceValue);
-                        ZeroResult = DataResult == 0;
-                        // TODO: Find Carry
-                    }
                     else
-                    {
                         Hub.WriteByte(SourceValue, DestinationValue);
-                        // TODO: Find Zero and Carry
-                    }
+                    ZeroResult = (DataResult == 0); //set as state Manual v1.2
+                    // Don't affect Carry as state Manual v1.2
                     WriteBackResult();
                     return;
+
                 case CogRunState.HUB_RDWORD:
                     if (WriteResult)
-                    {
                         DataResult = Hub.ReadWord(SourceValue);
-                        ZeroResult = DataResult == 0;
-                        // TODO: Find Carry
-                    }
                     else
-                    {
                         Hub.WriteWord(SourceValue, DestinationValue);
-                        // TODO: Find Zero and Carry
-                    }
+                    ZeroResult = (DataResult == 0); //set as state Manual v1.2
+                    // Don't affect Carry as state Manual v1.2
                     WriteBackResult();
                     return;
+
                 case CogRunState.HUB_RDLONG:
                     if (WriteResult)
-                    {
                         DataResult = Hub.ReadLong(SourceValue);
-                        ZeroResult = DataResult == 0;
-                        // TODO: Find Carry
-                    }
                     else
-                    {
                         Hub.WriteLong(SourceValue, DestinationValue);
-                        // TODO: Find Zero and Carry
-                    }
+                    ZeroResult = (DataResult == 0); //set as state Manual v1.2
+                    // Don't affect Carry as state Manual v1.2
                     WriteBackResult();
                     return;
             }
@@ -221,6 +221,8 @@ namespace Gear.EmulationCore
             base.HubAccessable();
         }
 
+        /// @brief Execute a PASM instruction in this cog.
+        /// @returns TRUE if it is time to trigger a breakpoint, or FALSE if not.
         override public bool DoInstruction()
         {
             switch (State)

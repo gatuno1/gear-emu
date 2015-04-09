@@ -36,8 +36,6 @@ using System.CodeDom.Compiler;
 
 using Gear.PluginSupport;
 
-/// @copydoc Gear.GUI
-/// 
 namespace Gear.GUI
 {
     /// @brief Form to edit or create GEAR plugins.
@@ -205,8 +203,7 @@ namespace Gear.GUI
         /// @brief Load a plugin from File in Plugin Editor, updating the screen.
         /// @note This method take care of update change state of the window. 
         /// @param[in] FileName Name of the file to open.
-        /// @param[in] version String with the version of plugin system to use for 
-        /// saving.
+        /// @param[in] displayErrors Flag to show errors in the error grid.
         /// @version v15.03.26 - modified to validate XML & plugin version and load it
         /// with the appropiate method.
         public bool OpenFile(string FileName, bool displayErrors)

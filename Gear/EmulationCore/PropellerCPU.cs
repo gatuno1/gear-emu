@@ -33,7 +33,7 @@ using Gear;
 using Gear.PluginSupport;
 using Gear.GUI;
 
-/// @todo Document Gear.EmulationCore namespace.
+/// @brief Core of the emulation for Propeller (model objects).
 /// 
 namespace Gear.EmulationCore
 {
@@ -42,15 +42,16 @@ namespace Gear.EmulationCore
     {
         /// @brief Setting the clock.
         HUBOP_CLKSET  = 0,
-        /// @brief Getting the Cog ID.
+        /// @brief Getting the %Cog ID.
         HUBOP_COGID   = 1,
-        /// @brief Start or restart a Cog by ID or next available.
+        /// @brief Start or restart a %Cog by ID or next available.
         HUBOP_COGINIT = 2,
-        /// @brief Stop Cog by its ID.
+        /// @brief Stop %Cog by its ID.
         HUBOP_COGSTOP = 3,
         /// @brief Check out new semaphore and get its ID.
         HUBOP_LOCKNEW = 4,
-        /// @brief Return semaphore back to semaphore pool, releasing it for future LOCKNEW requests.
+        /// @brief Return semaphore back to semaphore pool, releasing it for future 
+        /// LOCKNEW requests.
         HUBOP_LOCKRET = 5,
         /// @brief Set semaphore to true and get its previous state.
         HUBOP_LOCKSET = 6,
@@ -74,8 +75,8 @@ namespace Gear.EmulationCore
     }
 
     /// @brief Class to emulate the core of Propeller P1 chip.
-    /// @details Conceptually it comprehends the ROM, RAM (hub memory), clock , locks, hub ring, main 
-    /// pin state, and references to each cog (with their own cog memory, counters, frequency 
+    /// @details Conceptually it comprehends the ROM, RAM (hub memory), clock , locks, hub ring, 
+    /// main pin state, and references to each cog (with their own cog memory, counters, frequency 
     /// generator, program cursor).
     public partial class PropellerCPU
     {

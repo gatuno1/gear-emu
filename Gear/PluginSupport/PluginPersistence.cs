@@ -28,7 +28,6 @@ using System.Xml;
 using System.Xml.Schema;
 using System.IO;
 
-/// @copydoc Gear.PluginSupport
 namespace Gear.PluginSupport
 {
     /// @brief Class to hold metadata of the plugin.

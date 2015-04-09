@@ -30,8 +30,6 @@ using System.Xml;
 using Gear.EmulationCore;
 using Gear.PluginSupport;
 
-/// @copydoc Gear.GUI
-/// 
 namespace Gear.GUI
 {
     /// @brief View class for PropellerCPU emulator instance.

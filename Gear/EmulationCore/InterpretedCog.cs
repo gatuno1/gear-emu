@@ -27,6 +27,7 @@ using System.Text;
 
 namespace Gear.EmulationCore
 {
+    /// @brief Derived class from Cog, to emulate running SPIN code.
     class InterpretedCog : Cog
     {
         // Constants
@@ -37,14 +38,14 @@ namespace Gear.EmulationCore
         private uint ObjectFrame;
         private uint VariableFrame;
         private uint LocalFrame;
-        private bool InterpreterFlag; // Flag for determining if a COGINIT statement is to load an interpreter
+        private bool InterpreterFlag; //!< Flag for determining if a COGINIT statement is to load an interpreter
 
         private uint TargetValue;
         private uint MaskValue;
         private uint PixelsValue;
         private uint ColorsValue;
 
-        private Stack<uint> CallStack;  // Internal stack, used for storing return call stuff
+        private Stack<uint> CallStack;  //!< Internal stack, used for storing return call stuff
 
         private bool Port;
 
@@ -68,6 +69,7 @@ namespace Gear.EmulationCore
             get { return VariableFrame; }
         }
 
+        /// @brief Default constructor for the derived class.
         public InterpretedCog(PropellerCPU host,
             uint paramAddress, uint frequency,
             PLLGroup pll)
@@ -185,8 +187,8 @@ namespace Gear.EmulationCore
             return Hub.HubOp(this, (uint)HubOperationCodes.HUBOP_COGINIT, code, ref temp, ref temp2);
         }
 
-        /// @todo document Gear.EmulationCore.DoInstruction()
-        /// 
+        /// @brief Execute a SPIN instruction in this cog.
+        /// @returns TRUE if it is time to trigger a breakpoint, or FALSE if not.
         override public bool DoInstruction()
         {
             switch (State)

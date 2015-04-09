@@ -29,14 +29,13 @@ using Gear.GUI;
 using Gear.PluginSupport;
 
 
-
+/// @brief Main namespace for GEAR Emulator.
 namespace Gear
 {
+    /// @brief Main emulator application.
     static class GearProgram
     {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
+        /// @brief The main entry point for the application.
         [STAThread]
         static void Main()
         {
