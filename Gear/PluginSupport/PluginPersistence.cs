@@ -34,7 +34,9 @@ namespace Gear.PluginSupport
     /// @version v15.03.26 - Added.
     public class PluginData
     {
-        public string PluginSystemVersion;  //!< @brief Version of plugin system.
+        /// @brief Version of plugin system.
+        /// @note Will be a version, if only is a valid plugin (attribute PluginData::isValid = true).
+        public string PluginSystemVersion;
         public string PluginVersion;        //!< @brief Version of the plugin itself.
 
         public string[] Authors;            //!< @brief List of authors.
@@ -55,6 +57,8 @@ namespace Gear.PluginSupport
         /// @brief Text of the C# code of the plugin.
         public string[] Codes;
         /// @brief Hold the result for a validity test of related XML file, based on DTD.
+        /// @note If the plugin is valid, will be a version for the plugin system (attribute 
+        /// PluginData::PluginSystemVersion), nevertheless it would be 0.0 (the default one).
         bool isValid;
         /// @brief List of errors in the validation of XML file.
         List<string> ValidationErrors;
@@ -88,7 +92,7 @@ namespace Gear.PluginSupport
         /// @param[in] XR Source of a XML to read of.
         /// @param[in] settings Settings to be used to validate the XML.
         /// @returns True if the XML is valid against DTD definition, False if not.
-        /// v15.03.26 - Added.
+        /// @version v15.03.26 - Added.
         bool ValidateXMLPluginSource(XmlReader XR, XmlReaderSettings settings)
         {
             //read the XML, if it is possible
@@ -148,6 +152,7 @@ namespace Gear.PluginSupport
                 else  //we have to try adding default DTD definition to the XML source
                 {
                     ValidationErrors.Clear();   //clear the warnings from failed validation
+					this.isValid = true;		//resetting the initial status to test for validity
                     /// Add the DTD definition to XML with a XmlReader
                     /// reference from http://stackoverflow.com/questions/470313/net-how-to-validate-xml-file-with-dtd-without-doctype-declaration
                     /// and from http://stackoverflow.com/questions/10514198/validate-xml-against-dtd-from-string
