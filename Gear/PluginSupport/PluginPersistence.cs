@@ -153,9 +153,9 @@ namespace Gear.PluginSupport
                 {
                     ValidationErrors.Clear();   //clear the warnings from failed validation
 					this.isValid = true;		//resetting the initial status to test for validity
-                    /// Add the DTD definition to XML with a XmlReader
-                    /// reference from http://stackoverflow.com/questions/470313/net-how-to-validate-xml-file-with-dtd-without-doctype-declaration
-                    /// and from http://stackoverflow.com/questions/10514198/validate-xml-against-dtd-from-string
+                    // Add the DTD definition to XML with a XmlReader
+                    // reference from http://stackoverflow.com/questions/470313/net-how-to-validate-xml-file-with-dtd-without-doctype-declaration
+                    // and from http://stackoverflow.com/questions/10514198/validate-xml-against-dtd-from-string
                     XmlDocument doc = new XmlDocument();
                     doc.Load(filenameXml);
                     doc.InsertBefore( 
@@ -195,7 +195,7 @@ namespace Gear.PluginSupport
                 return false;
             }
         }
-    } 
+    }
 
     
     /// @brief Methods to save and retrieve plugin from files, managing version of files.
@@ -422,12 +422,14 @@ namespace Gear.PluginSupport
             return true;
         }
 
-        /// @brief Load a plugin from XML as version 0.0.
+        /// @brief Load a plugin from XML as version 0.0, filling the plugin data.
         /// @param[in] filenameXml File name in XML format, version 0.0
-        /// @param[in] Data Metadata of the plugin.
-        /// @returns State of loading.
+        /// @param[in,out] Data Metadata of the plugin.
+        /// @returns State of loading: True if it was succesful (also filling Data parameter 
+        /// with the plugin information), or False if didn't (in this case Data parameter
+        /// only should have updated IsValid attribute).
         /// @version v15.03.26 - Added.
-        static public bool LoadXML_v0_0(string filenameXml, PluginData Data)
+        static public bool LoadXML_v0_0(string filenameXml, ref PluginData Data)
         {
             //TODO [ASB] : complete code to load XML v0
             return false;
@@ -436,9 +438,11 @@ namespace Gear.PluginSupport
         /// @brief Load a plugin from XML as version 1.0.
         /// @param[in] filenameXml File name in XML format, version 1.0
         /// @param[in] Data Metadata of the plugin.
-        /// @returns State of loading.
+        /// @returns State of loading: True if it was succesful (also filling Data parameter 
+        /// with the plugin information), or False if didn't (in this case Data parameter
+        /// only should have updated IsValid attribute).
         /// @version v15.03.26 - Added.
-        static public bool LoadXML_v1_0(string filenameXml, PluginData Data)
+        static public bool LoadXML_v1_0(string filenameXml, ref PluginData Data)
         {
             //TODO [ASB] : complete code to load XML v1
             return false;

@@ -47,6 +47,7 @@ namespace Gear.GUI
         /// @brief Version of the file for a plugin. 
         private string m_FormatVersion;
         /// @brief Text for plugin Metadata
+        /// @details Indicates the version of plugin system for the current plugin.
         /// @version V15.03.26 - Added.
         private string metadataText
         {
@@ -67,14 +68,16 @@ namespace Gear.GUI
         /// @version V14.07.03 - Added.
         private Font defaultFont;    
         /// @brief Flag if the plugin definition has changed.
-        /// To determine changes, it includes not only the C# code, but also class name and reference list.
+        /// To determine changes, it includes not only the C# code, but also class name and 
+        /// reference list.
         /// @version V15.03.26 - Added.
         private bool m_CodeChanged;
         /// @brief Enable or not change detection event.
         /// @version V15.03.26 - Added.
         private bool changeDetectEnabled;
         /// @brief Types of change detected.
-        /// To maintain consistency between class name in C# code and class name declared in the other field.
+        /// To maintain consistency between class name in C# code and class name declared 
+        /// in the other field.
         /// @version V15.03.26 - Added.
         private enum ChangeType : byte
         {
@@ -96,9 +99,10 @@ namespace Gear.GUI
 
 		
         /// @brief Default constructor.
-        /// Init class, defines columns for error grid, setting on changes detection initially, and 
-        /// try to load the default template for plugin.
-        /// @param[in] loadDefaultTemplate Indicate to load default template (=true) or no (=false).
+        /// Init class, defines columns for error grid, setting on changes detection initially, 
+        /// and try to load the default template for plugin.
+        /// @param[in] loadDefaultTemplate Indicate to load default template (=true) or 
+        /// no template at all(=false).
         /// @version V15.03.26 - Added parameter for loading default template for plugin.
         public PluginEditor(bool loadDefaultTemplate)
         {
@@ -109,7 +113,8 @@ namespace Gear.GUI
             {
                 try
                 {
-                    codeEditorView.LoadFile("Resources\\PluginTemplate.cs", RichTextBoxStreamType.PlainText);
+                    codeEditorView.LoadFile(
+                        "Resources\\PluginTemplate.cs", RichTextBoxStreamType.PlainText);
                 }
                 catch (IOException) { }         //do nothing, maintaining empty the code text box
                 catch (ArgumentException) { }   //
@@ -147,7 +152,8 @@ namespace Gear.GUI
                     SetUserDefinedMetadataElement(item, true);
             }
             //regex for class name instance
-            ClassNameExpression = new Regex(@"\bclass\s+(?<classname>[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*)\s*\:\s*PluginBase\b",
+            ClassNameExpression = new Regex(
+            @"\bclass\s+(?<classname>[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*)\s*\:\s*PluginBase\b",
                 RegexOptions.Compiled);
             //regex for syntax highlighting
             SyntaxExpression = new Regex("\\n", RegexOptions.Compiled);
@@ -204,6 +210,7 @@ namespace Gear.GUI
         /// @note This method take care of update change state of the window. 
         /// @param[in] FileName Name of the file to open.
         /// @param[in] displayErrors Flag to show errors in the error grid.
+        /// @note Actually it supports one plugin code window only.
         /// @version v15.03.26 - modified to validate XML & plugin version and load it
         /// with the appropriate method.
         public bool OpenFile(string FileName, bool displayErrors)
@@ -225,11 +232,11 @@ namespace Gear.GUI
                 {
                     case "0.0" :
                         IsSuccess = 
-                            PluginPersistence.LoadXML_v0_0(FileName,pluginCandidate);
+                            PluginPersistence.LoadXML_v0_0(FileName, ref pluginCandidate);
                         break;
                     case "1.0":
                         IsSuccess = 
-                            PluginPersistence.LoadXML_v1_0(FileName, pluginCandidate);
+                            PluginPersistence.LoadXML_v1_0(FileName, ref pluginCandidate);
                         break;
                     default:
                         ListViewItem item = new ListViewItem("0000", 0);
@@ -239,6 +246,35 @@ namespace Gear.GUI
                         errorListView.Items.Add(item);
                         IsSuccess = false;
                         break;
+                }
+                if (IsSuccess)
+                {
+                    //initial cleanup of screen elements
+                    if (referencesList.Items.Count > 0) 
+                        referencesList.Items.Clear();   //clear out the reference list
+                    codeEditorView.Clear();             //clear the code of the plugin
+                    //fill code section on screen
+                    foreach(string cod in pluginCandidate.Codes)
+                    {
+                        //set or reset font and color
+                        codeEditorView.SelectAll();
+                        codeEditorView.SelectionFont = this.defaultFont;
+                        codeEditorView.SelectionColor = Color.Black;
+                        ///@todo : Add support to show in screen more than one file.
+                        codeEditorView.Text = cod;  //now it overwrites the code text.
+                    }
+                    CodeChanged = false;
+                    //fill instance text
+                    ///@todo validate the instance name inside plugin against the detected one by regex.
+                    instanceName.Text = pluginCandidate.InstanceName;
+                    //fill references section on screen
+                    foreach (string refer in pluginCandidate.References)
+                    {
+                        referencesList.Items.Add(refer);
+                    }
+                    //store the name of the last file opened
+                    m_SaveFileName = FileName;
+                    
                 }
                 return IsSuccess;
             }
@@ -320,7 +356,8 @@ namespace Gear.GUI
  */ 
         }
 
-        /// @brief Take the plugin information from screen and call the persistence to store in a file.
+        /// @brief Take the plugin information from screen and call the persistence to store 
+        /// in a file.
         /// @details Take care of update change state of the window. It use methods from
         /// Gear.PluginSupport.PluginPersistence class to store in file.
         /// @param[in] FileName Name of the file to save.
@@ -337,16 +374,16 @@ namespace Gear.GUI
             //TODO [ASB]: add try section & detect exception thrown
             data.Authors = GetElementsFromMetadata("Authors");
             //TODO [ASB]: add try section & detect exception thrown
-            data.Modifier = GetElementsFromMetadata("ModifiedBy")[0];      //always expect 1 element
+            data.Modifier = GetElementsFromMetadata("ModifiedBy")[0];   //always expect 1 element
             //TODO [ASB]: add try section & detect exception thrown
             data.DateModified = 
                 GetElementsFromMetadata("DateModified",false)[0];//always expect 1 element
             //cultural reference should be the one actually used in run time
             data.CulturalReference = CultureInfo.CurrentCulture.Name;
             //TODO [ASB]: add try section & detect exception thrown
-            data.Description = GetElementsFromMetadata("Description")[0];  //always expect 1 element
+            data.Description = GetElementsFromMetadata("Description")[0]; //always expect 1 element
             //TODO [ASB]: add try section & detect exception thrown
-            data.Usage = GetElementsFromMetadata("Usage")[0];              //always expect 1 element
+            data.Usage = GetElementsFromMetadata("Usage")[0];             //always expect 1 element
             //TODO [ASB]: add try section & detect exception thrown
             data.Links = GetElementsFromMetadata("Links");
 
@@ -366,7 +403,8 @@ namespace Gear.GUI
                     data.UseAuxFiles = new bool[1] { (!embeddedCode.Checked) };
                     string separateFileName = Path.Combine(Path.GetDirectoryName(FileName),
                         Path.GetFileNameWithoutExtension(FileName) + ".cs");
-                    data.AuxFiles = new string[1] { ((!embeddedCode.Checked) ? separateFileName : "") };
+                    data.AuxFiles = new string[1] { 
+                        ((!embeddedCode.Checked) ? separateFileName : "") };
                     data.Codes = new string[1] { codeEditorView.Text };
                     //update modified state for the plugin
                     CodeChanged = !PluginPersistence.SaveXML_v1_0(FileName, data);
@@ -472,7 +510,8 @@ namespace Gear.GUI
                 dialog.Filter = "Gear plug-in component (*.xml)|*.xml|All Files (*.*)|*.*";
                 dialog.Title = "Open Gear Plug-in...";
                 if (!String.IsNullOrEmpty(m_SaveFileName))
-                    dialog.InitialDirectory = Path.GetDirectoryName(m_SaveFileName);   //retrieve from last plugin edited
+                    //retrieve from last plugin edited
+                    dialog.InitialDirectory = Path.GetDirectoryName(m_SaveFileName);
                 else
                     if (!String.IsNullOrEmpty(Properties.Settings.Default.LastPlugin))
                         //retrieve from global last plugin
@@ -651,21 +690,21 @@ namespace Gear.GUI
 
                 // Check whether the token is a keyword.
                 String[] keywords = {
-                                        "add", "abstract", "alias", "as", "ascending", "async", "await",
-                                        "base", "bool", "break", "byte", "case", "catch", "char", "checked",
-                                        "class", "const", "continue", "decimal", "default", "delegate",
-                                        "descending", "do", "double", "dynamic", "else", "enum", "event",
-                                        "explicit", "extern", "false", "finally", "fixed", "float",
-                                        "for", "foreach", "from", "get", "global", "goto", "group", "if",
-                                        "implicit", "in", "int", "interface", "internal", "into", "is",
-                                        "join", "let", "lock", "long", "namespace", "new", "null", "object",
-                                        "operator", "orderby", "out", "override", "params", "partial ",
-                                        "private", "protected", "public", "readonly", "ref", "remove",
-                                        "return", "sbyte", "sealed", "select", "set", "short", "sizeof",
-                                        "stackalloc", "static", "string", "struct", "switch", "this",
-                                        "throw", "true", "try", "typeof", "uint", "ulong", "unchecked",
-                                        "unsafe", "ushort", "using", "value", "var", "virtual", "void",
-                                        "volatile", "where", "while", "yield"
+                    "add", "abstract", "alias", "as", "ascending", "async", "await",
+                    "base", "bool", "break", "byte", "case", "catch", "char", "checked",
+                    "class", "const", "continue", "decimal", "default", "delegate",
+                    "descending", "do", "double", "dynamic", "else", "enum", "event",
+                    "explicit", "extern", "false", "finally", "fixed", "float",
+                    "for", "foreach", "from", "get", "global", "goto", "group", "if",
+                    "implicit", "in", "int", "interface", "internal", "into", "is",
+                    "join", "let", "lock", "long", "namespace", "new", "null", "object",
+                    "operator", "orderby", "out", "override", "params", "partial ",
+                    "private", "protected", "public", "readonly", "ref", "remove",
+                    "return", "sbyte", "sealed", "select", "set", "short", "sizeof",
+                    "stackalloc", "static", "string", "struct", "switch", "this",
+                    "throw", "true", "try", "typeof", "uint", "ulong", "unchecked",
+                    "unsafe", "ushort", "using", "value", "var", "virtual", "void",
+                    "volatile", "where", "while", "yield"
                 };
                 for (int i = 0; i < keywords.Length; i++)
                 {
@@ -697,7 +736,8 @@ namespace Gear.GUI
         }
 
         /// @brief Detect the plugin class name from the code text given as parameter.
-        /// @param[in] code Text of the source code of plugin to look for the class name declaration.
+        /// @param[in] code Text of the source code of plugin to look for the class 
+        /// name declaration.
         /// @param[out] match Name of the plugin class found. If not, it will be null.
         /// @returns If a match had found =True, else =False.
         /// @version V15.03.26 - Added.
@@ -750,7 +790,8 @@ namespace Gear.GUI
         {
             //dialog to not lost changes
             DialogResult confirm = MessageBox.Show(
-                "Are you sure to close plugin \"" + fileName + "\" without saving?\nYour changes will lost.",
+                "Are you sure to close plugin \"" + fileName + 
+                "\" without saving?\nYour changes will lost.",
                 "Save.",
                 MessageBoxButtons.OKCancel,
                 MessageBoxIcon.Exclamation,
@@ -825,7 +866,8 @@ namespace Gear.GUI
                     //add to the list
                     pluginMetadataList.Items.Add(newItem);
                 }
-                //clear the text box as we had inserted that text in the corresponding metadata element
+                //clear the text box as we had inserted that text in the corresponding 
+                // metadata element
                 textPluginMetadataBox.Text = "";
                 //mark as changed
                 CodeChanged = true;
@@ -899,7 +941,8 @@ namespace Gear.GUI
             }
         }
 
-        /// @brief Determine the default text for the group of metadata element given as parameter.
+        /// @brief Determine the default text for the group of metadata element 
+        /// given as parameter.
         /// @param[in] group Group of metadata element.
         /// @returns Default text for the given group
         /// @version v15.03.26 - Added.
@@ -975,7 +1018,8 @@ namespace Gear.GUI
         /// @brief Retrieve a list of elements for the given group from the metadata list, 
         /// but resetting the names depending of the given parameter.
         /// @param[in] groupName Name of the group to retrieve elements.
-        /// @param[in] resetEmpty Boolean to reset the value if not user defined (=true), or not (=false).
+        /// @param[in] resetEmpty Boolean to reset the value if not user defined (=true), 
+        /// or not (=false).
         /// @returns Array of elements of the group.
         /// @version v15.03.26 - Added.
         private string[] GetElementsFromMetadata(string groupName, bool resetEmpty)
@@ -1041,7 +1085,8 @@ namespace Gear.GUI
                     labelValue = SelectedItem.Text; //use the last text
                     break;
                 case "":        //text was cleared
-                    labelValue = GetDefaultTextMetadataElement(SelectedItem.Group);   //use default text
+                    labelValue = 
+                        GetDefaultTextMetadataElement(SelectedItem.Group); //use default text
                     CodeChanged = true;
                     LastChange = ChangeType.metadata;
                     break;

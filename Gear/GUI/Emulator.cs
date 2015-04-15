@@ -485,15 +485,18 @@ namespace Gear.GUI
             RepaintViews();
         }
 
-        /// @todo Document Gear.GUI.Emulator.OpenPlugin_Click()
-        /// 
+        /// @brief Try to open a plugin, compiling it and attaching to the active 
+        /// emulator instance.
+        /// @param[in] sender Reference to the object where this event was called.
+        /// @param[in] args Class with the details event.
         private void OpenPlugin_Click(object sender, EventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog();
             dialog.Filter = "Gear Plug-in (*.xml)|*.xml|All Files (*.*)|*.*";
             dialog.Title = "Open Gear Plug-in...";
             if (!String.IsNullOrEmpty(Properties.Settings.Default.LastPlugin))
-                dialog.InitialDirectory = Path.GetDirectoryName(Properties.Settings.Default.LastPlugin);
+                dialog.InitialDirectory = Path.GetDirectoryName(
+                    Properties.Settings.Default.LastPlugin);
 
             if (dialog.ShowDialog(this) == DialogResult.OK)
                 LoadPlugin(dialog.FileName);
