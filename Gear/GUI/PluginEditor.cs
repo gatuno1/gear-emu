@@ -205,7 +205,7 @@ namespace Gear.GUI
         /// @param[in] FileName Name of the file to open.
         /// @param[in] displayErrors Flag to show errors in the error grid.
         /// @version v15.03.26 - modified to validate XML & plugin version and load it
-        /// with the appropiate method.
+        /// with the appropriate method.
         public bool OpenFile(string FileName, bool displayErrors)
         {
             //create the structure to fill from file
@@ -230,6 +230,14 @@ namespace Gear.GUI
                     case "1.0":
                         IsSuccess = 
                             PluginPersistence.LoadXML_v1_0(FileName, pluginCandidate);
+                        break;
+                    default:
+                        ListViewItem item = new ListViewItem("0000", 0);
+                        item.SubItems.Add(
+                            string.Format("Unknow version \"{0}\"for Plugin system.",
+                            pluginCandidate.PluginSystemVersion));
+                        errorListView.Items.Add(item);
+                        IsSuccess = false;
                         break;
                 }
                 return IsSuccess;

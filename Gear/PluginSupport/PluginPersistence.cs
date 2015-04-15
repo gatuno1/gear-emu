@@ -54,7 +54,7 @@ namespace Gear.PluginSupport
         public string[] AuxFiles;
         /// @brief Text of the C# code of the plugin.
         public string[] Codes;
-        /// @brief Hold the result for a validity test of related XML file.
+        /// @brief Hold the result for a validity test of related XML file, based on DTD.
         bool isValid;
         /// @brief List of errors in the validation of XML file.
         List<string> ValidationErrors;
@@ -63,7 +63,7 @@ namespace Gear.PluginSupport
         /// @version v15.03.26 - Added.
         public PluginData()
         {
-            isValid = true;
+            this.isValid = true;
             ValidationErrors = new List<string>();
         }
 
@@ -72,18 +72,52 @@ namespace Gear.PluginSupport
         /// @param[in] sender Reference to the object where the exception was raised.
         /// @param[in] args Class with the validation details event.
         /// @version v15.03.26 - Added.
-        void ValidateXMLEventHandler(object sender, ValidationEventArgs args)
+        void ValidateXMLPluginEventHandler(object sender, ValidationEventArgs args)
         {
             isValid = false;
-            ///@todo [ASB] complete the description of errors and saving on ValidationErrors
-            /*
-            Console.WriteLine("Evento de validación: [{0}]{1}\nLine:{2}, Position:{3}.",
+            ValidationErrors.Add(
+                string.Format("XML Plugin Validation: [{0}]{1} (Line:{2}, Position:{3}).",
                 args.Severity,
                 args.Message,
                 args.Exception.LineNumber,
-                args.Exception.LinePosition
+                args.Exception.LinePosition)
             );
-            */
+        }
+
+        /// @brief Validate the XML against a DTD definition, retrieving the version of it.
+        /// @param[in] XR Source of a XML to read of.
+        /// @param[in] settings Settings to be used to validate the XML.
+        /// @returns True if the XML is valid against DTD definition, False if not.
+        /// v15.03.26 - Added.
+        bool ValidateXMLPluginSource(XmlReader XR, XmlReaderSettings settings)
+        {
+            //read the XML, if it is possible
+            while (XR.Read())
+            {
+                //look for the element 'plugin' in the XML
+                if ((XR.NodeType == XmlNodeType.Element) && (XR.Name == "plugin"))
+                {
+                    //check if readable and having attributes
+                    if ((XR.ReadState == ReadState.Interactive) && XR.HasAttributes)
+                        //if I can move to it, it is readeable
+                        if (XR.MoveToFirstAttribute())
+                            do   //loop for each attribute
+                            {
+                                //look for the version of plugin system attribute
+                                if (XR.Name == "plugin_system_version")
+                                {
+                                    //if it is valid version
+                                    if (!string.IsNullOrEmpty(XR.Value))
+                                        this.PluginSystemVersion = XR.Value; //get version
+                                }
+                            } while (XR.MoveToNextAttribute());
+                }
+            }
+            XR.Close();
+            //if the XML file is not valid against embedded DTD definition,
+            // a ValidateXMLEventHandler was called, setting isValid property to false.
+            //Otherwise it will be true.
+            return this.isValid;
         }
 
         /// @brief Load the XML file for the plugin to determine if is valid against 
@@ -94,19 +128,67 @@ namespace Gear.PluginSupport
         public bool ValidateXMLPluginFile(string filenameXml)
         {
             //Settings to be used to validate the XML
-            XmlReaderSettings settings = new XmlReaderSettings();
-            settings.DtdProcessing = DtdProcessing.Parse;   //need to look for DTD definition
-            settings.ValidationType = ValidationType.DTD;   //validate XML against DTD
-            settings.IgnoreComments = true;
-            settings.IgnoreProcessingInstructions = true;
-            settings.IgnoreWhitespace = true;
-            settings.ValidationEventHandler += new ValidationEventHandler(ValidateXMLEventHandler);
-            //New XML reader
-            XmlReader XR = XmlReader.Create(filenameXml, settings);
+            // reference from https://msdn.microsoft.com/en-us/library/vstudio/z2adhb2f%28v=vs.100%29.aspx
+            XmlReaderSettings settings4DTD = new XmlReaderSettings();
+            settings4DTD.DtdProcessing = DtdProcessing.Parse;   //need to look for DTD definition
+            settings4DTD.ValidationType = ValidationType.DTD;   //validate XML against DTD
+            settings4DTD.IgnoreComments = true;
+            settings4DTD.IgnoreProcessingInstructions = true;
+            settings4DTD.IgnoreWhitespace = true;
+            settings4DTD.ValidationEventHandler += new ValidationEventHandler(ValidateXMLPluginEventHandler);
+            settings4DTD.ValidationFlags = XmlSchemaValidationFlags.ReportValidationWarnings;
 
-            ///@todo [ASB] complete the iteration on the XML validating the structure.
+            try
+            {
+                //Open a XML reader with the file name and settings given
+                XmlReader XR = XmlReader.Create(filenameXml, settings4DTD);
+                //validate the file as it is, expecting it have embedded DTD definition
+                if (ValidateXMLPluginSource(XR, settings4DTD)) 
+                    return true;
+                else  //we have to try adding default DTD definition to the XML source
+                {
+                    ValidationErrors.Clear();   //clear the warnings from failed validation
+                    /// Add the DTD definition to XML with a XmlReader
+                    /// reference from http://stackoverflow.com/questions/470313/net-how-to-validate-xml-file-with-dtd-without-doctype-declaration
+                    /// and from http://stackoverflow.com/questions/10514198/validate-xml-against-dtd-from-string
+                    XmlDocument doc = new XmlDocument();
+                    doc.Load(filenameXml);
+                    doc.InsertBefore( 
+                        doc.CreateDocumentType("plugin", null, "Resources\\plugin_v1.0.dtd", null),
+                        doc.DocumentElement);
+                    //save to a memory stream
+                    MemoryStream mem = new MemoryStream();
+                    doc.Save(mem);
+                    //we will read from the memory stream
+                    XR = XmlReader.Create(mem, settings4DTD);
+                    //validate from the XML source with default DTD definition
+                    return ValidateXMLPluginSource(XR, settings4DTD);
+                }
 
-            return isValid;   //delete this with the correct logic
+            }
+            catch (FileNotFoundException e)
+            {
+                isValid = false;
+                ValidationErrors.Add(
+                    string.Format("File \"{0}\" not found, when validating original XML file at '{1}'",
+                    filenameXml,
+                    e.Source));
+                return false;
+            }
+            catch (ArgumentNullException)
+            {
+                isValid = false;
+                ValidationErrors.Add(
+                    "No filename  was given, when validating original XML file.");
+                return false;
+            }
+            catch (Exception e)
+            {
+                isValid = false;
+                ValidationErrors.Add(
+                    string.Format("Error {0} found",e.Message));
+                return false;
+            }
         }
     } 
 
@@ -347,7 +429,7 @@ namespace Gear.PluginSupport
         }
 
         /// @brief Load a plugin from XML as version 1.0.
-        /// @param[in] filenameXml File name in XML format, version 0.0
+        /// @param[in] filenameXml File name in XML format, version 1.0
         /// @param[in] Data Metadata of the plugin.
         /// @returns State of loading.
         /// @version v15.03.26 - Added.
