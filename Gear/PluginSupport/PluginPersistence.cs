@@ -264,7 +264,7 @@ namespace Gear.PluginSupport
             xmlDoc.AppendChild(xmlDeclatation);
             //Document type element & DTD to use
             xmlDoc.XmlResolver = null;
-            XmlDocumentType doctype = xmlDoc.CreateDocumentType("plugin", null, "Resourses/plugin_v1.0.dtd", null);
+            XmlDocumentType doctype = xmlDoc.CreateDocumentType("plugin", null, @"Resourses\plugin_v1.0.dtd", null);
             xmlDoc.AppendChild(doctype);
             //Main element - plugin
             XmlElement root = xmlDoc.CreateElement("plugin");
