@@ -218,11 +218,11 @@ namespace Gear.GUI
                 {
                     case "0.0" :
                         IsSuccess = 
-                            PluginPersistence.LoadXML_v0_0(FileName, ref pluginCandidate);
+                            PluginPersistence.ExtractFromXML_v0_0(FileName, ref pluginCandidate);
                         break;
                     case "1.0":
                         IsSuccess = 
-                            PluginPersistence.LoadXML_v1_0(FileName, ref pluginCandidate);
+                            PluginPersistence.ExtractFromXML_v1_0(FileName, ref pluginCandidate);
                         break;
                     default:
                         ListViewItem item = new ListViewItem("0000", 0);

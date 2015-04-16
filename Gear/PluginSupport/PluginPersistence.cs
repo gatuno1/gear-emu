@@ -159,7 +159,7 @@ namespace Gear.PluginSupport
                     XmlDocument doc = new XmlDocument();
                     doc.Load(filenameXml);
                     doc.InsertBefore( 
-                        doc.CreateDocumentType("plugin", null, "Resources\\plugin_v1.0.dtd", null),
+                        doc.CreateDocumentType("plugin", null, @"Resources\plugin_v1.0.dtd", null),
                         doc.DocumentElement);
                     //save to a memory stream
                     MemoryStream mem = new MemoryStream();
@@ -429,10 +429,65 @@ namespace Gear.PluginSupport
         /// with the plugin information), or False if didn't (in this case Data parameter
         /// only should have updated IsValid attribute).
         /// @version v15.03.26 - Added.
-        static public bool LoadXML_v0_0(string filenameXml, ref PluginData Data)
+        static public bool ExtractFromXML_v0_0(string filenameXml, ref PluginData Data)
         {
             //TODO [ASB] : complete code to load XML v0
-            return false;
+            XmlReaderSettings settings = new XmlReaderSettings();
+            settings.IgnoreComments = true;
+            settings.IgnoreProcessingInstructions = true;
+            settings.IgnoreWhitespace = true;
+            try
+            {
+                //Open a XML reader with the file name and settings given
+                XmlReader XR = XmlReader.Create(filenameXml, settings);
+                //read the XML, if it is possible
+                while (XR.Read())
+                {
+                    switch (XR.NodeType)
+                    {
+                        case XmlNodeType.Attribute: //
+                            break;
+                        case XmlNodeType.CDATA:
+                            break;
+                        case XmlNodeType.Comment:
+                            break;
+                        case XmlNodeType.Document:
+                            break;
+                        case XmlNodeType.DocumentFragment:
+                            break;
+                        case XmlNodeType.Element:   //
+                            break;
+                        case XmlNodeType.EndElement:
+                            break;
+                        case XmlNodeType.EndEntity:
+                            break;
+                        case XmlNodeType.Entity:
+                            break;
+                        case XmlNodeType.EntityReference:
+                            break;
+                        case XmlNodeType.ProcessingInstruction:
+                            break;
+                        case XmlNodeType.Text:
+                            break;
+                        case XmlNodeType.DocumentType:
+                        case XmlNodeType.Notation:
+                        case XmlNodeType.None:
+                        case XmlNodeType.XmlDeclaration:
+                        default:
+                            break;
+                    }
+                }
+                XR.Close();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+
+
+            return false;   //@todo delete this after complete de method code
         }
 
         /// @brief Load a plugin from XML as version 1.0.
@@ -442,7 +497,7 @@ namespace Gear.PluginSupport
         /// with the plugin information), or False if didn't (in this case Data parameter
         /// only should have updated IsValid attribute).
         /// @version v15.03.26 - Added.
-        static public bool LoadXML_v1_0(string filenameXml, ref PluginData Data)
+        static public bool ExtractFromXML_v1_0(string filenameXml, ref PluginData Data)
         {
             //TODO [ASB] : complete code to load XML v1
             return false;
