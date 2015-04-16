@@ -44,7 +44,7 @@ namespace Gear.GUI
         /// @brief File name of current plugin on editor window.
         /// @note Include full path and name to the file.
         private string m_SaveFileName;
-        /// @brief Version of the file for a plugin. 
+        /// @brief Plugin System Version of the file for a plugin. 
         private string m_FormatVersion;
         /// @brief Text for plugin Metadata
         /// @details Indicates the version of plugin system for the current plugin.
@@ -75,21 +75,7 @@ namespace Gear.GUI
         /// @brief Enable or not change detection event.
         /// @version V15.03.26 - Added.
         private bool changeDetectEnabled;
-        /// @brief Types of change detected.
-        /// To maintain consistency between class name in C# code and class name declared 
-        /// in the other field.
-        /// @version V15.03.26 - Added.
-        private enum ChangeType : byte
-        {
-            none = 0,   //!< @brief No change detected.
-            code,       //!< @brief Code change detected.
-            reference,  //!< @brief Reference change detected.
-            metadata    //!< @brief Metadata change detected.
-        }
-        /// @brief Store the last change detected.
-        /// To determine changes, it includes the C# code, references list and metadata.
-        /// @version V15.03.26 - Added.
-        private ChangeType LastChange;
+
         /// @brief Regex for looking for class name.
         /// @version V15.03.26 - Added.
         private Regex ClassNameExpression;
@@ -125,7 +111,6 @@ namespace Gear.GUI
             m_FormatVersion = null;
             changeDetectEnabled = true;
             CodeChanged = false;
-            LastChange = ChangeType.none;
 
             // setting default font
             defaultFont = new Font(FontFamily.GenericMonospace, 10, FontStyle.Regular);
@@ -156,7 +141,7 @@ namespace Gear.GUI
             @"\bclass\s+(?<classname>[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*)\s*\:\s*PluginBase\b",
                 RegexOptions.Compiled);
             //regex for syntax highlighting
-            SyntaxExpression = new Regex("\\n", RegexOptions.Compiled);
+            SyntaxExpression = new Regex(@"\n", RegexOptions.Compiled);
             
         }
 
@@ -207,7 +192,7 @@ namespace Gear.GUI
         }
 
         /// @brief Load a plugin from File in Plugin Editor, updating the screen.
-        /// @note This method take care of update change state of the window. 
+        /// @details This method take care of update change state of the window. 
         /// @param[in] FileName Name of the file to open.
         /// @param[in] displayErrors Flag to show errors in the error grid.
         /// @note Actually it supports one plugin code window only.
@@ -220,10 +205,11 @@ namespace Gear.GUI
             //Determine if the XML is valid, and for which DTD version
             if (!pluginCandidate.ValidateXMLPluginFile(FileName))
             {
+                //if not valid
                 //@todo [ASB] show a dialog with the errors in XML definition of plugin
                 return false;
             }
-            else
+            else  //...XML plugin file is valid & system version is determined
             {   
                 bool IsSuccess = true;
                 //as is valid, we have the version to look for the correct method to 
@@ -247,8 +233,9 @@ namespace Gear.GUI
                         IsSuccess = false;
                         break;
                 }
-                if (IsSuccess)
+                if (IsSuccess)  //data is read succesfully from XML into pluginCandidate
                 {
+                    m_FormatVersion = pluginCandidate.PluginSystemVersion;
                     //initial cleanup of screen elements
                     if (referencesList.Items.Count > 0) 
                         referencesList.Items.Clear();   //clear out the reference list
@@ -272,9 +259,24 @@ namespace Gear.GUI
                     {
                         referencesList.Items.Add(refer);
                     }
+                    //load metadata of the plugimn
+                    if (pluginCandidate.PluginSystemVersion == "1.0")
+                    {
+                        ClearMetadata();    //reset metadata in screen
+                        SetElementOfMetadata("Version", pluginCandidate.PluginVersion);
+                        SetElementOfMetadata("Authors", pluginCandidate.Authors);
+                        SetElementOfMetadata("ModifiedBy", pluginCandidate.Modifier);
+                        CultureInfo culRef = new CultureInfo(pluginCandidate.CulturalReference);
+                        CultureInfo local = CultureInfo.CurrentCulture;
+                        /// @todo convert the date of date modified to local culture
+                        //string date = TypeDescriptor.GetConverter(local).ConvertTo()
+                        SetElementOfMetadata("DateModified", pluginCandidate.DateModified);
+                        SetElementOfMetadata("Description", pluginCandidate.Description);
+                        SetElementOfMetadata("Usage", pluginCandidate.Usage);
+                        SetElementOfMetadata("Links", pluginCandidate.Links);
+                    }
                     //store the name of the last file opened
                     m_SaveFileName = FileName;
-                    
                 }
                 return IsSuccess;
             }
@@ -370,14 +372,14 @@ namespace Gear.GUI
             //data.PluginVersion - version of the plugin itself
             //TODO [ASB]: add try section & detect exception thrown
             data.PluginVersion = 
-                GetElementsFromMetadata("Version",false)[0];    //always expect 1 element
+                GetElementsFromMetadata("Version", false)[0];    //always expect 1 element
             //TODO [ASB]: add try section & detect exception thrown
             data.Authors = GetElementsFromMetadata("Authors");
             //TODO [ASB]: add try section & detect exception thrown
             data.Modifier = GetElementsFromMetadata("ModifiedBy")[0];   //always expect 1 element
             //TODO [ASB]: add try section & detect exception thrown
             data.DateModified = 
-                GetElementsFromMetadata("DateModified",false)[0];//always expect 1 element
+                GetElementsFromMetadata("DateModified", false)[0];//always expect 1 element
             //cultural reference should be the one actually used in run time
             data.CulturalReference = CultureInfo.CurrentCulture.Name;
             //TODO [ASB]: add try section & detect exception thrown
@@ -592,7 +594,6 @@ namespace Gear.GUI
                 referencesList.Items.Add(referenceName.Text);
                 referenceName.Text = "";
                 CodeChanged = true;
-                LastChange = ChangeType.reference;
             }
         }
 
@@ -606,7 +607,6 @@ namespace Gear.GUI
             {
                 referencesList.Items.RemoveAt(referencesList.SelectedIndex);
                 CodeChanged = true;
-                LastChange = ChangeType.reference;
             }
         }
 
@@ -665,7 +665,7 @@ namespace Gear.GUI
         // Parse line for syntax highlighting.
         private void ParseLine(string line)
         {
-            Regex r = new Regex("([ \\t{}();:])", RegexOptions.Compiled);
+            Regex r = new Regex(@"([ \t{}();:])", RegexOptions.Compiled);
             String[] tokens = r.Split(line);
             System.Drawing.Font fontRegular = this.defaultFont;
             System.Drawing.Font fontBold = new Font(fontRegular, FontStyle.Bold);
@@ -731,7 +731,6 @@ namespace Gear.GUI
             if (changeDetectEnabled)
             {
                 CodeChanged = true;
-                LastChange = ChangeType.code;
             }
         }
 
@@ -871,7 +870,6 @@ namespace Gear.GUI
                 textPluginMetadataBox.Text = "";
                 //mark as changed
                 CodeChanged = true;
-                LastChange = ChangeType.metadata;
             }
         }
 
@@ -906,7 +904,6 @@ namespace Gear.GUI
                     }
                     //mark as changed
                     CodeChanged = true;
-                    LastChange = ChangeType.metadata;
                 }
             }
         }
@@ -944,7 +941,7 @@ namespace Gear.GUI
         /// @brief Determine the default text for the group of metadata element 
         /// given as parameter.
         /// @param[in] group Group of metadata element.
-        /// @returns Default text for the given group
+        /// @returns Default text for the given group.
         /// @version v15.03.26 - Added.
         private string GetDefaultTextMetadataElement(ListViewGroup group)
         {
@@ -997,7 +994,7 @@ namespace Gear.GUI
         /// @brief Get the visibility of the given metadata element.
         /// @param[in] item Metadata element to set.
         /// @returns User defined (=true), or default value used (=false).
-        /// @version v15.03.26 - Added
+        /// @version v15.03.26 - Added.
         private bool IsUserDefinedMetadataElement(ListViewItem item)
         {
             if (item != null)
@@ -1013,6 +1010,89 @@ namespace Gear.GUI
                 return false;   //delete this line when add the exception thrown code
             }
                 
+        }
+
+        /// @brief Clear the metadata screen elements of plugin editor, setting all fields 
+        /// to defaults, setting ots visibility, and allowing only one element on each group.
+        /// @version v15.03.26 - Added.
+        private void ClearMetadata()
+        {
+            foreach (ListViewGroup group in pluginMetadataList.Groups)  //loop for each group
+            {
+                if (group.Items.Count > 1)  //we have to delete elements?
+                {
+                    //remove all except the first
+                    for (int i = 0; i < group.Items.Count; i++)
+                    {
+                        if (i > 0)
+                            group.Items.RemoveAt(i);
+                    }
+                }
+                //set the only element or remaining one
+                group.Items[0].Text = GetDefaultTextMetadataElement(group);
+                //change visibility to default text
+                SetUserDefinedMetadataElement(group.Items[0], false);
+            }
+        }
+
+        /// @brief Set an element of metadata, given the group name.
+        /// @param groupName Name of the group to set a element.
+        /// @param value Value to set.
+        /// @pre The actual algorithm assumes GUI.PluginEditor.ClearMetadata() was ejecuted before.
+        /// @version v15.03.26 - Added.
+        private void SetElementOfMetadata(string groupName, string value)
+        {
+            //lookin for the group of interest
+            foreach (ListViewGroup group in pluginMetadataList.Groups)  
+            {
+                if (group.Name == groupName)    //Is the desired group?
+                {
+                    if (string.IsNullOrEmpty(value))    //the text given as parameter is valid?
+                    {
+                        group.Items[0].Text = GetDefaultTextMetadataElement(group);
+                        //change visibility to default text
+                        SetUserDefinedMetadataElement(group.Items[0], false);
+                    }
+                    else
+                    {
+                        group.Items[0].Text = value;
+                        //change visibility to user text
+                        SetUserDefinedMetadataElement(group.Items[0], true);
+                    }
+                }
+            }
+        }
+
+        /// @brief Set the elemens of metadata, given the group name.
+        /// @param groupName Name of the group to set elements.
+        /// @param values Array of values to set.
+        /// @pre The actual algorithm assumes GUI.PluginEditor.ClearMetadata() was ejecuted before.
+        /// @version v15.03.26 - Added.
+        private void SetElementOfMetadata(string groupName, string[] values)
+        {
+            if (values.Length > 0)  //there are data to set?
+            {
+                //lookin for the group of interest
+                foreach (ListViewGroup group in pluginMetadataList.Groups)
+                {
+                    if (group.Name == groupName)    //Is the desired group?
+                    {
+                        string val;
+                        for (int i = 0; i < values.Length; i++) //loop for each value
+                        {
+                            bool isValid = !string.IsNullOrEmpty(values[i]);
+                            //if not valid, get the default value; else use the given value
+                            val = (isValid) ? values[i] : GetDefaultTextMetadataElement(group);
+                            if (i > 0)  
+                                group.Items.Add(val);
+                            else   //assuming always exists zero-index element
+                                group.Items[0].Text = val;
+                            //set the visibility as is using a default value or not
+                            SetUserDefinedMetadataElement(group.Items[i], isValid);
+                        }
+                    }
+                }
+            }
         }
 
         /// @brief Retrieve a list of elements for the given group from the metadata list, 
@@ -1088,12 +1168,10 @@ namespace Gear.GUI
                     labelValue = 
                         GetDefaultTextMetadataElement(SelectedItem.Group); //use default text
                     CodeChanged = true;
-                    LastChange = ChangeType.metadata;
                     break;
                 default:        //text was changed
                     labelValue = e.Label;   //use the new text
                     CodeChanged = true;
-                    LastChange = ChangeType.metadata;
                     break;
             }
             //compare new text edited by user with the default, to set visibility

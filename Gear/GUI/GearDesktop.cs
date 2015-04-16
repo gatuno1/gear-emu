@@ -33,7 +33,8 @@ using System.IO;
 /// @brief Contains the definitions of %GUI objects (controlling objects).
 namespace Gear.GUI
 {
-    /// @brief Implements the graphical Desktop to the emulator, plugin editor and related windows.
+    /// @brief Implements the graphical Desktop to the emulator, plugin editor and 
+    /// related windows.
     public partial class GearDesktop : Form
     {
         /// @brief Gear.GUI.GearDesktop Constructor.
@@ -43,12 +44,13 @@ namespace Gear.GUI
         }
 
         /// @brief Load a new emulator from file.
-        /// Load an binary image into a new emulator, from user selected file, remembering last binary directory,
-        /// independently from last plugin directory.
+        /// Load an binary image into a new emulator, from user selected file, remembering last
+        /// binary directory, independently from last plugin directory.
         private void OpenBinaryButton_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Propeller Runtime Image (*.binary;*.eeprom)|*.binary;*.eeprom|All Files (*.*)|*.*";
+            openFileDialog.Filter = "Propeller Runtime Image (*.binary;*.eeprom)|*.binary;" +
+                "*.eeprom|All Files (*.*)|*.*";
             openFileDialog.Title = "Open Propeller Binary...";
             if (!String.IsNullOrEmpty(Properties.Settings.Default.LastBinary))
                 //retrieve last binary location
@@ -58,7 +60,8 @@ namespace Gear.GUI
             if (openFileDialog.ShowDialog(this) == DialogResult.OK)
             {
                 Emulator emul = new Emulator(Path.GetFileName(openFileDialog.FileName));
-                if (emul.OpenFile(openFileDialog.FileName))   //if succesfully load binary in emulator
+                //if succesfully load binary in emulator
+                if (emul.OpenFile(openFileDialog.FileName))   
                 {
                     //show emulator window
                     emul.MdiParent = this;
@@ -149,7 +152,8 @@ namespace Gear.GUI
         private void newPluginButton_Click(object sender, EventArgs e)
         {
             //load default plugin template
-            PluginEditor plugin = new PluginEditor(! Properties.Settings.Default.UseNoTemplate);   
+            PluginEditor plugin = 
+                new PluginEditor(! Properties.Settings.Default.UseNoTemplate);
             plugin.MdiParent = this;
             plugin.Show();
         }

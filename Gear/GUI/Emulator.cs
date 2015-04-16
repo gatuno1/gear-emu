@@ -459,6 +459,8 @@ namespace Gear.GUI
 
         /// @brief Stop the emulation.
         /// @version V15.03.26 - Added the refresh of the screen.
+        /// @param sender Reference to the object where this event was called.
+        /// @param e Class with the details event.
         private void stopEmulator_Click(object sender, EventArgs e)
         {
             runTimer.Stop();
@@ -487,8 +489,8 @@ namespace Gear.GUI
 
         /// @brief Try to open a plugin, compiling it and attaching to the active 
         /// emulator instance.
-        /// @param[in] sender Reference to the object where this event was called.
-        /// @param[in] args Class with the details event.
+        /// @param sender Reference to the object where this event was called.
+        /// @param e Class with the details event.
         private void OpenPlugin_Click(object sender, EventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog();
