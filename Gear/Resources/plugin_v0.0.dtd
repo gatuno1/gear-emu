@@ -1,0 +1,8 @@
+<!ELEMENT plugin (instance, reference*, code)>
+    <!ATTLIST plugin plugin_system_version CDATA "0.0">
+
+    <!ELEMENT instance EMPTY> 
+        <!ATTLIST instance class CDATA #REQUIRED>
+    <!ELEMENT reference EMPTY>
+        <!ATTLIST reference name CDATA #IMPLIED>	
+    <!ELEMENT code (#PCDATA)>

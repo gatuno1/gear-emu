@@ -269,25 +269,29 @@ namespace Gear.PluginSupport
             //Main element - plugin
             XmlElement root = xmlDoc.CreateElement("plugin");
             root.SetAttribute("plugin_system_version", Data.PluginSystemVersion);
+            root.SetAttribute("version", Data.PluginVersion);
             xmlDoc.AppendChild(root);
             //level 1 element - metadata
             instance = xmlDoc.CreateElement("metadata");
-            instance.SetAttribute("version", Data.PluginVersion);
             root.AppendChild(instance);
             {
                 //level 2 elements - author
                 if (Data.Authors != null)
                 {
-                    foreach (string s in Data.Authors)
+                    bool isValidT, isFirst = true;
+                    foreach (string Author in Data.Authors)
                     {
-                        childElement = xmlDoc.CreateElement("author");
-                        instance.AppendChild(childElement);
-                        if (s.Length > 0)
+                        isValidT = !string.IsNullOrEmpty(Author);
+                        if (isFirst | isValidT)
                         {
-                            textElement = xmlDoc.CreateTextNode("");
-                            childElement.AppendChild(textElement);
-                            cdata = xmlDoc.CreateCDataSection(s);
-                            childElement.AppendChild(cdata);
+                            childElement = xmlDoc.CreateElement("author");
+                            instance.AppendChild(childElement);
+                            isFirst = false;
+                            if (isValidT)
+                            {
+                                textElement = xmlDoc.CreateTextNode(Author);
+                                childElement.AppendChild(textElement);
+                            }
                         }
                     }
                 }
@@ -301,64 +305,58 @@ namespace Gear.PluginSupport
                 instance.AppendChild(childElement);
                 if (Data.Modifier.Length > 0)
                 {
-                    textElement = xmlDoc.CreateTextNode("");
+                    textElement = xmlDoc.CreateTextNode(Data.Modifier);
                     childElement.AppendChild(textElement);
-                    cdata = xmlDoc.CreateCDataSection(Data.Modifier);
-                    childElement.AppendChild(cdata);
                 }
                 //level 2 element - date_modified
                 childElement = xmlDoc.CreateElement("date_modified");
                 instance.AppendChild(childElement);
                 if (Data.DateModified.Length > 0)
                 {
-                    textElement = xmlDoc.CreateTextNode("");
-                    cdata = xmlDoc.CreateCDataSection(Data.DateModified);
+                    textElement = xmlDoc.CreateTextNode(Data.DateModified);
                     childElement.AppendChild(textElement);
-                    childElement.AppendChild(cdata);
                 }
                 //level 2 element - cultural_reference
                 childElement = xmlDoc.CreateElement("cultural_reference");
                 instance.AppendChild(childElement);
                 if (Data.CulturalReference.Length > 0)
                 {
-                    textElement = xmlDoc.CreateTextNode("");
-                    cdata = xmlDoc.CreateCDataSection(Data.CulturalReference);
+                    textElement = xmlDoc.CreateTextNode(Data.CulturalReference);
                     childElement.AppendChild(textElement);
-                    childElement.AppendChild(cdata);
                 }
                 //level 2 element - description
                 childElement = xmlDoc.CreateElement("description");
                 instance.AppendChild(childElement);
                 if (Data.Description.Length > 0)
                 {
-                    textElement = xmlDoc.CreateTextNode("");
-                    cdata = xmlDoc.CreateCDataSection(Data.Description);
+                    textElement = xmlDoc.CreateTextNode(Data.Description);
                     childElement.AppendChild(textElement);
-                    childElement.AppendChild(cdata);
                 }
                 //level 2 element - usage
                 childElement = xmlDoc.CreateElement("usage");
                 instance.AppendChild(childElement);
                 if (Data.Usage.Length > 0)
                 {
-                    textElement = xmlDoc.CreateTextNode("");
-                    cdata = xmlDoc.CreateCDataSection(Data.Usage);
+                    textElement = xmlDoc.CreateTextNode(Data.Usage);
                     childElement.AppendChild(textElement);
-                    childElement.AppendChild(cdata);
                 }
                 //level 2 elements - link
                 if (Data.Links != null)
                 {
-                    foreach (string s in Data.Links)
+                    bool isValidT, isFirst = true; 
+                    foreach (string link in Data.Links)
                     {
-                        childElement = xmlDoc.CreateElement("link");
-                        instance.AppendChild(childElement);
-                        if (s.Length > 0)
+                        isValidT = !string.IsNullOrEmpty(link);
+                        if (isFirst | isValidT)
                         {
-                            textElement = xmlDoc.CreateTextNode("");
-                            cdata = xmlDoc.CreateCDataSection(s);
-                            childElement.AppendChild(textElement);
-                            childElement.AppendChild(cdata);
+                            childElement = xmlDoc.CreateElement("link");
+                            instance.AppendChild(childElement);
+                            isFirst = false;
+                            if (isValidT)
+                            {
+                                textElement = xmlDoc.CreateTextNode(link);
+                                childElement.AppendChild(textElement);
+                            }
                         }
                     }
                 }
@@ -375,37 +373,36 @@ namespace Gear.PluginSupport
             //level 1 elements - reference
             if (Data.References != null)
             {
-                foreach (string s in Data.References)
+                foreach (string reference in Data.References)
                 {
-                    instance = xmlDoc.CreateElement("reference");
-                    instance.SetAttribute("name", s);
-                    root.AppendChild(instance);
+                    if (!string.IsNullOrEmpty(reference))
+                    {
+                        instance = xmlDoc.CreateElement("reference");
+                        root.AppendChild(instance);
+                        textElement = xmlDoc.CreateTextNode(reference);
+                        instance.AppendChild(textElement);
+                    }
                 }
-            }
-            else 
-            {
-                instance = xmlDoc.CreateElement("reference");
-                root.AppendChild(instance);
             }
             //level 1 elements - code
             if (Data.UseAuxFiles != null)
-                for (int i = 0; i < Data.UseAuxFiles.Rank; i++)
+                for (int i = 0; i < Data.UseAuxFiles.Length; i++)
                 {
                     instance = xmlDoc.CreateElement("code");
                     root.AppendChild(instance);
                     if (!Data.UseAuxFiles[i])   //code embedded in XML file?
                     {
-                        textElement = xmlDoc.CreateTextNode("");
-                        instance.AppendChild(textElement);
-                        instance.SetAttribute("order", Convert.ToString(i + 1));
                         cdata = xmlDoc.CreateCDataSection(Data.Codes[i]);
                         instance.AppendChild(cdata);
+                        if (Data.UseAuxFiles.Length > 1)
+                            instance.SetAttribute("order", Convert.ToString(i + 1));
                     }
                     else      //code written to a separate file
                     {
                         //write the reference to the .CS file
                         instance.SetAttribute("ref", Path.GetFileName(Data.AuxFiles[i]));
-                        instance.SetAttribute("order", Convert.ToString(i + 1));
+                        if (Data.UseAuxFiles.Length > 1)
+                            instance.SetAttribute("order", Convert.ToString(i + 1));
                         //save the code to a .CS file (same name, different extension)
                         File.WriteAllText(Data.AuxFiles[i], Data.Codes[i], Encoding.UTF8);
                     }

@@ -200,6 +200,9 @@
     <Content Include="Resources\plugin_v1.0.dtd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\plugin_v0.0.dtd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <None Include="Resources\StartupROM.bin" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
