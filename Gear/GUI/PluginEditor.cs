@@ -402,10 +402,10 @@ namespace Gear.GUI
             {
                 case "1.0":
                     //TODO ASB: manage multiple files from user interface
-                    data.UseAuxFiles = new bool[1] { (!embeddedCode.Checked) };
+                    data.UseExtFiles = new bool[1] { (!embeddedCode.Checked) };
                     string separateFileName = Path.Combine(Path.GetDirectoryName(FileName),
                         Path.GetFileNameWithoutExtension(FileName) + ".cs");
-                    data.AuxFiles = new string[1] { 
+                    data.ExtFiles = new string[1] { 
                         ((!embeddedCode.Checked) ? separateFileName : "") };
                     data.Codes = new string[1] { codeEditorView.Text };
                     //update modified state for the plugin
@@ -413,8 +413,8 @@ namespace Gear.GUI
                     break;
                 case "0.0":
                     //manage only one file on user interface
-                    data.UseAuxFiles = new bool[1] { false };
-                    data.AuxFiles = new string[1] { "" };
+                    data.UseExtFiles = new bool[1] { false };
+                    data.ExtFiles = new string[1] { "" };
                     data.Codes = new string[1] { codeEditorView.Text };
                     //update modified state for the plugin
                     CodeChanged = !PluginPersistence.SaveXML_v0_0(FileName,data);

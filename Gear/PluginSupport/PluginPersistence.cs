@@ -22,6 +22,7 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
@@ -51,9 +52,9 @@ namespace Gear.PluginSupport
         public string[] References;         //!< @brief Auxiliary references to compile the plugin.
 
         /// @brief Flag to write the code in external file or embedded in XML file.
-        public bool[] UseAuxFiles;
+        public bool[] UseExtFiles;
         /// @brief Name of external file with C# code of the plugin.
-        public string[] AuxFiles;
+        public string[] ExtFiles;
         /// @brief Text of the C# code of the plugin.
         public string[] Codes;
         /// @brief Hold the result for a validity test of related XML file, based on DTD.
@@ -69,6 +70,12 @@ namespace Gear.PluginSupport
         {
             this.isValid = true;
             ValidationErrors = new List<string>();
+        }
+
+        public void AddError(string errorText)
+        {
+            if (!string.IsNullOrEmpty(errorText))
+                ValidationErrors.Add(errorText);
         }
 
         /// @brief Handle the error in the validation, saving the messages and setting 
@@ -235,10 +242,10 @@ namespace Gear.PluginSupport
             }
             //level 1 element - code
             instance = xmlDoc.CreateElement("code");
-            if (!Data.UseAuxFiles[0])
+            if (!Data.UseExtFiles[0])
                 instance.AppendChild(xmlDoc.CreateTextNode(Data.Codes[0]));
             else 
-                instance.SetAttribute("ref",Data.AuxFiles[0]);
+                instance.SetAttribute("ref",Data.ExtFiles[0]);
             root.AppendChild(instance);
             //saving XML document
             xmlDoc.Save(filenameXml);
@@ -329,16 +336,16 @@ namespace Gear.PluginSupport
                 instance.AppendChild(childElement);
                 if (Data.Description.Length > 0)
                 {
-                    textElement = xmlDoc.CreateTextNode(Data.Description);
-                    childElement.AppendChild(textElement);
+                    cdata = xmlDoc.CreateCDataSection(Data.Description);
+                    childElement.AppendChild(cdata);
                 }
                 //level 2 element - usage
                 childElement = xmlDoc.CreateElement("usage");
                 instance.AppendChild(childElement);
                 if (Data.Usage.Length > 0)
                 {
-                    textElement = xmlDoc.CreateTextNode(Data.Usage);
-                    childElement.AppendChild(textElement);
+                    cdata = xmlDoc.CreateCDataSection(Data.Usage);
+                    childElement.AppendChild(cdata);
                 }
                 //level 2 elements - link
                 if (Data.Links != null)
@@ -354,8 +361,8 @@ namespace Gear.PluginSupport
                             isFirst = false;
                             if (isValidT)
                             {
-                                textElement = xmlDoc.CreateTextNode(link);
-                                childElement.AppendChild(textElement);
+                                cdata = xmlDoc.CreateCDataSection(link);
+                                childElement.AppendChild(cdata);
                             }
                         }
                     }
@@ -367,9 +374,10 @@ namespace Gear.PluginSupport
                 }
             }
             //level 1 element - instance
-            instance = xmlDoc.CreateElement("instance");
-            instance.SetAttribute("class", Data.InstanceName);
+            instance = xmlDoc.CreateElement("instance_class");
             root.AppendChild(instance);
+            textElement = xmlDoc.CreateTextNode(Data.InstanceName);
+            instance.AppendChild(textElement);
             //level 1 elements - reference
             if (Data.References != null)
             {
@@ -385,26 +393,26 @@ namespace Gear.PluginSupport
                 }
             }
             //level 1 elements - code
-            if (Data.UseAuxFiles != null)
-                for (int i = 0; i < Data.UseAuxFiles.Length; i++)
+            if (Data.UseExtFiles != null)
+                for (int i = 0; i < Data.UseExtFiles.Length; i++)
                 {
                     instance = xmlDoc.CreateElement("code");
                     root.AppendChild(instance);
-                    if (!Data.UseAuxFiles[i])   //code embedded in XML file?
+                    if (!Data.UseExtFiles[i])   //code embedded in XML file?
                     {
                         cdata = xmlDoc.CreateCDataSection(Data.Codes[i]);
                         instance.AppendChild(cdata);
-                        if (Data.UseAuxFiles.Length > 1)
+                        if (Data.UseExtFiles.Length > 1)
                             instance.SetAttribute("order", Convert.ToString(i + 1));
                     }
                     else      //code written to a separate file
                     {
                         //write the reference to the .CS file
-                        instance.SetAttribute("ref", Path.GetFileName(Data.AuxFiles[i]));
-                        if (Data.UseAuxFiles.Length > 1)
+                        instance.SetAttribute("ref", Path.GetFileName(Data.ExtFiles[i]));
+                        if (Data.UseExtFiles.Length > 1)
                             instance.SetAttribute("order", Convert.ToString(i + 1));
                         //save the code to a .CS file (same name, different extension)
-                        File.WriteAllText(Data.AuxFiles[i], Data.Codes[i], Encoding.UTF8);
+                        File.WriteAllText(Data.ExtFiles[i], Data.Codes[i], Encoding.UTF8);
                     }
                 }
             else
@@ -428,63 +436,96 @@ namespace Gear.PluginSupport
         /// @version v15.03.26 - Added.
         static public bool ExtractFromXML_v0_0(string filenameXml, ref PluginData Data)
         {
-            //TODO [ASB] : complete code to load XML v0
+            //Settings to read the XML
             XmlReaderSettings settings = new XmlReaderSettings();
             settings.IgnoreComments = true;
             settings.IgnoreProcessingInstructions = true;
             settings.IgnoreWhitespace = true;
+            bool success = true;    //status to return
             try
             {
                 //Open a XML reader with the file name and settings given
                 XmlReader XR = XmlReader.Create(filenameXml, settings);
-                //read the XML, if it is possible
+                Stack<string> lastElement = new Stack<string>();
+                List<string> references = new List<string>();
+                List<string> codes = new List<string>();
+                //read the data from XML, assigning to corresponding PluginData member
                 while (XR.Read())
                 {
                     switch (XR.NodeType)
                     {
-                        case XmlNodeType.Attribute: //
-                            break;
-                        case XmlNodeType.CDATA:
-                            break;
-                        case XmlNodeType.Comment:
-                            break;
-                        case XmlNodeType.Document:
-                            break;
-                        case XmlNodeType.DocumentFragment:
-                            break;
-                        case XmlNodeType.Element:   //
+                        case XmlNodeType.Element:
+                            lastElement.Push(XR.Name);  //Save the name to associate it to the content
                             break;
                         case XmlNodeType.EndElement:
+                            lastElement.Pop();  //delete it
                             break;
-                        case XmlNodeType.EndEntity:
-                            break;
-                        case XmlNodeType.Entity:
-                            break;
-                        case XmlNodeType.EntityReference:
-                            break;
-                        case XmlNodeType.ProcessingInstruction:
+                        case XmlNodeType.Attribute:
+                            switch (XR.Name)
+	                        {
+                                case "class":
+                                    Data.InstanceName = XR.Value;
+                                    break;
+                                case "name":
+                                    references.Add(XR.Value);   //add to the list of references
+                                    break;
+                                default:
+                                    break;
+	                        }   
                             break;
                         case XmlNodeType.Text:
+                            switch (lastElement.Peek())
+                            {
+                                case "code":
+                                    codes.Add(XR.Value);    //add to the list of codes
+                                    break;
+                                default:
+                                    break;
+                            }
                             break;
-                        case XmlNodeType.DocumentType:
-                        case XmlNodeType.Notation:
-                        case XmlNodeType.None:
-                        case XmlNodeType.XmlDeclaration:
+                        case XmlNodeType.CDATA:
+                            switch (lastElement.Peek())
+                            {
+                                case "code":
+                                    codes.Add(XR.Value);    //add to the list of codes
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
                         default:
                             break;
                     }
                 }
                 XR.Close();
+                if (references.Count > 0)   //if elements exists...
+                    Data.References = references.ToArray(); //fill the array for references
+                if (codes.Count > 0)    //if elements exists...
+                {
+                    Data.Codes = codes.ToArray();   //fill the array for references
+                    List<bool> aux = new List<bool>();  //construct the list for UseExtFiles
+                    List<string> aux2 = new List<string>();
+                    for (int i = 0; i < codes.Count; i++ )
+                    {
+                        aux.Add(false);
+                        aux2.Add(null);
+                    }
+                    Data.UseExtFiles = aux.ToArray();   //fill the array
+                }
             }
-            catch (Exception)
+            catch (XmlException e)
             {
-
-                throw;
+                success = false;
+                Data.AddError(string.Format("Error '{0}' in XML file {1}.", 
+                    e.Message, 
+                    e.SourceUri));
             }
-
-
-
-            return false;   //@todo delete this after complete de method code
+            catch (Exception e)
+            {
+                success = false;
+                Data.AddError(e.Message);
+            }
+            return success;
         }
 
         /// @brief Load a plugin from XML as version 1.0.
@@ -496,8 +537,124 @@ namespace Gear.PluginSupport
         /// @version v15.03.26 - Added.
         static public bool ExtractFromXML_v1_0(string filenameXml, ref PluginData Data)
         {
-            //TODO [ASB] : complete code to load XML v1
-            return false;
+            //Settings to read the XML
+            XmlReaderSettings settings = new XmlReaderSettings();
+            settings.IgnoreComments = true;
+            settings.IgnoreProcessingInstructions = true;
+            settings.IgnoreWhitespace = true;
+            bool success = true;    //status to return
+            try
+            {
+                //Open a XML reader with the file name and settings given
+                XmlReader XR = XmlReader.Create(filenameXml, settings);
+                //Stack to remember the section we were reading text or cdata values
+                Stack<string> lastElement = new Stack<string>();
+                //dynamic lists to hold values for 1:* fields 
+                List<string> authorsTmp = new List<string>();
+                List<string> linksTmp = new List<string>();
+                List<string> referencesTmp = new List<string>();
+                List<string> useExtFilesTmp = new List<string>();
+                List<string> extFilesTmp = new List<string>();
+                List<string> codesTmp = new List<string>();
+                List<int> orderCodesTmp = new List<int>();
+                //read the data from XML, assigning to corresponding PluginData member
+                while (XR.Read())
+                {
+                    switch (XR.NodeType)
+                    {
+                        case XmlNodeType.Element:
+                            lastElement.Push(XR.Name);  //Save the name to associate it to the content
+                            break;
+                        case XmlNodeType.EndElement:
+                            lastElement.Pop();  //delete it
+                            break;
+                        case XmlNodeType.Attribute:
+                            switch (XR.Name)
+                            {
+                                case "version":
+                                    Data.PluginVersion = XR.Value;
+                                    break;
+                                case "ref":
+                                    extFilesTmp.Add(XR.Value);
+                                    break;
+                                case "order":
+                                    Data.
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                        case XmlNodeType.Text:
+                            switch (lastElement.Peek())
+                            {
+                                case "author":
+                                    authorsTmp.Add(XR.Value);
+                                    break;
+                                case "modified_by":
+                                    Data.Modifier = XR.Value;
+                                    break;
+                                case "date_modified":
+                                    Data.DateModified = XR.Value;
+                                    /// @todo convert to current locale
+                                    break;
+                                case "cultural_reference":
+                                    Data.CulturalReference = XR.Value;
+                                    break;
+                                case "description":
+                                    Data.Description = XR.Value;
+                                    break;
+                                case "usage":
+                                    Data.Usage = XR.Value;
+                                    break;
+                                case "link":
+                                    linksTmp.Add(XR.Value);
+                                    break;
+                                case "instance_class":
+                                    Data.InstanceName = XR.Value;
+                                    break;
+                                case "reference":
+                                    referencesTmp.Add(XR.Value);   //add to the list of references
+                                    break;
+                                case "code":
+                                    codes.Add(XR.Value);    //add to the list of codes
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                        case XmlNodeType.CDATA:
+                            switch (lastElement.Peek())
+                            {
+                                case "code":
+                                    codes.Add(XR.Value);    //add to the list of codes
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                XR.Close();
+                if (references.Count > 0)   //if elements exists...
+                    Data.References = references.ToArray(); //fill the array for references
+                if (codes.Count > 0)    //if elements exists...
+                    Data.Codes = codes.ToArray();   //fill the array for references
+            }
+            catch (XmlException e)
+            {
+                success = false;
+                Data.AddError(string.Format("Error '{0}' in XML file {1}.", 
+                    e.Message, 
+                    e.SourceUri));
+            }
+            catch (Exception e)
+            {
+                success = false;
+                Data.AddError(e.Message);
+            }
+            return success;
         }
 
     }
