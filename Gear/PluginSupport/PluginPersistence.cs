@@ -438,17 +438,17 @@ namespace Gear.PluginSupport
         {
             //Settings to read the XML
             XmlReaderSettings settings = new XmlReaderSettings();
-            settings.IgnoreComments = true;
-            settings.IgnoreProcessingInstructions = true;
-            settings.IgnoreWhitespace = true;
+            settings.IgnoreComments                 = true;
+            settings.IgnoreProcessingInstructions   = true;
+            settings.IgnoreWhitespace               = true;
             bool success = true;    //status to return
             try
             {
                 //Open a XML reader with the file name and settings given
                 XmlReader XR = XmlReader.Create(filenameXml, settings);
-                Stack<string> lastElement = new Stack<string>();
-                List<string> references = new List<string>();
-                List<string> codes = new List<string>();
+                Stack<string> lastElement   = new Stack<string>();
+                List<string> referencesTmp  = new List<string>();
+                List<string> codesTmp       = new List<string>();
                 //read the data from XML, assigning to corresponding PluginData member
                 while (XR.Read())
                 {
@@ -467,7 +467,7 @@ namespace Gear.PluginSupport
                                     Data.InstanceName = XR.Value;
                                     break;
                                 case "name":
-                                    references.Add(XR.Value);   //add to the list of references
+                                    referencesTmp.Add(XR.Value);   //add to the list of references
                                     break;
                                 default:
                                     break;
@@ -477,7 +477,7 @@ namespace Gear.PluginSupport
                             switch (lastElement.Peek())
                             {
                                 case "code":
-                                    codes.Add(XR.Value);    //add to the list of codes
+                                    codesTmp.Add(XR.Value);    //add to the list of codes
                                     break;
                                 default:
                                     break;
@@ -487,7 +487,7 @@ namespace Gear.PluginSupport
                             switch (lastElement.Peek())
                             {
                                 case "code":
-                                    codes.Add(XR.Value);    //add to the list of codes
+                                    codesTmp.Add(XR.Value);    //add to the list of codes
                                     break;
                                 default:
                                     break;
@@ -498,19 +498,22 @@ namespace Gear.PluginSupport
                     }
                 }
                 XR.Close();
-                if (references.Count > 0)   //if elements exists...
-                    Data.References = references.ToArray(); //fill the array for references
-                if (codes.Count > 0)    //if elements exists...
+                if (referencesTmp.Count > 0)   //if elements exists...
+                    Data.References = referencesTmp.ToArray(); //fill the array for references
+                if (codesTmp.Count > 0)    //if elements exists...
                 {
-                    Data.Codes = codes.ToArray();   //fill the array for references
-                    List<bool> aux = new List<bool>();  //construct the list for UseExtFiles
+                    Data.Codes = codesTmp.ToArray();   //fill the array for references
+                    //construct the list for UseExtFiles & ExtFiles: not used in v0.0
+                    List<bool> aux = new List<bool>();  
                     List<string> aux2 = new List<string>();
-                    for (int i = 0; i < codes.Count; i++ )
+                    for (int i = 0; i < codesTmp.Count; i++ )
                     {
                         aux.Add(false);
                         aux2.Add(null);
                     }
-                    Data.UseExtFiles = aux.ToArray();   //fill the array
+                    //fill the arrays
+                    Data.UseExtFiles = aux.ToArray();   
+                    Data.ExtFiles = aux2.ToArray();
                 }
             }
             catch (XmlException e)
@@ -539,9 +542,9 @@ namespace Gear.PluginSupport
         {
             //Settings to read the XML
             XmlReaderSettings settings = new XmlReaderSettings();
-            settings.IgnoreComments = true;
-            settings.IgnoreProcessingInstructions = true;
-            settings.IgnoreWhitespace = true;
+            settings.IgnoreComments                 = true;
+            settings.IgnoreProcessingInstructions   = true;
+            settings.IgnoreWhitespace               = true;
             bool success = true;    //status to return
             try
             {
@@ -550,13 +553,14 @@ namespace Gear.PluginSupport
                 //Stack to remember the section we were reading text or cdata values
                 Stack<string> lastElement = new Stack<string>();
                 //dynamic lists to hold values for 1:* fields 
-                List<string> authorsTmp = new List<string>();
-                List<string> linksTmp = new List<string>();
-                List<string> referencesTmp = new List<string>();
-                List<string> useExtFilesTmp = new List<string>();
-                List<string> extFilesTmp = new List<string>();
-                List<string> codesTmp = new List<string>();
-                List<int> orderCodesTmp = new List<int>();
+                List<string> authorsTmp     = new List<string>();
+                List<string> linksTmp       = new List<string>();
+                List<string> referencesTmp  = new List<string>();
+                //dynamic dictionaries to manage code & external files
+                Dictionary<int, string> useExtFilesTmp  = new Dictionary<int, string>();
+                Dictionary<int, string> extFilesTmp     = new Dictionary<int, string>();
+                Dictionary<int, string> codesTmp        = new Dictionary<int, string>();
+                Dictionary<int, int> orderCodesTmp      = new Dictionary<int, int>();
                 //read the data from XML, assigning to corresponding PluginData member
                 while (XR.Read())
                 {
@@ -578,7 +582,7 @@ namespace Gear.PluginSupport
                                     extFilesTmp.Add(XR.Value);
                                     break;
                                 case "order":
-                                    Data.
+                                    orderCodesTmp.Add(int.Parse(XR.Value));
                                     break;
                                 default:
                                     break;
@@ -595,7 +599,7 @@ namespace Gear.PluginSupport
                                     break;
                                 case "date_modified":
                                     Data.DateModified = XR.Value;
-                                    /// @todo convert to current locale
+                                    /// @todo convert read date to current locale
                                     break;
                                 case "cultural_reference":
                                     Data.CulturalReference = XR.Value;
@@ -607,7 +611,7 @@ namespace Gear.PluginSupport
                                     Data.Usage = XR.Value;
                                     break;
                                 case "link":
-                                    linksTmp.Add(XR.Value);
+                                    linksTmp.Add(XR.Value); //add to the list of links
                                     break;
                                 case "instance_class":
                                     Data.InstanceName = XR.Value;
@@ -616,7 +620,7 @@ namespace Gear.PluginSupport
                                     referencesTmp.Add(XR.Value);   //add to the list of references
                                     break;
                                 case "code":
-                                    codes.Add(XR.Value);    //add to the list of codes
+                                    codesTmp.Add(XR.Value);    //add to the list of codes
                                     break;
                                 default:
                                     break;
@@ -625,22 +629,31 @@ namespace Gear.PluginSupport
                         case XmlNodeType.CDATA:
                             switch (lastElement.Peek())
                             {
+                                case "description":
+                                    Data.Description = XR.Value;
+                                    break;
+                                case "usage":
+                                    Data.Usage = XR.Value;
+                                    break;
+                                case "link":
+                                    linksTmp.Add(XR.Value); //add to the list of links
+                                    break;
                                 case "code":
-                                    codes.Add(XR.Value);    //add to the list of codes
+                                    codesTmp.Add(XR.Value);    //add to the list of codes
                                     break;
                                 default:
                                     break;
                             }
                             break;
                         default:
-                            break;
+                            break;  //do nothing
                     }
                 }
                 XR.Close();
-                if (references.Count > 0)   //if elements exists...
-                    Data.References = references.ToArray(); //fill the array for references
-                if (codes.Count > 0)    //if elements exists...
-                    Data.Codes = codes.ToArray();   //fill the array for references
+                if (referencesTmp.Count > 0)   //if elements exists...
+                    Data.References = referencesTmp.ToArray(); //fill the array for references
+                if (codesTmp.Count > 0)    //if elements exists...
+                    Data.Codes = codesTmp.ToArray();   //fill the array for references
             }
             catch (XmlException e)
             {

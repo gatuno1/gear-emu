@@ -8,12 +8,12 @@
         <!ELEMENT modified_by         (#PCDATA)>
         <!ELEMENT date_modified       (#PCDATA)>
         <!ELEMENT cultural_reference  (#PCDATA)>
-        <!ELEMENT description         ANY>
-        <!ELEMENT usage               ANY>
-        <!ELEMENT link                ANY>
+        <!ELEMENT description         ANY>        <!-- use CDATA -->
+        <!ELEMENT usage               ANY>        <!-- use CDATA -->
+        <!ELEMENT link                ANY>        <!-- use CDATA -->
 
     <!ELEMENT instance_class    ANY>
     <!ELEMENT reference         ANY>
-    <!ELEMENT code              (#PCDATA)>
+    <!ELEMENT code              (#PCDATA)>        <!-- use CDATA -->
         <!ATTLIST code ref        CDATA #IMPLIED>
         <!ATTLIST code order      CDATA "0">
