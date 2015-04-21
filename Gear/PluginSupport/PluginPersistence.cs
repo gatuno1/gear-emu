@@ -438,6 +438,8 @@ namespace Gear.PluginSupport
         {
             //Settings to read the XML
             XmlReaderSettings settings = new XmlReaderSettings();
+            settings.DtdProcessing = DtdProcessing.Parse;
+            settings.ValidationType = ValidationType.DTD;
             settings.IgnoreComments                 = true;
             settings.IgnoreProcessingInstructions   = true;
             settings.IgnoreWhitespace               = true;
@@ -455,23 +457,29 @@ namespace Gear.PluginSupport
                     switch (XR.NodeType)
                     {
                         case XmlNodeType.Element:
-                            lastElement.Push(XR.Name);  //Save the name to associate it to the content
+                            if (!XR.IsEmptyElement)
+                                lastElement.Push(XR.Name);  //Save the name to associate it to the content
+                            if ((XR.ReadState == ReadState.Interactive) && XR.HasAttributes)
+                            {
+                                if (XR.MoveToFirstAttribute())
+                                    do
+                                    {
+                                        switch (XR.Name)
+                                        {
+                                            case "class":
+                                                Data.InstanceName = XR.Value;
+                                                break;
+                                            case "name":
+                                                referencesTmp.Add(XR.Value);   //add to the list of references
+                                                break;
+                                            default:
+                                                break;
+                                        }
+                                    } while (XR.MoveToNextAttribute());
+                            }
                             break;
                         case XmlNodeType.EndElement:
                             lastElement.Pop();  //delete it
-                            break;
-                        case XmlNodeType.Attribute:
-                            switch (XR.Name)
-	                        {
-                                case "class":
-                                    Data.InstanceName = XR.Value;
-                                    break;
-                                case "name":
-                                    referencesTmp.Add(XR.Value);   //add to the list of references
-                                    break;
-                                default:
-                                    break;
-	                        }   
                             break;
                         case XmlNodeType.Text:
                             switch (lastElement.Peek())
@@ -542,6 +550,8 @@ namespace Gear.PluginSupport
         {
             //Settings to read the XML
             XmlReaderSettings settings = new XmlReaderSettings();
+            settings.DtdProcessing = DtdProcessing.Parse;
+            //settings.ValidationType = ValidationType.DTD;
             settings.IgnoreComments                 = true;
             settings.IgnoreProcessingInstructions   = true;
             settings.IgnoreWhitespace               = true;
@@ -557,36 +567,48 @@ namespace Gear.PluginSupport
                 List<string> linksTmp       = new List<string>();
                 List<string> referencesTmp  = new List<string>();
                 //dynamic dictionaries to manage code & external files
-                Dictionary<int, string> useExtFilesTmp  = new Dictionary<int, string>();
+                Dictionary<int, bool> useExtFilesTmp  = new Dictionary<int, bool>();
                 Dictionary<int, string> extFilesTmp     = new Dictionary<int, string>();
                 Dictionary<int, string> codesTmp        = new Dictionary<int, string>();
-                Dictionary<int, int> orderCodesTmp      = new Dictionary<int, int>();
+                Dictionary<int, int> orderCodesReverse  = new Dictionary<int, int>();
+                int codeQty = 0;    //count the code sections encountered
                 //read the data from XML, assigning to corresponding PluginData member
                 while (XR.Read())
                 {
                     switch (XR.NodeType)
                     {
                         case XmlNodeType.Element:
-                            lastElement.Push(XR.Name);  //Save the name to associate it to the content
+                            if (!XR.IsEmptyElement)
+                            { 
+                                lastElement.Push(XR.Name);  //Save the name to associate it to the content
+                                if (XR.Name == "code")  //if code section?
+                                    codeQty++;  //...increment the code section number
+                            }
+                            if ((XR.ReadState == ReadState.Interactive) && XR.HasAttributes)
+                            {
+                                if (XR.MoveToFirstAttribute())
+                                    do 
+                                    {
+                                        switch (XR.Name)
+                                        {
+                                            case "version":
+                                                Data.PluginVersion = XR.Value;
+                                                break;
+                                            case "ref":
+                                                extFilesTmp.Add(codeQty, XR.Value);
+                                                useExtFilesTmp.Add(codeQty, true);
+                                                break;
+                                            case "order":
+                                                orderCodesReverse.Add(int.Parse(XR.Value), codeQty);
+                                                break;
+                                            default:
+                                                break;
+                                        }
+                                    } while (XR.MoveToNextAttribute());
+                            }
                             break;
                         case XmlNodeType.EndElement:
                             lastElement.Pop();  //delete it
-                            break;
-                        case XmlNodeType.Attribute:
-                            switch (XR.Name)
-                            {
-                                case "version":
-                                    Data.PluginVersion = XR.Value;
-                                    break;
-                                case "ref":
-                                    extFilesTmp.Add(XR.Value);
-                                    break;
-                                case "order":
-                                    orderCodesTmp.Add(int.Parse(XR.Value));
-                                    break;
-                                default:
-                                    break;
-                            }
                             break;
                         case XmlNodeType.Text:
                             switch (lastElement.Peek())
@@ -620,7 +642,8 @@ namespace Gear.PluginSupport
                                     referencesTmp.Add(XR.Value);   //add to the list of references
                                     break;
                                 case "code":
-                                    codesTmp.Add(XR.Value);    //add to the list of codes
+                                    codesTmp.Add(codeQty, XR.Value);    //add to the list of codes
+                                    useExtFilesTmp.Add(codeQty, false);
                                     break;
                                 default:
                                     break;
@@ -639,7 +662,8 @@ namespace Gear.PluginSupport
                                     linksTmp.Add(XR.Value); //add to the list of links
                                     break;
                                 case "code":
-                                    codesTmp.Add(XR.Value);    //add to the list of codes
+                                    codesTmp.Add(codeQty, XR.Value);    //add to the list of codes
+                                    useExtFilesTmp.Add(codeQty, false);
                                     break;
                                 default:
                                     break;
@@ -650,10 +674,31 @@ namespace Gear.PluginSupport
                     }
                 }
                 XR.Close();
-                if (referencesTmp.Count > 0)   //if elements exists...
-                    Data.References = referencesTmp.ToArray(); //fill the array for references
-                if (codesTmp.Count > 0)    //if elements exists...
-                    Data.Codes = codesTmp.ToArray();   //fill the array for references
+                //construct the array of references
+                if (referencesTmp.Count > 0)
+                    Data.References = referencesTmp.ToArray();
+                //construct the array for codes, external files & etc, ordering by the 
+                // specified order of the file
+                if (codeQty > 0)
+                {
+                    int idx = 0; bool boolVal; string strVal;
+                    Data.UseExtFiles = new bool[codeQty];
+                    Data.ExtFiles    = new string[codeQty];
+                    Data.Codes       = new string[codeQty];
+                    for (int i=1; i <= codeQty; i++)
+                    {
+                        //retrieve index corresponding with original order
+                        if (orderCodesReverse.TryGetValue(i, out idx))
+                        {
+                            if (useExtFilesTmp.TryGetValue(idx, out boolVal))
+                                Data.UseExtFiles[i] = boolVal;
+                            if (boolVal && extFilesTmp.TryGetValue(idx, out strVal))
+                                Data.ExtFiles[i] = strVal;
+                            if (!boolVal && codesTmp.TryGetValue(idx, out strVal))
+                                Data.Codes[i] = strVal;
+                        }
+                    }
+                }
             }
             catch (XmlException e)
             {
