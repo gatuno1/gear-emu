@@ -205,8 +205,16 @@ namespace Gear.GUI
             //Determine if the XML is valid, and for which DTD version
             if (!pluginCandidate.ValidateXMLPluginFile(FileName))
             {
-                //if not valid
-                //@todo [ASB] show a dialog with the errors in XML definition of plugin
+                //if not valid, show the errors.
+                foreach(string strText in pluginCandidate.ValidationErrors)
+                {
+                    /// @todo change to show a dialog with the errors in load
+                    ListViewItem item = new ListViewItem("0000", 0);
+                    item.SubItems.Add("");
+                    item.SubItems.Add("");
+                    item.SubItems.Add(strText);
+                    errorListView.Items.Add(item);
+                }
                 return false;
             }
             else  //...XML plugin file is valid & system version is determined
@@ -214,7 +222,7 @@ namespace Gear.GUI
                 bool IsSuccess = true;
                 //as is valid, we have the version to look for the correct method to 
                 // load it
-                switch (pluginCandidate.PluginVersion)
+                switch (pluginCandidate.PluginSystemVersion)
                 {
                     case "0.0" :
                         IsSuccess = 
@@ -226,8 +234,9 @@ namespace Gear.GUI
                         break;
                     default:
                         ListViewItem item = new ListViewItem("0000", 0);
-                        item.SubItems.Add(
-                            string.Format("Unknow version \"{0}\"for Plugin system.",
+                        item.SubItems.Add("");
+                        item.SubItems.Add("");
+                        item.SubItems.Add(string.Format("Unknow version \"{0}\"for Plugin system.",
                             pluginCandidate.PluginSystemVersion));
                         errorListView.Items.Add(item);
                         IsSuccess = false;
@@ -257,7 +266,8 @@ namespace Gear.GUI
                     //fill references section on screen
                     foreach (string refer in pluginCandidate.References)
                     {
-                        referencesList.Items.Add(refer);
+                        if (!string.IsNullOrEmpty(refer))
+                            referencesList.Items.Add(refer);
                     }
                     //load metadata of the plugimn
                     if (pluginCandidate.PluginSystemVersion == "1.0")
@@ -280,82 +290,6 @@ namespace Gear.GUI
                 }
                 return IsSuccess;
             }
-
-/*
-            XmlReaderSettings settings = new XmlReaderSettings();
-            settings.IgnoreComments = true;
-            settings.IgnoreProcessingInstructions = true;
-            settings.IgnoreWhitespace = true;
-            XmlReader tr = XmlReader.Create(FileName, settings);
-            bool ReadText = false;
-
-            if (referencesList.Items.Count > 0) 
-                referencesList.Items.Clear();   //clear out the reference list
-            try
-            {
-
-                while (tr.Read())
-                {
-                    if (tr.NodeType == XmlNodeType.Text && ReadText)
-                    {
-                        //set or reset font and color
-                        codeEditorView.SelectAll();
-                        codeEditorView.SelectionFont = this.defaultFont;
-                        codeEditorView.SelectionColor = Color.Black;
-                        codeEditorView.Text = tr.Value;
-                        ReadText = false;
-                    }
-
-                    switch (tr.Name.ToLower())
-                    {
-                        case "reference":
-                            if (tr.HasAttributes)     //prevent empty element generates error
-                                referencesList.Items.Add(tr.GetAttribute("name"));
-                            break;
-                        case "instance":
-                            instanceName.Text = tr.GetAttribute("class");
-                            break;
-                        case "code":
-                            ReadText = true;
-                            break;
-                    }
-                }
-                m_SaveFileName = FileName;
-                CodeChanged = false;
-
-                if (displayErrors)
-                {
-                    errorListView.Items.Clear();
-                    ModuleCompiler.EnumerateErrors(EnumErrors);
-                }
-
-                return true;
-            }
-            catch (IOException ioe)
-            {
-                MessageBox.Show(this,
-                    ioe.Message,
-                    "Failed to load plug-in",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Exclamation);
-
-                return false;
-            }
-            catch (XmlException xmle)
-            {
-                MessageBox.Show(this,
-                    xmle.Message,
-                    "Failed to load plug-in",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Exclamation);
-
-                return false;
-            }
-            finally
-            {
-                tr.Close();
-            }
- */ 
         }
 
         /// @brief Take the plugin information from screen and call the persistence to store 
@@ -522,7 +456,8 @@ namespace Gear.GUI
 
                 if (dialog.ShowDialog(this) == DialogResult.OK)
                 {
-                    OpenFile(dialog.FileName, false);
+                    if (OpenFile(dialog.FileName, false))
+                        UpdateTitles();
                 }
             }
         }
@@ -621,14 +556,17 @@ namespace Gear.GUI
             int i = 0;
             int index = errorListView.SelectedIndices[0];
             ListViewItem lvi = errorListView.Items[index];
-            int line = Convert.ToInt32(lvi.SubItems[1].Text) - 1;
-            int column = Convert.ToInt32(lvi.SubItems[2].Text) - 1;
-            while (line != codeEditorView.GetLineFromCharIndex(i++)) ;
-            i += column;
-            codeEditorView.SelectionStart = i;
-            codeEditorView.ScrollToCaret();
-            codeEditorView.Select();
-
+            try
+            {
+                int line = Convert.ToInt32(lvi.SubItems[1].Text) - 1;
+                int column = Convert.ToInt32(lvi.SubItems[2].Text) - 1;
+                while (line != codeEditorView.GetLineFromCharIndex(i++)) ;
+                i += column;
+                codeEditorView.SelectionStart = i;
+                codeEditorView.ScrollToCaret();
+                codeEditorView.Select();
+            }
+            catch (FormatException) { }
             return;
         }
 
@@ -1070,7 +1008,7 @@ namespace Gear.GUI
         /// @version v15.03.26 - Added.
         private void SetElementOfMetadata(string groupName, string[] values)
         {
-            if (values.Length > 0)  //there are data to set?
+            if ((values != null) && (values.Length > 0))  //there are data to set?
             {
                 //lookin for the group of interest
                 foreach (ListViewGroup group in pluginMetadataList.Groups)

@@ -62,7 +62,7 @@ namespace Gear.PluginSupport
         /// PluginData::PluginSystemVersion), nevertheless it would be 0.0 (the default one).
         bool isValid;
         /// @brief List of errors in the validation of XML file.
-        List<string> ValidationErrors;
+        public List<string> ValidationErrors;
 
         /// @brief default constructor for PluginData
         /// @version v15.03.26 - Added.
@@ -72,6 +72,9 @@ namespace Gear.PluginSupport
             ValidationErrors = new List<string>();
         }
 
+        /// @brief Add an error to the list.
+        /// @param errorText Text of the error.
+        /// @version v15.03.26 - Added.
         public void AddError(string errorText)
         {
             if (!string.IsNullOrEmpty(errorText))
@@ -551,7 +554,7 @@ namespace Gear.PluginSupport
             //Settings to read the XML
             XmlReaderSettings settings = new XmlReaderSettings();
             settings.DtdProcessing = DtdProcessing.Parse;
-            //settings.ValidationType = ValidationType.DTD;
+            settings.ValidationType = ValidationType.DTD;
             settings.IgnoreComments                 = true;
             settings.IgnoreProcessingInstructions   = true;
             settings.IgnoreWhitespace               = true;
@@ -677,6 +680,8 @@ namespace Gear.PluginSupport
                 //construct the array of references
                 if (referencesTmp.Count > 0)
                     Data.References = referencesTmp.ToArray();
+                else
+                    Data.References = new string[1];
                 //construct the array for codes, external files & etc, ordering by the 
                 // specified order of the file
                 if (codeQty > 0)
@@ -691,11 +696,11 @@ namespace Gear.PluginSupport
                         if (orderCodesReverse.TryGetValue(i, out idx))
                         {
                             if (useExtFilesTmp.TryGetValue(idx, out boolVal))
-                                Data.UseExtFiles[i] = boolVal;
+                                Data.UseExtFiles[i-1] = boolVal;
                             if (boolVal && extFilesTmp.TryGetValue(idx, out strVal))
-                                Data.ExtFiles[i] = strVal;
+                                Data.ExtFiles[i-1] = strVal;
                             if (!boolVal && codesTmp.TryGetValue(idx, out strVal))
-                                Data.Codes[i] = strVal;
+                                Data.Codes[i-1] = strVal;
                         }
                     }
                 }

@@ -16,4 +16,4 @@
     <!ELEMENT reference         ANY>
     <!ELEMENT code              (#PCDATA)>        <!-- use CDATA -->
         <!ATTLIST code ref        CDATA #IMPLIED>
-        <!ATTLIST code order      CDATA "0">
+        <!ATTLIST code order      CDATA "1">
