@@ -287,6 +287,8 @@ namespace Gear.GUI
                     }
                     //store the name of the last file opened
                     m_SaveFileName = FileName;
+                    //
+                    UpdateTitles();
                 }
                 return IsSuccess;
             }
@@ -430,7 +432,8 @@ namespace Gear.GUI
             errorListView.Items.Add(item);
         }
 
-        /// @brief Show dialog to load a file with plugin information.
+        /// @brief Show a dialog to load a file with plugin information.
+        /// @details This method checks if the previous plugin data was modified and not saved.
         /// @param[in] sender Object who called this on event.
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         private void OpenButton_Click(object sender, EventArgs e)
@@ -456,8 +459,7 @@ namespace Gear.GUI
 
                 if (dialog.ShowDialog(this) == DialogResult.OK)
                 {
-                    if (OpenFile(dialog.FileName, false))
-                        UpdateTitles();
+                    OpenFile(dialog.FileName, false);   //try to open the file and load to screen
                 }
             }
         }
@@ -1127,3 +1129,21 @@ namespace Gear.GUI
 
     }
 }
+
+/// @page PluginEditorOpenFileCommonFig Common sequence inside PluginEditor.OpenFile().
+/// @par Details inside OpenFile Method
+/// Sequence inside the 
+/// @ref Gear.GUI.PluginEditor.OpenFile() 
+/// method, used in @ref PluginLoadingFromGearDesktop "\"Plugin loading from GEAR Desktop\""
+/// and @ref PluginLoadInsidePluginEditor "\"Plugin loading inside Plugin Editor\"".
+/// @par
+/// @mscfile "Plugin_Editor_OpenFile_Common-fig.mscgen" "Figure: Common case inside PluginEditor.OpenFile(.)"
+
+
+/// @page PluginLoadInsidePluginEditor Plugin Loading Sequence from inside Plugin Editor.
+/// @par Main Sequence.
+/// Sequence of plugin loading, after the user presses the "Open" button in the editor window (ideal 
+/// flow case).
+/// @par
+/// @mscfile "Load_plugin_inside_Plugin_Editor-fig1.mscgen" "Figure: Loading a Plugin in Editor inside from Plugin Editor."
+/// 

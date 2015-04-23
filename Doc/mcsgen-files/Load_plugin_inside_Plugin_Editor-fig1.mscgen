@@ -1,0 +1,12 @@
+msc {
+#global settings
+hscale="1.00";
+
+#List of entities
+A [label="1"],
+B [label="2"],
+C [label="3"];
+
+A => B;
+
+}

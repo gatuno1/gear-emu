@@ -573,25 +573,29 @@ namespace Gear.GUI
 // Reference link to MSCGEN: http://www.mcternan.me.uk/mscgen/
 // Reference link to DOXYGEN commands: http://www.stack.nl/~dimitri/doxygen/manual/commands.html
 //
-/// @defgroup PluginDetails Details about Loading a Plugin
-/// 
 
-/// @ingroup PluginDetails
-/// @page PluginLoadingSequencePage Loading Sequence for a Plugin.
+/// @page PluginDetails Plugin Loading Details
+/// Documentation of sequences of loading a plugin in differents situations.
+/// - @subpage PluginLoadingInEmulatorPage "Loading in Emulator."
+/// - @subpage PluginLoadingFromGearDesktop  "Loading from GEAR Desktop."
+/// - @subpage PluginLoadInsidePluginEditor "Loading inside Plugin Editor."
+/// - @subpage PluginEditorOpenFileCommonFig "Common sequences inside PluginEditor.OpenFile()."
+
+/// @page PluginLoadingInEmulatorPage Plugin Loading Sequence in Emulator.
 /// @par Main Sequence.
-/// Sequence of plugin loading, since the user presses the button in the emulator window (ideal 
+/// Sequence of plugin loading, after the user presses the button in the emulator window (ideal 
 /// flow case).
-/// @anchor PluginLoadingSequenceFig1
+/// @anchor PluginLoadingInEmulatorFig1
 /// @par
-/// @mscfile "Load plugin Callings-fig1.mcsgen" "Fig.1: Main sequence for a Plugin loading."
+/// @mscfile "Load plugin Callings-fig1.mcsgen" "Fig.1: Main sequence for loading a Plugin in Emulator."
 /// @par Detail for Registering OnPinChange & OnClock Methods.
 /// This is a detail of main sequence of 
-/// @ref PluginLoadingSequenceFig1 "\"Fig.1: Main sequence for a Plugin loading.\"", to show 
-/// the possible flows of invocations when the program calls the Method `PresentChip()`, but not 
-/// from PluginBase; is the method defined in the plugin class derived by the loaded & compiled 
-/// plugin class. So the plugin programmer could choose to call or not either `OnClock()` and 
-/// `OnPinChange()` derived methods.
-/// @anchor PluginLoadingSequenceFig2
+/// @ref PluginLoadingInEmulatorFig1 "\"Fig.1: Main sequence for loading a Plugin in Emulator.\"",
+/// to show the possible flows of invocations when the program calls the Method `PresentChip()`, 
+/// but not from PluginBase; is the method defined in the plugin class derived by the loaded & 
+/// compiled plugin class. So the plugin programmer could choose to call or not either `OnClock()` 
+/// and `OnPinChange()` derived methods.
+/// @anchor PluginLoadingInEmulatorFig2
 /// @par
 /// @mscfile "Load plugin Callings-fig2.mcsgen" "Fig.2: details of invocation for Plugin members."
 /// 

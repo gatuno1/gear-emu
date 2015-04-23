@@ -1,0 +1,32 @@
+msc {
+#global settings
+hscale="1.00";
+
+#List of entities
+A [label="1"],
+B [label="2"];
+
+#phase separation
+--- [label=" to complete ", linecolor="indigo", textcolor="indigo"];
+
+#titles Phase
+A box A [label="GearDesktop.\nOpenPluginButton_Click()", url="\ref Gear.GUI.GearDesktop.OpenPluginButton_Click", textbgcolor="#DCE2EF"],
+B box B [label="new PluginEditor(false)", url="\ref Gear.GUI.PluginEditor", textbgcolor="#DCE2EF"];
+
+#Transitions Phase
+A => B;
+B rbox B [label="Create a Plugin Editor Window."];
+A <= B;
+
+#phase separation
+--- [label=" to complete", linecolor="indigo", textcolor="indigo"];
+
+#titles Phase
+B box B [label="PluginEditor.\nOpenFile(FileName, false)", url="\ref Gear.GUI.PluginEditor.OpenFile", textbgcolor="#DCE2EF"];
+
+#Transitions Phase
+A => B;
+B note B [label="\nDetails on\nFigure 2.\n", url="\ref PluginLoadingInEmulatorFig2", textbgcolor="#7FFF7F"];
+A <= B;
+
+}

@@ -123,6 +123,8 @@ namespace Gear.GUI
         /// @brief Load plugin editor from file.
         /// @details Load a plugin definition into a new editor window, from user selected file, 
         /// remembering independently from last binary directory.
+        /// @param[in] sender Reference to object where event was raised.
+        /// @param[in] e Event data arguments.
         private void OpenPluginButton_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -149,6 +151,8 @@ namespace Gear.GUI
         }
 
         /// @brief Open a window with the plugin editor to create a new plugin.
+        /// @param[in] sender Reference to object where event was raised.
+        /// @param[in] e Event data arguments.
         private void newPluginButton_Click(object sender, EventArgs e)
         {
             //load default plugin template
@@ -160,3 +164,12 @@ namespace Gear.GUI
 
     }
 }
+
+/// @page PluginLoadingFromGearDesktop Plugin Loading Sequence in Plugin Editor from GEAR Desktop.
+/// @par Main Sequence.
+/// Sequence of plugin loading, after the user presses the "Edit Plugin" button in the main 
+/// desktop window (ideal flow case).
+/// @anchor PluginLoadInEditorFromGEARDesktopFig1
+/// @par
+/// @mscfile "Load_plugin_in_Editor_from_GEAR_Desktop-fig1.mscgen" "Figure: Loading a Plugin in Editor from GEAR Desktop."
+/// 

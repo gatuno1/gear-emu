@@ -64,6 +64,6 @@ A <= B;
 
 #phase separation
 --- [label="", linecolor="indigo", textcolor="indigo"];
-A note A [label="\nReturn to\nDiagram 1.\n", url="\ref PluginLoadingSequenceFig1", textbgcolor="#7FFF7F"];
+A note A [label="\nReturn to\nDiagram 1.\n", url="\ref PluginLoadingInEmulatorFig1", textbgcolor="#7FFF7F"];
 
 }

@@ -18,7 +18,7 @@ B box B [label="Emulator.\nLoadPlugin()", url="\ref Gear.GUI.Emulator.LoadPlugin
 C box C [label="PluginBase plugin =", url="\ref Gear.PluginSupport.ModuleCompiler.LoadModule", textbgcolor="#DCE2EF"],
 D box D [label="ModuleCompiler.\nLoadModule()", url="\ref Gear.PluginSupport.ModuleCompiler.LoadModule", textbgcolor="#DCE2EF"];
 
-#Transicions Phase
+#Transitions Phase
 A => B; 
 B rbox B [label="Read XML file:\nextract code & refs"];
 B => C;
@@ -36,7 +36,7 @@ C box C [label="Emulator.\nAttachPlugin(plugin)", url="\ref Gear.GUI.Emulator.At
 D box D [label="PropellerCPU.\nIncludePlugin(plugin)", url="\ref Gear.EmulationCore.PropellerCPU.IncludePlugin", textbgcolor="#DCE2EF"],
 E box E [label="PropellerCPU.\nPlugIns.Add(plugin)", url="\ref Gear.EmulationCore.PropellerCPU.IncludePlugin", textbgcolor="#DCE2EF"];
 
-#Transicions Phase
+#Transitions Phase
 B => C [label="From here plugin is a\nvalid Plugin instance."];
 C => D;
 D => E;
@@ -46,13 +46,13 @@ D <= E;
 #phase separation
 --- [label="Detail for Registering OnPinChange & OnClock Methods on Figure 2.", linecolor="indigo", textcolor="indigo"];
 
-#Transicions Phase
-D note E [label="\nMore details on\nFigure 2.\n", url="\ref PluginLoadingSequenceFig2", textbgcolor="#7FFF7F"];
+#Transitions Phase
+D note E [label="\nMore details on\nFigure 2.\n", url="\ref PluginLoadingInEmulatorFig2", textbgcolor="#7FFF7F"];
 
 #phase separation
 --- [label="After registering OnPinChange & OnClock Methods.", linecolor="indigo", textcolor="indigo"];
 
-#Transicions Phase
+#Transitions Phase
 C <= D;
 B <= C;
 A <= B;
