@@ -209,7 +209,8 @@ namespace Gear.GUI
                 foreach(string strText in pluginCandidate.ValidationErrors)
                 {
                     /// @todo change to show a dialog with the errors in load
-                    ListViewItem item = new ListViewItem("0000", 0);
+                    errorListView.Items.Clear();
+                    ListViewItem item = new ListViewItem("OpenFile", 0);
                     item.SubItems.Add("");
                     item.SubItems.Add("");
                     item.SubItems.Add(strText);
@@ -233,10 +234,10 @@ namespace Gear.GUI
                             PluginPersistence.ExtractFromXML_v1_0(FileName, ref pluginCandidate);
                         break;
                     default:
-                        ListViewItem item = new ListViewItem("0000", 0);
+                        ListViewItem item = new ListViewItem("OpenFile", 0);
                         item.SubItems.Add("");
                         item.SubItems.Add("");
-                        item.SubItems.Add(string.Format("Unknow version \"{0}\"for Plugin system.",
+                        item.SubItems.Add(string.Format("Unknow version \"{0}\" for Plugin system.",
                             pluginCandidate.PluginSystemVersion));
                         errorListView.Items.Add(item);
                         IsSuccess = false;
@@ -287,7 +288,8 @@ namespace Gear.GUI
                     }
                     //store the name of the last file opened
                     m_SaveFileName = FileName;
-                    //
+                    //clean up
+                    errorListView.Items.Clear();
                     UpdateTitles();
                 }
                 return IsSuccess;

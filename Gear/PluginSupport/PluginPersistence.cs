@@ -150,6 +150,11 @@ namespace Gear.PluginSupport
             settings4DTD.IgnoreProcessingInstructions = true;
             settings4DTD.IgnoreWhitespace = true;
             settings4DTD.ValidationEventHandler += new ValidationEventHandler(ValidateXMLPluginEventHandler);
+            XmlUrlResolver resolver = new XmlUrlResolver();
+            resolver.Credentials = System.Net.CredentialCache.DefaultCredentials;
+            settings4DTD.XmlResolver = resolver;
+            // about Resolver class see https://msdn.microsoft.com/en-us/library/47as68k4%28v=vs.100%29.aspx
+            // about custom XmlResolver http://stackoverflow.com/questions/995591/how-to-resolve-xsl-includes-in-a-transformation-that-loads-xsl-from-a-string https://msdn.microsoft.com/en-us/library/aa302284.aspx
             settings4DTD.ValidationFlags = XmlSchemaValidationFlags.ReportValidationWarnings;
 
             try
@@ -201,7 +206,7 @@ namespace Gear.PluginSupport
             {
                 isValid = false;
                 ValidationErrors.Add(
-                    string.Format("Error {0} found",e.Message));
+                    string.Format("Error found: \"{0}\"", e.Message));
                 return false;
             }
         }
