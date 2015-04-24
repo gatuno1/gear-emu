@@ -136,9 +136,10 @@ namespace Gear.GUI
         }
 
         /// @brief Run the emulator updating the screen between a number of steps.
-        /// @details The program property "UpdateEachSteps" gives the number of steps before screen repaint.
-        /// Adjusting this number in configuration (like increasing the number) enable to obtain faster 
-        /// execution at expense of less screen responsiveness.
+        /// @details The program property "UpdateEachSteps" gives the number of steps before 
+        /// screen repaint.
+        /// Adjusting this number in configuration (like increasing the number) enable to obtain 
+        /// faster execution at expense of less screen responsiveness.
         /// @param[in] sender Reference to object where event was raised.
         /// @param[in] e Event data arguments.
         private void RunEmulatorStep(object sender, EventArgs e)
