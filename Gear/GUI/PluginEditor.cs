@@ -251,16 +251,32 @@ namespace Gear.GUI
                         referencesList.Items.Clear();   //clear out the reference list
                     codeEditorView.Clear();             //clear the code of the plugin
                     //fill code section on screen
-                    foreach(string cod in pluginCandidate.Codes)
+                    for(int i = 0; i < pluginCandidate.UseExtFiles.Length; i++)
                     {
-                        //set or reset font and color
-                        codeEditorView.SelectAll();
-                        codeEditorView.SelectionFont = this.defaultFont;
-                        codeEditorView.SelectionColor = Color.Black;
-                        ///@todo : Add support to show in screen more than one file.
-                        codeEditorView.Text = cod;  //now it overwrites the code text.
+                        if (pluginCandidate.UseExtFiles[i])
+                        {
+                            //set or reset font and color
+                            codeEditorView.SelectAll();
+                            codeEditorView.SelectionFont = this.defaultFont;
+                            codeEditorView.SelectionColor = Color.Black;
+                            /// @todo : Add support to show in screen more than one file.
+                            /// @todo : add exceptions management to file loading.
+                            string externalFile = Path.Combine(Path.GetDirectoryName(FileName),
+                                pluginCandidate.ExtFiles[i]);
+                            codeEditorView.LoadFile(externalFile);
+                        }
+                        else
+                        {
+                            //set or reset font and color
+                            codeEditorView.SelectAll();
+                            codeEditorView.SelectionFont = this.defaultFont;
+                            codeEditorView.SelectionColor = Color.Black;
+                            ///@todo : Add support to show in screen more than one file.
+                            ///now it overwrites the code text.
+                            codeEditorView.Text = pluginCandidate.Codes[i];  
+                        }
+                        CodeChanged = false;
                     }
-                    CodeChanged = false;
                     //fill instance text
                     ///@todo validate the instance name inside plugin against the detected one by regex.
                     instanceName.Text = pluginCandidate.InstanceName;

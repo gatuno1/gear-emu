@@ -68,6 +68,8 @@ namespace Gear.EmulationCore
     /// 
     /// @remark Source: Table 15 - %Cog RAM Special Purpose Registers, %Propeller 
     /// P8X32A Datasheet V1.4.0.
+    /// @version v15.03.26 - added NONE to enum, to follow best practices and do not
+    /// have an illegal value when is instatiated.
     public enum CogSpecialAddress : uint
     {
         COGID     = 0x1E9,    //!< Identificator number of this cog.
@@ -87,9 +89,10 @@ namespace Gear.EmulationCore
         PHSA      = 0x1FC,    //!< Counter A Phase.
         PHSB      = 0x1FD,    //!< Counter B Phase.
         VCFG      = 0x1FE,    //!< Video Configuration.
-        VSCL      = 0x1FF     //!< Video Scale.
+        VSCL      = 0x1FF,    //!< Video Scale.
+        NONE      = 0x000     //!< None
     }
-
+    
     /// @todo Document enum Gear.EmulationCore.CogConditionCodes
     /// 
     public enum CogConditionCodes : uint
@@ -128,7 +131,7 @@ namespace Gear.EmulationCore
         IF_ALWAYS       = 0x0F  //!< Always execute
     }
 
-    /// @brief Base class for a cog emulator.
+    /// @brief Base class for a %Cog emulator.
     abstract public partial class Cog
     {
         // Runtime variables
@@ -150,12 +153,15 @@ namespace Gear.EmulationCore
         protected VideoGenerator Video;     //!< @todo Document member Cog.Video
         protected PLLGroup PhaseLockedLoop; //!< @todo Document member Cog.PhaseLockedLoop
 
+        /// @brief Total %Cog memory implemented on P1 Chip.
+        public const int TOTAL_COG_MEMORY = 0x200;  // 512 longs of memory
+
         /// @brief Default constructor.
         public Cog(PropellerCPU host, uint programAddress, uint param, uint frequency, PLLGroup pll)
         {
             Hub = host;
 
-            Memory = new uint[0x200];     // 512 longs of memory
+            Memory = new uint[TOTAL_COG_MEMORY];
             ProgramAddress = programAddress;
             ParamAddress = param;
 
@@ -317,7 +323,7 @@ namespace Gear.EmulationCore
         {
             get
             {
-                if (i >= 0x200)
+                if (i >= TOTAL_COG_MEMORY)
                 {
                     return 0x55;
                 }
@@ -338,7 +344,7 @@ namespace Gear.EmulationCore
 
             set
             {
-                if (i < 0x200)
+                if (i < TOTAL_COG_MEMORY)
                 {
                     Memory[i] = value;
                 }

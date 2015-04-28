@@ -168,7 +168,7 @@ namespace Gear.PluginSupport
             resolver.Credentials = System.Net.CredentialCache.DefaultCredentials;
             settings.XmlResolver = resolver;
             settings.ValidationFlags = XmlSchemaValidationFlags.ReportValidationWarnings;
-
+            
             try
             {
                 //Open a XML reader with the file name and settings given

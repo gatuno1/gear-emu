@@ -42,7 +42,7 @@ namespace Gear.GUI
         private String LastFileName;        //!< @brief Last file name opened.
         private List<Control> FloatControls;//!< @brief List of floating controls.
 
-        //!< @todo Document Gear.GUI.Emulator.runtimer member (what it is for???)
+        /// @brief Stepwatch to periodically rerun a step of the emulation
         private Timer runTimer;             
 
         /// @brief Default Constructor.

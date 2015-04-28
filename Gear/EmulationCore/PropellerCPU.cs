@@ -167,9 +167,9 @@ namespace Gear.EmulationCore
         public const int TOTAL_PINS      = 64;
         /// @brief Pin mask for all the 64 pins of P1 Chip.
         public const ulong PIN_FULL_MASK = 0xFFFFFFFFFFFFFFFF;
-        /// @brief Total main memory implemented on P1 Chip (Hub RAM + ROM).
+        /// @brief Total Main memory implemented on P1 Chip (Hub RAM + ROM).
         public const int TOTAL_MEMORY    = 0x10000;
-        /// @brief Total RAM hub memory implemented on P1 Chip.
+        /// @brief Total RAM Hub memory implemented on P1 Chip.
         public const int TOTAL_RAM       = 0x8000;
 
         /// @brief PropellerCPU Constructor.
