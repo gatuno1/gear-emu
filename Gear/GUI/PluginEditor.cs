@@ -1025,10 +1025,14 @@ namespace Gear.GUI
                             bool isValid = !string.IsNullOrEmpty(values[i]);
                             //if not valid, get the default value; else use the given value
                             val = (isValid) ? values[i] : GetDefaultTextMetadataElement(group);
-                            if (i > 0)  
-                                group.Items.Add(val);
-                            else   //assuming always exists zero-index element
-                                group.Items[0].Text = val;
+                            if (i > 0)
+                            {
+                                ListViewItem newItem = new ListViewItem(val, group);
+                                pluginMetadataList.Items.Add(newItem);
+                            }
+                            else
+                                //assuming always exists zero-index element
+                                group.Items[i].Text = val;
                             //set the visibility as is using a default value or not
                             SetUserDefinedMetadataElement(group.Items[i], isValid);
                         }
@@ -1041,7 +1045,7 @@ namespace Gear.GUI
         /// but resetting the names depending of the given parameter.
         /// @param[in] groupName Name of the group to retrieve elements.
         /// @param[in] resetEmpty Boolean to reset the value if not user defined (=true), 
-        /// or not (=false).
+        /// or default (=false).
         /// @returns Array of elements of the group.
         /// @version v15.03.26 - Added.
         private string[] GetElementsFromMetadata(string groupName, bool resetEmpty)

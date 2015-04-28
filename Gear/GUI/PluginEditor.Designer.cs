@@ -460,7 +460,7 @@ namespace Gear.GUI
             this.removePluginMetadataButton.Image = ((System.Drawing.Image)(resources.GetObject("removePluginMetadataButton.Image")));
             this.removePluginMetadataButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.removePluginMetadataButton.Name = "removePluginMetadataButton";
-            this.removePluginMetadataButton.Size = new System.Drawing.Size(54, 22);
+            this.removePluginMetadataButton.Size = new System.Drawing.Size(54, 19);
             this.removePluginMetadataButton.Text = "Remove";
             this.removePluginMetadataButton.ToolTipText = "Remove selected Author/Link";
             this.removePluginMetadataButton.Click += new System.EventHandler(this.removePluginMetadataButton_Click);

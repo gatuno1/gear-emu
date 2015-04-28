@@ -31,6 +31,20 @@ using System.IO;
 
 namespace Gear.PluginSupport
 {
+    /// @brief Custom XML resolver, to locate the DTD definition file in the appropriate folder.
+    /// @details Instead of search of DTD file in the location of XML plugin file, this redirects 
+	/// to search in the base directory of the GEAR executable.
+    /// @version v15.03.26 - Added.
+    class DTDLocationResolver : XmlUrlResolver
+    {
+        public override Uri ResolveUri(Uri baseUri, string relativeUri)
+        {
+            Uri temp = new Uri(AppDomain.CurrentDomain.BaseDirectory, UriKind.Absolute);
+            Uri outVal = base.ResolveUri(temp, relativeUri);
+            return outVal;
+        }
+    }
+
     /// @brief Class to hold metadata of the plugin.
     /// @version v15.03.26 - Added.
     public class PluginData
@@ -86,7 +100,7 @@ namespace Gear.PluginSupport
         /// @param[in] sender Reference to the object where the exception was raised.
         /// @param[in] args Class with the validation details event.
         /// @version v15.03.26 - Added.
-        void ValidateXMLPluginEventHandler(object sender, ValidationEventArgs args)
+        public void ValidateXMLPluginEventHandler(object sender, ValidationEventArgs args)
         {
             isValid = false;
             ValidationErrors.Add(
@@ -113,7 +127,7 @@ namespace Gear.PluginSupport
                 {
                     //check if readable and having attributes
                     if ((XR.ReadState == ReadState.Interactive) && XR.HasAttributes)
-                        //if I can move to it, it is readeable
+                        //if I can move to it, it is readable
                         if (XR.MoveToFirstAttribute())
                             do   //loop for each attribute
                             {
@@ -143,36 +157,35 @@ namespace Gear.PluginSupport
         {
             //Settings to be used to validate the XML
             // reference from https://msdn.microsoft.com/en-us/library/vstudio/z2adhb2f%28v=vs.100%29.aspx
-            XmlReaderSettings settings4DTD = new XmlReaderSettings();
-            settings4DTD.DtdProcessing = DtdProcessing.Parse;   //need to look for DTD definition
-            settings4DTD.ValidationType = ValidationType.DTD;   //validate XML against DTD
-            settings4DTD.IgnoreComments = true;
-            settings4DTD.IgnoreProcessingInstructions = true;
-            settings4DTD.IgnoreWhitespace = true;
-            settings4DTD.ValidationEventHandler += new ValidationEventHandler(ValidateXMLPluginEventHandler);
-            XmlUrlResolver resolver = new XmlUrlResolver();
+            XmlReaderSettings settings = new XmlReaderSettings();
+            settings.DtdProcessing = DtdProcessing.Parse;   //need to look for DTD definition
+            settings.ValidationType = ValidationType.DTD;   //validate XML against DTD
+            settings.IgnoreComments = true;
+            settings.IgnoreProcessingInstructions = true;
+            settings.IgnoreWhitespace = true;
+            settings.ValidationEventHandler += new ValidationEventHandler(ValidateXMLPluginEventHandler);
+            XmlUrlResolver resolver = new DTDLocationResolver();
             resolver.Credentials = System.Net.CredentialCache.DefaultCredentials;
-            settings4DTD.XmlResolver = resolver;
-            // about Resolver class see https://msdn.microsoft.com/en-us/library/47as68k4%28v=vs.100%29.aspx
-            // about custom XmlResolver http://stackoverflow.com/questions/995591/how-to-resolve-xsl-includes-in-a-transformation-that-loads-xsl-from-a-string https://msdn.microsoft.com/en-us/library/aa302284.aspx
-            settings4DTD.ValidationFlags = XmlSchemaValidationFlags.ReportValidationWarnings;
+            settings.XmlResolver = resolver;
+            settings.ValidationFlags = XmlSchemaValidationFlags.ReportValidationWarnings;
 
             try
             {
                 //Open a XML reader with the file name and settings given
-                XmlReader XR = XmlReader.Create(filenameXml, settings4DTD);
+                XmlReader XR = XmlReader.Create(filenameXml, settings);
                 //validate the file as it is, expecting it have embedded DTD definition
-                if (ValidateXMLPluginSource(XR, settings4DTD)) 
+                if (ValidateXMLPluginSource(XR, settings)) 
                     return true;
                 else  //we have to try adding default DTD definition to the XML source
                 {
+                    /// @todo [ASB] detect the validation errors properly (bug: a invalid XML with v1.0 version should be detected before).
                     ValidationErrors.Clear();   //clear the warnings from failed validation
-					this.isValid = true;		//resetting the initial status to test for validity
+                    this.isValid = true;		//resetting the initial status to test for validity
                     // Add the DTD definition to XML with a XmlReader
                     // reference from http://stackoverflow.com/questions/470313/net-how-to-validate-xml-file-with-dtd-without-doctype-declaration
                     // and from http://stackoverflow.com/questions/10514198/validate-xml-against-dtd-from-string
                     XmlDocument doc = new XmlDocument();
-                    doc.Load(filenameXml);
+                    doc.Load(XR);	//to use the same settings as the first validation
                     doc.InsertBefore( 
                         doc.CreateDocumentType("plugin", null, @"Resources\plugin_v1.0.dtd", null),
                         doc.DocumentElement);
@@ -180,9 +193,9 @@ namespace Gear.PluginSupport
                     MemoryStream mem = new MemoryStream();
                     doc.Save(mem);
                     //we will read from the memory stream
-                    XR = XmlReader.Create(mem, settings4DTD);
+                    XR = XmlReader.Create(mem, settings);
                     //validate from the XML source with default DTD definition
-                    return ValidateXMLPluginSource(XR, settings4DTD);
+                    return ValidateXMLPluginSource(XR, settings);
                 }
 
             }
@@ -279,7 +292,7 @@ namespace Gear.PluginSupport
             xmlDoc.AppendChild(xmlDeclatation);
             //Document type element & DTD to use
             xmlDoc.XmlResolver = null;
-            XmlDocumentType doctype = xmlDoc.CreateDocumentType("plugin", null, @"Resourses\plugin_v1.0.dtd", null);
+            XmlDocumentType doctype = xmlDoc.CreateDocumentType("plugin", null, @"Resources\plugin_v1.0.dtd", null);
             xmlDoc.AppendChild(doctype);
             //Main element - plugin
             XmlElement root = xmlDoc.CreateElement("plugin");
@@ -438,7 +451,7 @@ namespace Gear.PluginSupport
         /// @brief Load a plugin from XML as version 0.0, filling the plugin data.
         /// @param[in] filenameXml File name in XML format, version 0.0
         /// @param[in,out] Data Metadata of the plugin.
-        /// @returns State of loading: True if it was succesful (also filling Data parameter 
+        /// @returns State of loading: True if it was successful (also filling Data parameter 
         /// with the plugin information), or False if didn't (in this case Data parameter
         /// only should have updated IsValid attribute).
         /// @version v15.03.26 - Added.
@@ -466,7 +479,8 @@ namespace Gear.PluginSupport
                     {
                         case XmlNodeType.Element:
                             if (!XR.IsEmptyElement)
-                                lastElement.Push(XR.Name);  //Save the name to associate it to the content
+                                //Save the name to associate it to the content
+                                lastElement.Push(XR.Name);
                             if ((XR.ReadState == ReadState.Interactive) && XR.HasAttributes)
                             {
                                 if (XR.MoveToFirstAttribute())
@@ -478,7 +492,8 @@ namespace Gear.PluginSupport
                                                 Data.InstanceName = XR.Value;
                                                 break;
                                             case "name":
-                                                referencesTmp.Add(XR.Value);   //add to the list of references
+                                                //add to the list of references
+                                                referencesTmp.Add(XR.Value);
                                                 break;
                                             default:
                                                 break;
@@ -550,7 +565,7 @@ namespace Gear.PluginSupport
         /// @brief Load a plugin from XML as version 1.0.
         /// @param[in] filenameXml File name in XML format, version 1.0
         /// @param[in] Data Metadata of the plugin.
-        /// @returns State of loading: True if it was succesful (also filling Data parameter 
+        /// @returns State of loading: True if it was successful (also filling Data parameter 
         /// with the plugin information), or False if didn't (in this case Data parameter
         /// only should have updated IsValid attribute).
         /// @version v15.03.26 - Added.
@@ -563,6 +578,11 @@ namespace Gear.PluginSupport
             settings.IgnoreComments                 = true;
             settings.IgnoreProcessingInstructions   = true;
             settings.IgnoreWhitespace               = true;
+            settings.ValidationEventHandler += 
+                new ValidationEventHandler(Data.ValidateXMLPluginEventHandler);
+            XmlUrlResolver resolver = new DTDLocationResolver();
+            resolver.Credentials = System.Net.CredentialCache.DefaultCredentials;
+            settings.XmlResolver = resolver;
             bool success = true;    //status to return
             try
             {
@@ -682,6 +702,16 @@ namespace Gear.PluginSupport
                     }
                 }
                 XR.Close();
+                //construct the array of authors
+                if (authorsTmp.Count > 0)
+                    Data.Authors = authorsTmp.ToArray();
+                else
+                    Data.Authors = new string[1];
+                //construct the array of links
+                if (linksTmp.Count > 0)
+                    Data.Links = linksTmp.ToArray();
+                else
+                    Data.Links = new string[1];
                 //construct the array of references
                 if (referencesTmp.Count > 0)
                     Data.References = referencesTmp.ToArray();
