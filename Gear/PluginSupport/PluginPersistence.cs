@@ -609,9 +609,9 @@ namespace Gear.PluginSupport
                             if (!XR.IsEmptyElement)
                             { 
                                 lastElement.Push(XR.Name);  //Save the name to associate it to the content
-                                if (XR.Name == "code")  //if code section?
-                                    codeQty++;  //...increment the code section number
                             }
+                            if (XR.Name == "code")  //if code section?
+                                codeQty++;  //...increment the code section number
                             if ((XR.ReadState == ReadState.Interactive) && XR.HasAttributes)
                             {
                                 if (XR.MoveToFirstAttribute())

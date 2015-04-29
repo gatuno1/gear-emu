@@ -263,7 +263,8 @@ namespace Gear.GUI
                             /// @todo : add exceptions management to file loading.
                             string externalFile = Path.Combine(Path.GetDirectoryName(FileName),
                                 pluginCandidate.ExtFiles[i]);
-                            codeEditorView.LoadFile(externalFile);
+                            codeEditorView.LoadFile(externalFile, RichTextBoxStreamType.PlainText);
+                            embeddedCode.Checked = false;
                         }
                         else
                         {
@@ -273,7 +274,8 @@ namespace Gear.GUI
                             codeEditorView.SelectionColor = Color.Black;
                             ///@todo : Add support to show in screen more than one file.
                             ///now it overwrites the code text.
-                            codeEditorView.Text = pluginCandidate.Codes[i];  
+                            codeEditorView.Text = pluginCandidate.Codes[i];
+                            embeddedCode.Checked = true;
                         }
                         CodeChanged = false;
                     }
