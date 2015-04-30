@@ -38,6 +38,8 @@ namespace Gear.PluginSupport
     /// @note See Asterisk's comments:
     /// Source: <a href="http://forums.parallax.com/showthread.php/91084-GEAR-Propeller-Debugging-Environment?p=636953&viewfull=1#post636953">
     /// Original thread on GEAR with explanation of plugin class</a>
+    /// @remarks To see examples of how to use it, see the directory 'plugins' included with 
+    /// the source code.
     public class PluginBase : UserControl
     {
         /// @brief Reference to PropellerCPU for the plugin.
@@ -46,6 +48,7 @@ namespace Gear.PluginSupport
 
         /// @brief Default constructor.
         /// @note Not to be used by plugin derived class, only by the Designer in MVSC.
+        /// @remarks Not to be used in Plugin Editor by user plugins.
         protected PluginBase() { }
 
         /// @brief Constructor to initialize with the PropellerCPU reference.
@@ -77,9 +80,11 @@ namespace Gear.PluginSupport
         public virtual Boolean AllowHotKeys { get { return true; } }
 
         /// @brief Attribute to allow the window to be closed (default) or not (like cog windows).
+        /// @remarks Not to be used in Plugin Editor by user plugins.
         public virtual Boolean IsClosable { get { return true; } }
 
         /// @brief Identify a plugin as user (=true) or system (=false).
+        /// @remarks Not to be used in Plugin Editor by user plugins.
         /// @version V15.03.26 Added member.
         public virtual Boolean IsUserPlugin { get { return true; } }
 
@@ -103,7 +108,7 @@ namespace Gear.PluginSupport
              
         /// @brief Event when a clock tick is informed to the plugin, in clock units.
         /// @param[in] time Time in seconds of the emulation.
-		/// @param[in] sysCounter Present system clock in ticks unit.
+        /// @param[in] sysCounter Present system clock in ticks unit.
         /// @warning If sysCounter is used only, the plugin designer have to take measures to 
         /// detect and manage system counter rollover.
         /// @version V15.03.26 - Changed to method with two parameters.

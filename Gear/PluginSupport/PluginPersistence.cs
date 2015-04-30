@@ -28,6 +28,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Schema;
 using System.IO;
+using System.Globalization;
 
 namespace Gear.PluginSupport
 {
@@ -595,10 +596,10 @@ namespace Gear.PluginSupport
                 List<string> linksTmp       = new List<string>();
                 List<string> referencesTmp  = new List<string>();
                 //dynamic dictionaries to manage code & external files
-                Dictionary<int, bool> useExtFilesTmp  = new Dictionary<int, bool>();
-                Dictionary<int, string> extFilesTmp     = new Dictionary<int, string>();
-                Dictionary<int, string> codesTmp        = new Dictionary<int, string>();
-                Dictionary<int, int> orderCodesReverse  = new Dictionary<int, int>();
+                Dictionary<int, bool>   useExtFilesTmp     = new Dictionary<int, bool>();
+                Dictionary<int, string> extFilesTmp        = new Dictionary<int, string>();
+                Dictionary<int, string> codesTmp           = new Dictionary<int, string>();
+                Dictionary<int, int>    orderCodesReverse  = new Dictionary<int, int>();
                 int codeQty = 0;    //count the code sections encountered
                 //read the data from XML, assigning to corresponding PluginData member
                 while (XR.Read())
@@ -607,11 +608,10 @@ namespace Gear.PluginSupport
                     {
                         case XmlNodeType.Element:
                             if (!XR.IsEmptyElement)
-                            { 
-                                lastElement.Push(XR.Name);  //Save the name to associate it to the content
-                            }
-                            if (XR.Name == "code")  //if code section?
-                                codeQty++;  //...increment the code section number
+                                //Save the name to associate the content with the section
+                                lastElement.Push(XR.Name);  
+                            if (XR.Name == "code")
+                                codeQty++;              //increment the code sections
                             if ((XR.ReadState == ReadState.Interactive) && XR.HasAttributes)
                             {
                                 if (XR.MoveToFirstAttribute())
@@ -627,7 +627,8 @@ namespace Gear.PluginSupport
                                                 useExtFilesTmp.Add(codeQty, true);
                                                 break;
                                             case "order":
-                                                orderCodesReverse.Add(int.Parse(XR.Value), codeQty);
+                                                orderCodesReverse.Add(int.Parse(XR.Value), 
+                                                    codeQty);
                                                 break;
                                             default:
                                                 break;
@@ -635,9 +636,12 @@ namespace Gear.PluginSupport
                                     } while (XR.MoveToNextAttribute());
                             }
                             break;
+
                         case XmlNodeType.EndElement:
-                            lastElement.Pop();  //delete it
+                            //delete the name of section, because it ended in XML file
+                            lastElement.Pop();  
                             break;
+
                         case XmlNodeType.Text:
                             switch (lastElement.Peek())
                             {
@@ -677,6 +681,7 @@ namespace Gear.PluginSupport
                                     break;
                             }
                             break;
+
                         case XmlNodeType.CDATA:
                             switch (lastElement.Peek())
                             {
@@ -697,6 +702,7 @@ namespace Gear.PluginSupport
                                     break;
                             }
                             break;
+
                         default:
                             break;  //do nothing
                     }
@@ -707,6 +713,13 @@ namespace Gear.PluginSupport
                     Data.Authors = authorsTmp.ToArray();
                 else
                     Data.Authors = new string[1];
+                //convert date to current culture
+                DateTimeFormatInfo readInfo = 
+                    new CultureInfo(Data.CulturalReference, false).DateTimeFormat;
+                DateTimeFormatInfo currInfo = 
+                    System.Threading.Thread.CurrentThread.CurrentCulture.DateTimeFormat;
+                Data.DateModified =
+                    Convert.ToDateTime(Data.DateModified, readInfo).ToString(currInfo.ShortDatePattern);
                 //construct the array of links
                 if (linksTmp.Count > 0)
                     Data.Links = linksTmp.ToArray();
@@ -718,7 +731,7 @@ namespace Gear.PluginSupport
                 else
                     Data.References = new string[1];
                 //construct the array for codes, external files & etc, ordering by the 
-                // specified order of the file
+                // specified order of the XML file
                 if (codeQty > 0)
                 {
                     int idx = 0; bool boolVal; string strVal;
@@ -727,7 +740,7 @@ namespace Gear.PluginSupport
                     Data.Codes       = new string[codeQty];
                     for (int i=1; i <= codeQty; i++)
                     {
-                        //retrieve index corresponding with original order
+                        //retrieve by index corresponding with original order in XML
                         if (orderCodesReverse.TryGetValue(i, out idx))
                         {
                             if (useExtFilesTmp.TryGetValue(idx, out boolVal))

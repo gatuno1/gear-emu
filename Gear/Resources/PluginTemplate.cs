@@ -50,8 +50,8 @@ class YourClassName : PluginBase
         //Put your code here:
     }
 
-    //Called every time a pin changes, if called Chip.NotifyOnPins() in 
-    // method PresentChip(.) above. 
+    //Called every time a pin changes, only if called Chip.NotifyOnPins()  
+    // inside of method PresentChip() above. 
     //Warning: to assure the correct correct operation of the plugin system, 
     //you can't change the parameters of any predefined method: neither the 
     //names or the types. Also you must not add other parameters.
@@ -62,17 +62,21 @@ class YourClassName : PluginBase
         //Possible values for PinState enum are: 
         //  FLOATING, OUTPUT_LO, OUTPUT_HI, INPUT_LO, INPUT_HI.
         //
+        //Also you can use BreakPoint() to stop the program here.
+        //
         //Put your code here.
         
     }
     
-    //Called every clock tick, if called Chip.NotifyOnClock() in method 
-    // PresentChip() above. 
+    //Called every clock tick, only if called Chip.NotifyOnClock() inside of 
+    // method PresentChip() above. 
     //Warning: to assure the correct correct operation of the plugin system, 
     //you can't change the parameters of any predefined method: neither the 
     //names or the types. Also you must not add other parameters.
     public override void OnClock(double time, uint sysCounter) 
-    { 
+    {
+        //You can use BreakPoint() to stop the program here.
+        //
         //Put your code here.
     }
 
