@@ -264,7 +264,7 @@ namespace Gear.GUI
                             string externalFile = Path.Combine(Path.GetDirectoryName(FileName),
                                 pluginCandidate.ExtFiles[i]);
                             codeEditorView.LoadFile(externalFile, RichTextBoxStreamType.PlainText);
-                            embeddedCode.Checked = false;
+                            SetEmbeddedCodeButton(embeddedCode.Checked = false);
                         }
                         else
                         {
@@ -275,7 +275,7 @@ namespace Gear.GUI
                             ///@todo : Add support to show in screen more than one file.
                             ///now it overwrites the code text.
                             codeEditorView.Text = pluginCandidate.Codes[i];
-                            embeddedCode.Checked = true;
+                            SetEmbeddedCodeButton(embeddedCode.Checked = true);
                         }
                         CodeChanged = false;
                     }
@@ -289,20 +289,25 @@ namespace Gear.GUI
                             referencesList.Items.Add(refer);
                     }
                     //load metadata of the plugimn
-                    if (pluginCandidate.PluginSystemVersion == "1.0")
+                    switch (pluginCandidate.PluginSystemVersion)
                     {
-                        ClearMetadata();    //reset metadata in screen
-                        SetElementOfMetadata("Version", pluginCandidate.PluginVersion);
-                        SetElementOfMetadata("Authors", pluginCandidate.Authors);
-                        SetElementOfMetadata("ModifiedBy", pluginCandidate.Modifier);
-                        CultureInfo culRef = new CultureInfo(pluginCandidate.CulturalReference);
-                        CultureInfo local = CultureInfo.CurrentCulture;
-                        /// @todo convert the date of date modified to local culture
-                        //string date = TypeDescriptor.GetConverter(local).ConvertTo()
-                        SetElementOfMetadata("DateModified", pluginCandidate.DateModified);
-                        SetElementOfMetadata("Description", pluginCandidate.Description);
-                        SetElementOfMetadata("Usage", pluginCandidate.Usage);
-                        SetElementOfMetadata("Links", pluginCandidate.Links);
+                        case "1.0":
+                            ClearMetadata(true);    //reset metadata in screen, enabling it
+                            SetElementOfMetadata("Version", pluginCandidate.PluginVersion);
+                            SetElementOfMetadata("Authors", pluginCandidate.Authors);
+                            SetElementOfMetadata("ModifiedBy", pluginCandidate.Modifier);
+                            CultureInfo culRef = new CultureInfo(pluginCandidate.CulturalReference);
+                            CultureInfo local = CultureInfo.CurrentCulture;
+                            /// @todo convert the date of date modified to local culture
+                            //string date = TypeDescriptor.GetConverter(local).ConvertTo()
+                            SetElementOfMetadata("DateModified", pluginCandidate.DateModified);
+                            SetElementOfMetadata("Description", pluginCandidate.Description);
+                            SetElementOfMetadata("Usage", pluginCandidate.Usage);
+                            SetElementOfMetadata("Links", pluginCandidate.Links);
+                            break;
+                        case "0.0":
+                            ClearMetadata(false);    //reset metadata in screen, disabling it
+                            break;
                     }
                     //store the name of the last file opened
                     m_SaveFileName = FileName;
@@ -973,10 +978,13 @@ namespace Gear.GUI
         }
 
         /// @brief Clear the metadata screen elements of plugin editor, setting all fields 
-        /// to defaults, setting ots visibility, and allowing only one element on each group.
+        /// to defaults, setting its visibility, and allowing only one element on each group.
+        /// @param enable Enable the Metadata control or not.
         /// @version v15.03.26 - Added.
-        private void ClearMetadata()
+        private void ClearMetadata(bool enable)
         {
+            pluginMetadataList.BeginUpdate();
+            pluginMetadataList.Enabled = true;
             foreach (ListViewGroup group in pluginMetadataList.Groups)  //loop for each group
             {
                 if (group.Items.Count > 1)  //we have to delete elements?
@@ -993,6 +1001,8 @@ namespace Gear.GUI
                 //change visibility to default text
                 SetUserDefinedMetadataElement(group.Items[0], false);
             }
+            pluginMetadataList.Enabled = enable;
+            pluginMetadataList.EndUpdate();
         }
 
         /// @brief Set an element of metadata, given the group name.

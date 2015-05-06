@@ -46,6 +46,15 @@ namespace Gear.PluginSupport
         }
     }
 
+    public enum PluginDataErrorType
+    {
+        none = 0,           //!< @brief There is no error.
+        notFoundDTD,        //!< @brief DTD not found.
+        openFile,           //!< @brief Can't open XML file.
+        nonDTDComplaint,    //!< @brief The XML is not valid against corresponding DTD.
+        other = 100         //!< @brief Other cause.
+    }
+
     /// @brief Class to hold metadata of the plugin.
     /// @version v15.03.26 - Added.
     public class PluginData
@@ -73,9 +82,12 @@ namespace Gear.PluginSupport
         /// @brief Text of the C# code of the plugin.
         public string[] Codes;
         /// @brief Hold the result for a validity test of related XML file, based on DTD.
-        /// @note If the plugin is valid, will be a version for the plugin system (attribute 
-        /// PluginData::PluginSystemVersion), nevertheless it would be 0.0 (the default one).
+        /// @note If the plugin is valid, the version number for the plugin system will exist 
+        /// (attribute PluginData::PluginSystemVersion), nevertheless it would be 0.0 (the 
+        /// default one).
         bool isValid;
+        /// @brief Error type found in validation
+        PluginDataErrorType errorType;
         /// @brief List of errors in the validation of XML file.
         public List<string> ValidationErrors;
 
@@ -84,6 +96,7 @@ namespace Gear.PluginSupport
         public PluginData()
         {
             this.isValid = true;
+            this.errorType = PluginDataErrorType.none;
             ValidationErrors = new List<string>();
         }
 
@@ -104,6 +117,8 @@ namespace Gear.PluginSupport
         public void ValidateXMLPluginEventHandler(object sender, ValidationEventArgs args)
         {
             isValid = false;
+            if (args.Exception.GetType() == typeof(System.Xml.Schema.XmlSchemaException) )
+                this.errorType = PluginDataErrorType.notFoundDTD;
             ValidationErrors.Add(
                 string.Format("XML Plugin Validation: [{0}]{1} (Line:{2}, Position:{3}).",
                 args.Severity,
@@ -115,10 +130,9 @@ namespace Gear.PluginSupport
 
         /// @brief Validate the XML against a DTD definition, retrieving the version of it.
         /// @param[in] XR Source of a XML to read of.
-        /// @param[in] settings Settings to be used to validate the XML.
         /// @returns True if the XML is valid against DTD definition, False if not.
         /// @version v15.03.26 - Added.
-        bool ValidateXMLPluginSource(XmlReader XR, XmlReaderSettings settings)
+        bool ValidateXMLPluginSource(XmlReader XR)
         {
             //read the XML, if it is possible
             while (XR.Read())
@@ -175,50 +189,75 @@ namespace Gear.PluginSupport
                 //Open a XML reader with the file name and settings given
                 XmlReader XR = XmlReader.Create(filenameXml, settings);
                 //validate the file as it is, expecting it have embedded DTD definition
-                if (ValidateXMLPluginSource(XR, settings)) 
+                if (ValidateXMLPluginSource(XR)) 
                     return true;
-                else  //we have to try adding default DTD definition to the XML source
-                {
-                    /// @todo [ASB] detect the validation errors properly (bug: a invalid XML with v1.0 version should be detected before).
-                    ValidationErrors.Clear();   //clear the warnings from failed validation
-                    this.isValid = true;		//resetting the initial status to test for validity
-                    // Add the DTD definition to XML with a XmlReader
-                    // reference from http://stackoverflow.com/questions/470313/net-how-to-validate-xml-file-with-dtd-without-doctype-declaration
-                    // and from http://stackoverflow.com/questions/10514198/validate-xml-against-dtd-from-string
-                    XmlDocument doc = new XmlDocument();
-                    doc.Load(XR);	//to use the same settings as the first validation
-                    doc.InsertBefore( 
-                        doc.CreateDocumentType("plugin", null, @"Resources\plugin_v1.0.dtd", null),
-                        doc.DocumentElement);
-                    //save to a memory stream
-                    MemoryStream mem = new MemoryStream();
-                    doc.Save(mem);
-                    //we will read from the memory stream
-                    XR = XmlReader.Create(mem, settings);
-                    //validate from the XML source with default DTD definition
-                    return ValidateXMLPluginSource(XR, settings);
+                else 
+                    switch (this.PluginVersion)
+                {   //case of not valid XML, so let's see the plugin system version detected
+                    case null:
+                        //we have to try adding default DTD definition to the XML source, because
+                        // the 0.0 version didn't have DTD specification on it.
+                        ValidationErrors.Clear();   //clear the warnings from failed validation
+                        this.isValid = true;		//resetting the initial status to test for validity
+                        this.errorType = PluginDataErrorType.none;
+                        // Add the DTD definition to XML with a XmlReader
+                        // reference from http://stackoverflow.com/questions/470313/net-how-to-validate-xml-file-with-dtd-without-doctype-declaration
+                        // and from http://stackoverflow.com/questions/10514198/validate-xml-against-dtd-from-string
+                        XmlDocument doc = new XmlDocument();
+                        XmlReaderSettings settingsNoDTD = settings.Clone();
+                        settingsNoDTD.DtdProcessing = DtdProcessing.Ignore;
+                        settingsNoDTD.ValidationType = ValidationType.None;
+                        //reopen the XmlReader with no DTD validation
+                        XR = XmlReader.Create(filenameXml, settingsNoDTD);
+                        doc.Load(XR);
+                        doc.InsertBefore(
+                            doc.CreateDocumentType("plugin", null, @"Resources\plugin_v0.0.dtd", null),
+                            doc.DocumentElement);
+                        //save to a memory stream
+                        MemoryStream mem = new MemoryStream();
+                        doc.Save(mem);
+                        mem.Position = 0;   //restart the position of the stream
+                        //we will read from the memory stream, with the original settings
+                        XR = XmlReader.Create(mem, settings);
+                        //validate from the XML source with default DTD definition
+                        if (ValidateXMLPluginSource(XR))
+                            return true;
+                        else
+                        {
+                            this.errorType = PluginDataErrorType.nonDTDComplaint;
+                            return false;
+                        }
+                    case "1.0": //this means the plugin is not valid, because 1.0 version must have
+                                // DTD explicit on it!
+                        this.errorType = PluginDataErrorType.nonDTDComplaint;
+                        return false;
+                    default:    //for others future version, we don't know how to interpret it yet
+                        this.errorType = PluginDataErrorType.nonDTDComplaint;
+                        return false; 
                 }
-
             }
             catch (FileNotFoundException e)
             {
-                isValid = false;
+                this.isValid = false;
+                this.errorType = PluginDataErrorType.openFile;
                 ValidationErrors.Add(
                     string.Format("File \"{0}\" not found, when validating original XML file at '{1}'",
-                    filenameXml,
-                    e.Source));
+                    e.FileName,
+                    e.TargetSite));
                 return false;
             }
             catch (ArgumentNullException)
             {
-                isValid = false;
+                this.isValid = false;
+                this.errorType = PluginDataErrorType.openFile;
                 ValidationErrors.Add(
                     "No filename  was given, when validating original XML file.");
                 return false;
             }
             catch (Exception e)
             {
-                isValid = false;
+                this.isValid = false;
+                this.errorType = PluginDataErrorType.other;
                 ValidationErrors.Add(
                     string.Format("Error found: \"{0}\"", e.Message));
                 return false;
@@ -532,6 +571,8 @@ namespace Gear.PluginSupport
                 XR.Close();
                 if (referencesTmp.Count > 0)   //if elements exists...
                     Data.References = referencesTmp.ToArray(); //fill the array for references
+                else
+                    Data.References = new string[1];
                 if (codesTmp.Count > 0)    //if elements exists...
                 {
                     Data.Codes = codesTmp.ToArray();   //fill the array for references
@@ -546,6 +587,14 @@ namespace Gear.PluginSupport
                     //fill the arrays
                     Data.UseExtFiles = aux.ToArray();   
                     Data.ExtFiles = aux2.ToArray();
+                }
+                else
+                {
+                    //create empty arrays to avoid null references
+                    Data.UseExtFiles = new bool[1];
+                    Data.UseExtFiles[0] = false;
+                    Data.ExtFiles = new string[1];
+                    Data.Codes = new string[1];
                 }
             }
             catch (XmlException e)
@@ -751,6 +800,13 @@ namespace Gear.PluginSupport
                                 Data.Codes[i-1] = strVal;
                         }
                     }
+                }
+                else
+                {
+                    //create empty arrays to avoid null references
+                    Data.UseExtFiles = new bool[1];
+                    Data.ExtFiles = new string[1];
+                    Data.Codes = new string[1];
                 }
             }
             catch (XmlException e)
