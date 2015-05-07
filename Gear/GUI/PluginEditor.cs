@@ -66,7 +66,12 @@ namespace Gear.GUI
         }
         /// @brief Default font for editor code.
         /// @version V14.07.03 - Added.
-        private Font defaultFont;    
+        private static Font defaultFont = new Font(FontFamily.GenericMonospace, 10, 
+            FontStyle.Regular);
+        /// @brief Bold font for editor code.
+        /// @version V15.03.26 - Added.
+        private static Font fontBold = new Font(defaultFont, FontStyle.Bold);
+
         /// @brief Flag if the plugin definition has changed.
         /// To determine changes, it includes not only the C# code, but also class name and 
         /// reference list.
@@ -82,7 +87,28 @@ namespace Gear.GUI
         /// @brief Regex for syntax highlight.
         /// @version v15.03.26 - Added
         private Regex SyntaxExpression;
-
+        /// @brief Regex for parse token in lines for syntax highlight
+        /// @version 15.03.26 - Added
+        private Regex CodeLine;
+        /// @brief keywords to highlight in editor code
+        private static readonly HashSet<string> keywords = new HashSet<string> 
+        {
+            "add", "abstract", "alias", "as", "ascending", "async", "await",
+            "base", "bool", "break", "byte", "case", "catch", "char", "checked",
+            "class", "const", "continue", "decimal", "default", "delegate",
+            "descending", "do", "double", "dynamic", "else", "enum", "event",
+            "explicit", "extern", "false", "finally", "fixed", "float",
+            "for", "foreach", "from", "get", "global", "goto", "group", "if",
+            "implicit", "in", "int", "interface", "internal", "into", "is",
+            "join", "let", "lock", "long", "namespace", "new", "null", "object",
+            "operator", "orderby", "out", "override", "params", "partial ",
+            "private", "protected", "public", "readonly", "ref", "remove",
+            "return", "sbyte", "sealed", "select", "set", "short", "sizeof",
+            "stackalloc", "static", "string", "struct", "switch", "this",
+            "throw", "true", "try", "typeof", "uint", "ulong", "unchecked",
+            "unsafe", "ushort", "using", "value", "var", "virtual", "void",
+            "volatile", "where", "while", "yield"
+        };
 		
         /// @brief Default constructor.
         /// Init class, defines columns for error grid, setting on changes detection initially, 
@@ -140,8 +166,9 @@ namespace Gear.GUI
             ClassNameExpression = new Regex(
             @"\bclass\s+(?<classname>[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*)\s*\:\s*PluginBase\b",
                 RegexOptions.Compiled);
-            //regex for syntax highlighting
+            //regex's for syntax highlighting
             SyntaxExpression = new Regex(@"\n", RegexOptions.Compiled);
+            CodeLine = new Regex(@"([ \t{}();:])", RegexOptions.Compiled);
             
         }
 
@@ -257,7 +284,7 @@ namespace Gear.GUI
                         {
                             //set or reset font and color
                             codeEditorView.SelectAll();
-                            codeEditorView.SelectionFont = this.defaultFont;
+                            codeEditorView.SelectionFont = defaultFont;
                             codeEditorView.SelectionColor = Color.Black;
                             /// @todo : Add support to show in screen more than one file.
                             /// @todo : add exceptions management to file loading.
@@ -270,7 +297,7 @@ namespace Gear.GUI
                         {
                             //set or reset font and color
                             codeEditorView.SelectAll();
-                            codeEditorView.SelectionFont = this.defaultFont;
+                            codeEditorView.SelectionFont = defaultFont;
                             codeEditorView.SelectionColor = Color.Black;
                             ///@todo : Add support to show in screen more than one file.
                             ///now it overwrites the code text.
@@ -296,10 +323,6 @@ namespace Gear.GUI
                             SetElementOfMetadata("Version", pluginCandidate.PluginVersion);
                             SetElementOfMetadata("Authors", pluginCandidate.Authors);
                             SetElementOfMetadata("ModifiedBy", pluginCandidate.Modifier);
-                            CultureInfo culRef = new CultureInfo(pluginCandidate.CulturalReference);
-                            CultureInfo local = CultureInfo.CurrentCulture;
-                            /// @todo convert the date of date modified to local culture
-                            //string date = TypeDescriptor.GetConverter(local).ConvertTo()
                             SetElementOfMetadata("DateModified", pluginCandidate.DateModified);
                             SetElementOfMetadata("Description", pluginCandidate.Description);
                             SetElementOfMetadata("Usage", pluginCandidate.Usage);
@@ -605,85 +628,124 @@ namespace Gear.GUI
         // Syntax highlighting
         private void syntaxButton_Click(object sender, EventArgs e)
         {
-            int restore_pos = codeEditorView.SelectionStart;    //remember last position
+            int restore_pos = codeEditorView.SelectionStart, pos = 0;    //remember last position
             changeDetectEnabled = false;    //not enable change detection
-            // Foreach line in input,
-            // identify key words and format them when adding to the rich text box.
+            bool commentMode = false;       //initially not in comment mode
+            //Foreach line in input, identify key words and format them when 
+            // adding to the rich text box.
             String[] lines = SyntaxExpression.Split(codeEditorView.Text);
+            //update progress bar
+            progressHighlight.Maximum = lines.Length;
+            progressHighlight.Value = 0;
+            progressHighlight.Visible = true;
+            //update editor code
+            codeEditorView.Visible = false;
             codeEditorView.SelectAll();
             codeEditorView.Enabled = false;
-            foreach (string l in lines)
+            foreach (string line in lines)
             {
-                ParseLine(l);
+                progressHighlight.Value = ++pos;
+                ParseLine(line, ref commentMode);   //remember comment mode between lines
             }
+            //update progress bar
+            progressHighlight.Visible = false;
+            //update editor code
             codeEditorView.SelectionStart = restore_pos;    //restore last position
             codeEditorView.ScrollToCaret();                 //and scroll to it
+            codeEditorView.Visible = true;
             codeEditorView.Enabled = true;
             changeDetectEnabled = true; //restore change detection
         }
-
+        
         /// @brief Auxiliary method to check syntax.
         /// Examines line by line, parsing reserved C# words.
         /// @param[in] line Text line from the source code.
         /// @since V14.07.03 - Added.
-        /// @note Experimental highlighting. Probably changes in the future.
-        // Parse line for syntax highlighting.
-        private void ParseLine(string line)
+        /// @note Experimental highlighting. Probably will be changes in the future.
+        private void ParseLine(string line, ref bool commentMode)
         {
-            Regex r = new Regex(@"([ \t{}();:])", RegexOptions.Compiled);
-            String[] tokens = r.Split(line);
-            System.Drawing.Font fontRegular = this.defaultFont;
-            System.Drawing.Font fontBold = new Font(fontRegular, FontStyle.Bold);
+            int index;
 
-            foreach (string token in tokens)
+            if (commentMode)
             {
-                // Set the token's default color and font.
-                codeEditorView.SelectionColor = Color.Black;
-                codeEditorView.SelectionFont = fontRegular;
-
-                // Check for a comment.
-                if (token == "//" || token.StartsWith("//"))
+                // Check for a c style end comment
+                index = line.IndexOf("*/");
+                if (index != -1)
                 {
-                    // Find the start of the comment and then extract the whole comment.
-                    int index = line.IndexOf("//");
-                    string comment = line.Substring(index, line.Length - index);
+                    string comment = line.Substring(0, ++index);
                     codeEditorView.SelectionColor = Color.Green;
-                    codeEditorView.SelectionFont = fontRegular;
+                    codeEditorView.SelectionFont = defaultFont;
                     codeEditorView.SelectedText = comment;
-                    break;
+                    //parse the rest of the line (if any)
+                    commentMode = false;
+                    if (line.Length > ++index)
+                        ParseLine(line.Substring(index), ref commentMode);
                 }
+            }
+            else  //we are not in comment mode
+            {
+                bool putEndLine = true;
+                string[] tokens = CodeLine.Split(line);
 
-                // Check whether the token is a keyword.
-                String[] keywords = {
-                    "add", "abstract", "alias", "as", "ascending", "async", "await",
-                    "base", "bool", "break", "byte", "case", "catch", "char", "checked",
-                    "class", "const", "continue", "decimal", "default", "delegate",
-                    "descending", "do", "double", "dynamic", "else", "enum", "event",
-                    "explicit", "extern", "false", "finally", "fixed", "float",
-                    "for", "foreach", "from", "get", "global", "goto", "group", "if",
-                    "implicit", "in", "int", "interface", "internal", "into", "is",
-                    "join", "let", "lock", "long", "namespace", "new", "null", "object",
-                    "operator", "orderby", "out", "override", "params", "partial ",
-                    "private", "protected", "public", "readonly", "ref", "remove",
-                    "return", "sbyte", "sealed", "select", "set", "short", "sizeof",
-                    "stackalloc", "static", "string", "struct", "switch", "this",
-                    "throw", "true", "try", "typeof", "uint", "ulong", "unchecked",
-                    "unsafe", "ushort", "using", "value", "var", "virtual", "void",
-                    "volatile", "where", "while", "yield"
-                };
-                for (int i = 0; i < keywords.Length; i++)
+                foreach (string token in tokens)
                 {
-                    if (keywords[i] == token)
+                    // Check for a c style comment opening
+                    if (token == "/*" || token.StartsWith("/*"))
+                    {
+                        index = line.IndexOf("/*");
+                        int indexEnd = line.IndexOf("*/");
+                        //end comment found in the rest of the line?
+                        if ((indexEnd != -1) && (indexEnd > index)) 
+                        {
+                            string comment = line.Substring(index, (indexEnd += 2) - index);
+                            codeEditorView.SelectionColor = Color.Green;
+                            codeEditorView.SelectionFont = defaultFont;
+                            codeEditorView.SelectedText = comment;
+                            if (line.Length > indexEnd)
+                            {
+                                ParseLine(line.Substring(indexEnd), ref commentMode);
+                                putEndLine = false;
+                            }
+                            break;
+                        }
+                        else  //as there is no end comment in the line
+                        {
+                            commentMode = true; //we will enter comment mode
+                            string comment = line.Substring(index, line.Length - index);
+                            codeEditorView.SelectionColor = Color.Green;
+                            codeEditorView.SelectionFont = defaultFont;
+                            codeEditorView.SelectedText = comment;
+                            break;  
+                        }
+                    }
+
+                    // Check for a c++ style comment.
+                    if (token == "//" || token.StartsWith("//"))
+                    {
+                        // Find the start of the comment and then extract the whole comment.
+                        index = line.IndexOf("//");
+                        string comment = line.Substring(index, line.Length - index);
+                        codeEditorView.SelectionColor = Color.Green;
+                        codeEditorView.SelectionFont = defaultFont;
+                        codeEditorView.SelectedText = comment;
+                        break;
+                    }
+
+                    // Set the token's default color and font.
+                    codeEditorView.SelectionColor = Color.Black;
+                    codeEditorView.SelectionFont = defaultFont;
+                    // Check whether the token is a keyword.
+                    if (keywords.Contains(token))
                     {
                         // Apply alternative color and font to highlight keyword.
                         codeEditorView.SelectionColor = Color.Blue;
                         codeEditorView.SelectionFont = fontBold;
-                        break;
                     }
+                    codeEditorView.SelectedText = token;
                 }
-                codeEditorView.SelectedText = token;
+                if (putEndLine)
+                    codeEditorView.SelectedText = "\n";
             }
-            codeEditorView.SelectedText = "\n";
         }
 
         /// @brief Update change state for code text box.
@@ -987,13 +1049,13 @@ namespace Gear.GUI
             pluginMetadataList.Enabled = true;
             foreach (ListViewGroup group in pluginMetadataList.Groups)  //loop for each group
             {
-                if (group.Items.Count > 1)  //we have to delete elements?
+                int num = group.Items.Count;
+                if (num > 1)  //we have to delete elements?
                 {
                     //remove all except the first
-                    for (int i = 0; i < group.Items.Count; i++)
+                    for (int i = (num - 1); i >= 1; i--)
                     {
-                        if (i > 0)
-                            group.Items.RemoveAt(i);
+                        pluginMetadataList.Items.RemoveAt(group.Items[i].Index);
                     }
                 }
                 //set the only element or remaining one
@@ -1003,6 +1065,7 @@ namespace Gear.GUI
             }
             pluginMetadataList.Enabled = enable;
             pluginMetadataList.EndUpdate();
+            toolStripLinks.Enabled = enable;
         }
 
         /// @brief Set an element of metadata, given the group name.
@@ -1012,7 +1075,7 @@ namespace Gear.GUI
         /// @version v15.03.26 - Added.
         private void SetElementOfMetadata(string groupName, string value)
         {
-            //lookin for the group of interest
+            //looking for the group of interest
             foreach (ListViewGroup group in pluginMetadataList.Groups)  
             {
                 if (group.Name == groupName)    //Is the desired group?
@@ -1029,6 +1092,7 @@ namespace Gear.GUI
                         //change visibility to user text
                         SetUserDefinedMetadataElement(group.Items[0], true);
                     }
+                    break;
                 }
             }
         }
@@ -1064,6 +1128,7 @@ namespace Gear.GUI
                             //set the visibility as is using a default value or not
                             SetUserDefinedMetadataElement(group.Items[i], isValid);
                         }
+                        break;
                     }
                 }
             }

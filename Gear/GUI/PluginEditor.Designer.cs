@@ -37,7 +37,7 @@ namespace Gear.GUI
             {
                 components.Dispose();
             }
-            this.defaultFont.Dispose();
+            PluginEditor.defaultFont.Dispose();
             base.Dispose(disposing);
         }
 
@@ -100,6 +100,7 @@ namespace Gear.GUI
             this.addPluginMetadataButton = new System.Windows.Forms.ToolStripButton();
             this.removePluginMetadataButton = new System.Windows.Forms.ToolStripButton();
             this.detailsPanel = new System.Windows.Forms.Panel();
+            this.progressHighlight = new System.Windows.Forms.ToolStripProgressBar();
             this.errorSplitter = new Gear.GUI.CollapsibleSplitter();
             this.referencesSplitter = new Gear.GUI.CollapsibleSplitter();
             this.metadataSplitter = new Gear.GUI.CollapsibleSplitter();
@@ -139,11 +140,12 @@ namespace Gear.GUI
             classNameLabel,
             this.toolStripSeparator2,
             this.syntaxButton,
+            this.progressHighlight,
             this.toolStripSeparator3,
             this.embeddedCode});
             this.toolStripMain.Location = new System.Drawing.Point(0, 0);
             this.toolStripMain.Name = "toolStripMain";
-            this.toolStripMain.Size = new System.Drawing.Size(634, 25);
+            this.toolStripMain.Size = new System.Drawing.Size(654, 25);
             this.toolStripMain.TabIndex = 0;
             this.toolStripMain.Text = "toolStrip1";
             // 
@@ -314,7 +316,7 @@ namespace Gear.GUI
             this.errorListView.MultiSelect = false;
             this.errorListView.Name = "errorListView";
             this.errorListView.ShowItemToolTips = true;
-            this.errorListView.Size = new System.Drawing.Size(426, 97);
+            this.errorListView.Size = new System.Drawing.Size(446, 97);
             this.errorListView.TabIndex = 5;
             this.errorListView.UseCompatibleStateImageBehavior = false;
             this.errorListView.View = System.Windows.Forms.View.Details;
@@ -329,7 +331,7 @@ namespace Gear.GUI
             this.codeEditorView.HideSelection = false;
             this.codeEditorView.Location = new System.Drawing.Point(208, 25);
             this.codeEditorView.Name = "codeEditorView";
-            this.codeEditorView.Size = new System.Drawing.Size(426, 312);
+            this.codeEditorView.Size = new System.Drawing.Size(446, 312);
             this.codeEditorView.TabIndex = 7;
             this.codeEditorView.Text = "";
             this.codeEditorView.WordWrap = false;
@@ -476,6 +478,12 @@ namespace Gear.GUI
             this.detailsPanel.Size = new System.Drawing.Size(200, 417);
             this.detailsPanel.TabIndex = 2;
             // 
+            // progressHighlight
+            // 
+            this.progressHighlight.Name = "progressHighlight";
+            this.progressHighlight.Size = new System.Drawing.Size(80, 22);
+            this.progressHighlight.Visible = false;
+            // 
             // errorSplitter
             // 
             this.errorSplitter.AnimationDelay = 20;
@@ -526,7 +534,7 @@ namespace Gear.GUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(634, 442);
+            this.ClientSize = new System.Drawing.Size(654, 442);
             this.Controls.Add(this.codeEditorView);
             this.Controls.Add(this.errorSplitter);
             this.Controls.Add(this.errorListView);
@@ -585,5 +593,6 @@ namespace Gear.GUI
         private System.Windows.Forms.ToolStripButton embeddedCode;
         private System.Windows.Forms.ColumnHeader keyColumn;
         private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.ToolStripProgressBar progressHighlight;
     }
 }
