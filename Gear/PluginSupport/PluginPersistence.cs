@@ -36,7 +36,7 @@ namespace Gear.PluginSupport
     /// @details Instead of search of DTD file in the location of XML plugin file, this redirects 
 	/// to search in the base directory of the GEAR executable.
     /// @version v15.03.26 - Added.
-    class DTDLocationResolver : XmlUrlResolver
+    class myDTDLocationResolver : XmlUrlResolver
     {
         public override Uri ResolveUri(Uri baseUri, string relativeUri)
         {
@@ -179,9 +179,9 @@ namespace Gear.PluginSupport
             settings.IgnoreProcessingInstructions = true;
             settings.IgnoreWhitespace = true;
             settings.ValidationEventHandler += new ValidationEventHandler(ValidateXMLPluginEventHandler);
-            XmlUrlResolver resolver = new DTDLocationResolver();
-            resolver.Credentials = System.Net.CredentialCache.DefaultCredentials;
-            settings.XmlResolver = resolver;
+            XmlUrlResolver myResolver = new myDTDLocationResolver();
+            myResolver.Credentials = System.Net.CredentialCache.DefaultCredentials;
+            settings.XmlResolver = myResolver;
             settings.ValidationFlags = XmlSchemaValidationFlags.ReportValidationWarnings;
             
             try
@@ -210,6 +210,7 @@ namespace Gear.PluginSupport
                         //reopen the XmlReader with no DTD validation
                         XR = XmlReader.Create(filenameXml, settingsNoDTD);
                         doc.Load(XR);
+                        doc.XmlResolver = myResolver;
                         doc.InsertBefore(
                             doc.CreateDocumentType("plugin", null, @"Resources\plugin_v0.0.dtd", null),
                             doc.DocumentElement);
@@ -614,7 +615,7 @@ namespace Gear.PluginSupport
 
         /// @brief Load a plugin from XML as version 1.0.
         /// @param[in] filenameXml File name in XML format, version 1.0
-        /// @param[in] Data Metadata of the plugin.
+        /// @param[in,out] Data Metadata of the plugin.
         /// @returns State of loading: True if it was successful (also filling Data parameter 
         /// with the plugin information), or False if didn't (in this case Data parameter
         /// only should have updated IsValid attribute).
@@ -630,7 +631,7 @@ namespace Gear.PluginSupport
             settings.IgnoreWhitespace               = true;
             settings.ValidationEventHandler += 
                 new ValidationEventHandler(Data.ValidateXMLPluginEventHandler);
-            XmlUrlResolver resolver = new DTDLocationResolver();
+            XmlUrlResolver resolver = new myDTDLocationResolver();
             resolver.Credentials = System.Net.CredentialCache.DefaultCredentials;
             settings.XmlResolver = resolver;
             bool success = true;    //status to return

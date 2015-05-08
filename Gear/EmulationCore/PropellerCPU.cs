@@ -106,9 +106,9 @@ namespace Gear.EmulationCore
         private Cog[] Cogs;
         /// @brief Number of cogs Running in the CPU.
         /// @details Helpful to detect when all the cogs are stopped so you can stop the emulator.
-        /// @version 15.03.26 - Added to help detecting the complete stop of the CPU. 
+        /// @since 15.03.26 - Added to help detecting the complete stop of the CPU. 
         private uint CogsRunning;
-        //!< @todo Document member Gear.EmulationCore.PropellerCPU.Memory
+        /// @brief Array to hold the memory in bytes.
         private byte[] Memory;      
         //!< @todo Document member Gear.EmulationCore.PropellerCPU.ResetMemory
         private byte[] ResetMemory;
@@ -173,7 +173,7 @@ namespace Gear.EmulationCore
         public const int TOTAL_RAM       = 0x8000;
 
         /// @brief PropellerCPU Constructor.
-        /// @param em Reference to the Gear.GUI.Emulator instance controlling this PropellerCPU.
+        /// @param[in] em Reference to the Gear.GUI.Emulator instance controlling this PropellerCPU.
         public PropellerCPU(Emulator em)
         {
             emulator = em;
@@ -525,7 +525,7 @@ namespace Gear.EmulationCore
 
         /// @brief Add a plugin to be notified on clock ticks.
         /// @details It see if the plugin exist already to insert or not.
-        /// @param plugin Compiled plugin reference to include.
+        /// @param[in] plugin Compiled plugin reference to include.
         public void NotifyOnClock(PluginBase plugin)
         {
             if (!(TickHandlers.Contains(plugin)))
@@ -534,7 +534,7 @@ namespace Gear.EmulationCore
 
         /// @brief Remove a plugin from the clock notify list.
         /// @details Only if the plugin exists on the list, this method removes from it. 
-        /// @param plugin Compiled plugin reference to remove.
+        /// @param[in] plugin Compiled plugin reference to remove.
         public void RemoveOnClock(PluginBase plugin)
         {
             if (TickHandlers.Contains(plugin))
@@ -543,7 +543,7 @@ namespace Gear.EmulationCore
 
         /// @brief Add a plugin to be notified on pin changes.
         /// @details It see if the plugin exist already to insert or not.
-        /// @param plugin Compiled plugin reference to include.
+        /// @param[in] plugin Compiled plugin reference to include.
         public void NotifyOnPins(PluginBase plugin)
         {
             if (!(PinHandlers.Contains(plugin)))
@@ -552,7 +552,7 @@ namespace Gear.EmulationCore
 
         /// @brief Remove a plugin from the pin changed notify list.
         /// @details Only if the plugin exists on the list, this method removes from it. 
-        /// @param plugin Compiled plugin reference to remove.
+        /// @param[in] plugin Compiled plugin reference to remove.
         public void RemoveOnPins(PluginBase plugin)
         {
             if (PinHandlers.Contains(plugin))
@@ -910,7 +910,7 @@ namespace Gear.EmulationCore
         }
 
         /// @brief Determine the ID of the cog.
-        /// @param caller Cog instance to determine the its ID.
+        /// @param[in] caller Cog instance to determine the its ID.
         /// @returns Cog ID.
         public uint CogID(Cog caller)
         {
@@ -924,11 +924,11 @@ namespace Gear.EmulationCore
         /// @brief Execute the hub operations.
         /// @details This method is called from a cog to do the operations related to all the CPU.
         /// @version 15.03.26 - corrected problem in COGSTOP return.
-        /// @param caller Reference to the caller Cog of this method.
-        /// @param operation Hub operation to execute.
-        /// @param argument Parameter given to the opcode (destination field in PASM).
-        /// @param[out] carry Carry flag that could be affected by the operation.
-        /// @param[out] zero Zero flag that could be affected by the operation.
+        /// @param[in] caller Reference to the caller Cog of this method.
+        /// @param[in] operation Hub operation to execute.
+        /// @param[in] argument Parameter given to the opcode (destination field in PASM).
+        /// @param[in,out] carry Carry flag that could be affected by the operation.
+        /// @param[in,out] zero Zero flag that could be affected by the operation.
         /// @returns Value depending on operation.
         /// @note Reference of supported Operations, based in Propeller Manual v1.2:
         /// @arg HUBOP_CLKSET - page 271.
@@ -1050,7 +1050,7 @@ namespace Gear.EmulationCore
         }
 
         /// @brief Notify all the plugins about the closing event.
-        /// @version 15.03.26 - added.
+        /// @since 15.03.26 - Added.
         public void OnClose(object sender, FormClosingEventArgs e)
         { 
             foreach(PluginBase plugin in PlugIns)

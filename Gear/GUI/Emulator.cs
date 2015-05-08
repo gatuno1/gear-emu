@@ -122,8 +122,8 @@ namespace Gear.GUI
         /// 
         /// Delete a plugin from the actives plugins of the propeller instance, effectively stopping 
         /// the plugin. Remove also from pins and clock watch list.
-        /// @param plugin Instance of a Gear.PluginSupport.PluginBase class to be detached.
-        /// @version V15.03.26 - Added.
+        /// @param[in] plugin Instance of a Gear.PluginSupport.PluginBase class to be detached.
+        /// @since V15.03.26 - Added.
         //Added method to detach a plugin from the active plugin list of the propeller instance.
         private void DetachPlugin(PluginBase plugin)
         {
@@ -460,8 +460,8 @@ namespace Gear.GUI
 
         /// @brief Stop the emulation.
         /// @version V15.03.26 - Added the refresh of the screen.
-        /// @param sender Reference to the object where this event was called.
-        /// @param e Class with the details event.
+        /// @param[in] sender Reference to the object where this event was called.
+        /// @param[in] e Class with the details event.
         private void stopEmulator_Click(object sender, EventArgs e)
         {
             runTimer.Stop();
@@ -490,8 +490,8 @@ namespace Gear.GUI
 
         /// @brief Try to open a plugin, compiling it and attaching to the active 
         /// emulator instance.
-        /// @param sender Reference to the object where this event was called.
-        /// @param e Class with the details event.
+        /// @param[in] sender Reference to the object where this event was called.
+        /// @param[in] e Class with the details event.
         private void OpenPlugin_Click(object sender, EventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog();
@@ -526,7 +526,7 @@ namespace Gear.GUI
         /// don't allow to close.
         /// @param[in] sender Reference to object where event was raised.
         /// @param[in] e Event data arguments.
-        /// @version V14.07.03 - Added.
+        /// @since V14.07.03 - Added.
         private void documentsTab_Click(object sender, EventArgs e)
         {
             TabPage tp = documentsTab.SelectedTab;

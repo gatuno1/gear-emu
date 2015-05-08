@@ -48,7 +48,7 @@ namespace Gear.GUI
         private string m_FormatVersion;
         /// @brief Text for plugin Metadata
         /// @details Indicates the version of plugin system for the current plugin.
-        /// @version V15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private string metadataText
         {
             get 
@@ -58,38 +58,47 @@ namespace Gear.GUI
                 else switch (m_FormatVersion)
                 {
                     case "0.0":
-                        return "No Metadata for old plugin format";
+                        return "No Metadata for plugin V" + m_FormatVersion;
                     default:
                         return "Metadata of plugin V" + m_FormatVersion;
                 }
             }
         }
         /// @brief Default font for editor code.
-        /// @version V14.07.03 - Added.
+        /// @since v14.07.03 - Added.
         private static Font defaultFont = new Font(FontFamily.GenericMonospace, 10, 
             FontStyle.Regular);
         /// @brief Bold font for editor code.
-        /// @version V15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private static Font fontBold = new Font(defaultFont, FontStyle.Bold);
 
         /// @brief Flag if the plugin definition has changed.
         /// To determine changes, it includes not only the C# code, but also class name and 
         /// reference list.
-        /// @version V15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private bool m_CodeChanged;
         /// @brief Enable or not change detection event.
-        /// @version V15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private bool changeDetectEnabled;
 
-        /// @brief Regex for looking for class name.
-        /// @version V15.03.26 - Added.
-        private Regex ClassNameExpression;
+        /// @brief Regex to looking for class name inside the code of plugin.
+        /// @since v15.03.26 - Added.
+        private static Regex ClassNameExpression = new Regex(
+            @"\bclass\s+" +
+            @"(?<classname>[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*)" +
+            @"\s*\:\s*PluginBase\b",
+            RegexOptions.Compiled);
         /// @brief Regex for syntax highlight.
-        /// @version v15.03.26 - Added
-        private Regex SyntaxExpression;
+        /// @since v15.03.26 - Added.
+        private static Regex LineExpression= new Regex(
+            @"\n", 
+            RegexOptions.Compiled);
         /// @brief Regex for parse token in lines for syntax highlight
-        /// @version 15.03.26 - Added
-        private Regex CodeLine;
+        /// @version 15.03.26 - Added.
+        private Regex CodeLine = new Regex(
+            @"([ \t{}();:])", 
+            RegexOptions.Compiled);
+
         /// @brief keywords to highlight in editor code
         private static readonly HashSet<string> keywords = new HashSet<string> 
         {
@@ -115,7 +124,7 @@ namespace Gear.GUI
         /// and try to load the default template for plugin.
         /// @param[in] loadDefaultTemplate Indicate to load default template (=true) or 
         /// no template at all(=false).
-        /// @version V15.03.26 - Added parameter for loading default template for plugin.
+        /// @since v15.03.26 - Added parameter for loading default template for plugin.
         public PluginEditor(bool loadDefaultTemplate)
         {
             InitializeComponent();
@@ -162,26 +171,18 @@ namespace Gear.GUI
                 if ((item.Group.Name == "DateModified") || (item.Group.Name == "Version"))
                     SetUserDefinedMetadataElement(item, true);
             }
-            //regex for class name instance
-            ClassNameExpression = new Regex(
-            @"\bclass\s+(?<classname>[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*)\s*\:\s*PluginBase\b",
-                RegexOptions.Compiled);
-            //regex's for syntax highlighting
-            SyntaxExpression = new Regex(@"\n", RegexOptions.Compiled);
-            CodeLine = new Regex(@"([ \t{}();:])", RegexOptions.Compiled);
-            
         }
 
         /// @brief Return last plugin successfully loaded o saved.
         /// @details Useful to remember last plugin directory.
-        /// @version V15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         public string GetLastPlugin
         {
             get { return m_SaveFileName; }
         }
 
         /// @brief Attribute for changed plugin detection.
-        /// @version V15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private bool CodeChanged
         {
             get { return m_CodeChanged; }
@@ -193,7 +194,7 @@ namespace Gear.GUI
         }
 
         /// @brief Complete Name for plugin, including path.
-        /// @version V15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private string SaveFileName
         {
             get
@@ -633,7 +634,7 @@ namespace Gear.GUI
             bool commentMode = false;       //initially not in comment mode
             //Foreach line in input, identify key words and format them when 
             // adding to the rich text box.
-            String[] lines = SyntaxExpression.Split(codeEditorView.Text);
+            String[] lines = LineExpression.Split(codeEditorView.Text);
             //update progress bar
             progressHighlight.Maximum = lines.Length;
             progressHighlight.Value = 0;
@@ -660,7 +661,9 @@ namespace Gear.GUI
         /// @brief Auxiliary method to check syntax.
         /// Examines line by line, parsing reserved C# words.
         /// @param[in] line Text line from the source code.
-        /// @since V14.07.03 - Added.
+        /// @param[in,out] commentMode Flag to indicate if it is on comment mode between 
+        /// lines (=true) or normal mode (=false).
+        /// @since v14.07.03 - Added.
         /// @note Experimental highlighting. Probably will be changes in the future.
         private void ParseLine(string line, ref bool commentMode)
         {
@@ -670,16 +673,25 @@ namespace Gear.GUI
             {
                 // Check for a c style end comment
                 index = line.IndexOf("*/");
-                if (index != -1)
+                if (index != -1)    //found end comment in this line
                 {
-                    string comment = line.Substring(0, ++index);
+                    string comment = line.Substring(0, (index += 2));
                     codeEditorView.SelectionColor = Color.Green;
                     codeEditorView.SelectionFont = defaultFont;
                     codeEditorView.SelectedText = comment;
                     //parse the rest of the line (if any)
                     commentMode = false;
-                    if (line.Length > ++index)
+                    if (line.Length > index)
                         ParseLine(line.Substring(index), ref commentMode);
+                    else
+                        codeEditorView.SelectedText = "\n";
+                }
+                else  //not end comment in this line
+                {
+                    codeEditorView.SelectionColor = Color.Green;
+                    codeEditorView.SelectionFont = defaultFont;
+                    codeEditorView.SelectedText = line;
+                    codeEditorView.SelectedText = "\n";
                 }
             }
             else  //we are not in comment mode
@@ -752,7 +764,7 @@ namespace Gear.GUI
         /// It marks as changed, to prevent not averted loses at closure of the window.
         /// @param[in] sender Object who called this on event.
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
-        /// @version v15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private void codeEditorView_TextChanged(object sender, EventArgs e)
         {
             if (changeDetectEnabled)
@@ -766,7 +778,7 @@ namespace Gear.GUI
         /// name declaration.
         /// @param[out] match Name of the plugin class found. If not, it will be null.
         /// @returns If a match had found =True, else =False.
-        /// @version V15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private bool DetectClassName(string code, out string match)
         {
             string aux = null;
@@ -796,7 +808,7 @@ namespace Gear.GUI
         /// presented to the user to proceed or abort the closing.
         /// @param[in] sender Object who called this on event.
         /// @param[in] e `FormClosingEventArgs` class with a list of argument to the event call.
-        /// @version V15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private void PluginEditor_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (CodeChanged)
@@ -811,7 +823,7 @@ namespace Gear.GUI
         /// @brief Ask the user to not loose changes.
         /// @param[in] fileName Filename to show in dialog.
         /// @returns Boolean to close (=true) or not (=false).
-        /// @version V15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private bool CloseAnyway(string fileName)
         {
             //dialog to not lost changes
@@ -832,7 +844,7 @@ namespace Gear.GUI
         /// @brief Toggle the button state, updating the name & tooltip text.
         /// @param[in] sender Object who called this on event.
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
-        /// @version v15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private void embeddedCode_Click(object sender, EventArgs e)
         {
             SetEmbeddedCodeButton(embeddedCode.Checked);
@@ -842,7 +854,7 @@ namespace Gear.GUI
 
         /// @brief Update the name & tooltip text depending on each state.
         /// @param[in] newValue Value to set.
-        /// @version v15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private void SetEmbeddedCodeButton(bool newValue)
         {
             embeddedCode.Checked = newValue;
@@ -862,7 +874,7 @@ namespace Gear.GUI
         /// Also update change state for the plugin module, marking as changed.
         /// @param[in] sender Object who called this on event.
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
-        /// @version v15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private void addPluginMetadataButton_Click(object sender, EventArgs e)
         {
             if ( !String.IsNullOrEmpty(textPluginMetadataBox.Text) &&
@@ -904,7 +916,7 @@ namespace Gear.GUI
         /// Also update change state for the plugin module, marking as changed.
         /// @param[in] sender Object who called this on event.
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
-        /// @version v15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private void removePluginMetadataButton_Click(object sender, EventArgs e)
         {
             if (pluginMetadataList.SelectedItems.Count > 0)
@@ -939,7 +951,7 @@ namespace Gear.GUI
         /// metadata accordantly.
         /// @param[in] sender Object who called this on event.
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
-        /// @version v15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private void pluginMetadataList_SelectedIndexChanged(object sender, EventArgs e)
         {
             ListViewItem SelectedItem = null;   //selected item reference
@@ -969,7 +981,7 @@ namespace Gear.GUI
         /// given as parameter.
         /// @param[in] group Group of metadata element.
         /// @returns Default text for the given group.
-        /// @version v15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private string GetDefaultTextMetadataElement(ListViewGroup group)
         {
             string tex = null;
@@ -1006,7 +1018,7 @@ namespace Gear.GUI
         /// @brief Set the visibility of the given metadata element.
         /// @param[in] item Metadata element to set.
         /// @param[in] userDefined User defined (=true), or default value used (=false).
-        /// @version v15.03.26 - Added
+        /// @since v15.03.26 - Added
         private void SetUserDefinedMetadataElement(ListViewItem item, bool userDefined)
         {
             if (item != null)
@@ -1021,7 +1033,7 @@ namespace Gear.GUI
         /// @brief Get the visibility of the given metadata element.
         /// @param[in] item Metadata element to set.
         /// @returns User defined (=true), or default value used (=false).
-        /// @version v15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private bool IsUserDefinedMetadataElement(ListViewItem item)
         {
             if (item != null)
@@ -1041,8 +1053,8 @@ namespace Gear.GUI
 
         /// @brief Clear the metadata screen elements of plugin editor, setting all fields 
         /// to defaults, setting its visibility, and allowing only one element on each group.
-        /// @param enable Enable the Metadata control or not.
-        /// @version v15.03.26 - Added.
+        /// @param[in] enable Enable the Metadata control or not.
+        /// @since v15.03.26 - Added.
         private void ClearMetadata(bool enable)
         {
             pluginMetadataList.BeginUpdate();
@@ -1069,10 +1081,10 @@ namespace Gear.GUI
         }
 
         /// @brief Set an element of metadata, given the group name.
-        /// @param groupName Name of the group to set a element.
-        /// @param value Value to set.
+        /// @param[in] groupName Name of the group to set a element.
+        /// @param[in] value Value to set.
         /// @pre The actual algorithm assumes GUI.PluginEditor.ClearMetadata() was ejecuted before.
-        /// @version v15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private void SetElementOfMetadata(string groupName, string value)
         {
             //looking for the group of interest
@@ -1098,10 +1110,10 @@ namespace Gear.GUI
         }
 
         /// @brief Set the elemens of metadata, given the group name.
-        /// @param groupName Name of the group to set elements.
-        /// @param values Array of values to set.
+        /// @param[in] groupName Name of the group to set elements.
+        /// @param[in] values Array of values to set.
         /// @pre The actual algorithm assumes GUI.PluginEditor.ClearMetadata() was ejecuted before.
-        /// @version v15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private void SetElementOfMetadata(string groupName, string[] values)
         {
             if ((values != null) && (values.Length > 0))  //there are data to set?
@@ -1140,7 +1152,7 @@ namespace Gear.GUI
         /// @param[in] resetEmpty Boolean to reset the value if not user defined (=true), 
         /// or default (=false).
         /// @returns Array of elements of the group.
-        /// @version v15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private string[] GetElementsFromMetadata(string groupName, bool resetEmpty)
         {
             string[] result = null;
@@ -1180,7 +1192,7 @@ namespace Gear.GUI
         /// clearing the values if they are not user defined.
         /// @param[in] groupName Name of the group to retrieve elements.
         /// @returns Array of elements of the group.
-        /// @version v15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         private string[] GetElementsFromMetadata(string groupName)
         {
             return this.GetElementsFromMetadata(groupName, true);

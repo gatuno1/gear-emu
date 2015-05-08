@@ -56,10 +56,11 @@ namespace Gear.PluginSupport
         /// @code{.cs}
         /// class PinNoise : PluginBase
         /// {
-        ///     private PropellerCPU Chip;  //<== this line will not be necesary to declare in every plugin anymore.
+        ///     private PropellerCPU Chip;  /*<== this line will not be necesary to declare in every plugin anymore.*/
         /// ...
         /// @endcode
-        /// @version V15.03.26 - Added.
+        /// @param[in] chip Propeller CPU reference.
+        /// @version V15.03.26 - Modified to add %PropellerCPU parameter.
         public PluginBase(PropellerCPU chip)
         {
             Chip = chip;
@@ -70,7 +71,7 @@ namespace Gear.PluginSupport
         /// Source: <a href="http://forums.parallax.com/showthread.php/91084-GEAR-Propeller-Debugging-Environment?p=627190&viewfull=1#post627190">
         /// Post #32 from original GEAR post</a>. It shows that the original name of the class 
         /// was "BusModule". Changed to the new name of the class. 
-        /// @version V15.03.26 - change on the default name 
+        /// @version V15.03.26 - change the default name.
         public virtual string Title { get { return "Plugin Base"; } }
 
         /// @brief Attribute to allow key press detecting on the plugin. 
@@ -85,7 +86,7 @@ namespace Gear.PluginSupport
 
         /// @brief Identify a plugin as user (=true) or system (=false).
         /// @remarks Not to be used in Plugin Editor by user plugins.
-        /// @version V15.03.26 Added member.
+        /// @since V15.03.26 - Added.
         public virtual Boolean IsUserPlugin { get { return true; } }
 
         /// @brief Points to propeller instance.
@@ -103,7 +104,7 @@ namespace Gear.PluginSupport
         /// @brief Event when the plugin is closing.
         /// @details Useful to reset pins states or direction to initial state before loading the 
         /// plugin, or to release pins drive by the plugin.
-        /// @version V15.03.26 - Added.
+        /// @since V15.03.26 - Added.
         public virtual void OnClose() { }
              
         /// @brief Event when a clock tick is informed to the plugin, in clock units.
@@ -111,7 +112,7 @@ namespace Gear.PluginSupport
         /// @param[in] sysCounter Present system clock in ticks unit.
         /// @warning If sysCounter is used only, the plugin designer have to take measures to 
         /// detect and manage system counter rollover.
-        /// @version V15.03.26 - Changed to method with two parameters.
+        /// @version V15.03.26 - Modified to have two parameters.
         public virtual void OnClock(double time, uint sysCounter) { }
 
         /// @brief Event when some pin changed and is informed to the plugin.
@@ -120,6 +121,8 @@ namespace Gear.PluginSupport
         /// floating.
         /// @note Source: <a href="http://forums.parallax.com/showthread.php/91084-GEAR-Propeller-Debugging-Environment?p=625629&viewfull=1#post625629">
         /// API GEAR described on GEAR original Post</a>
+        /// @param[in] time Time in seconds.
+        /// @param[in] pins Array of pins with the current state.
         public virtual void OnPinChange(double time, PinState[] pins) { }
 
         /// @brief Event to repaint the plugin screen (if used).
@@ -128,11 +131,12 @@ namespace Gear.PluginSupport
         /// 'force' an update, this is provided so you can pass a false for non-forced repaints).
         /// @note Source: <a href="http://forums.parallax.com/showthread.php/91084-GEAR-Propeller-Debugging-Environment?p=625629&viewfull=1#post625629">
         /// API GEAR described on GEAR original Post</a>
+        /// @param[in] force Flag to indicate the intention to force the repaint.
         public virtual void Repaint(bool force) { }
 
         /// @brief Notifies that this plugin must be notified on pin changes.
         /// This method is to isolate the access to the underline Chip.
-        /// @version V15.03.26 - Added.
+        /// @since V15.03.26 - Added.
         public void NotifyOnPins()
         {
             Chip.NotifyOnPins(this);
@@ -140,7 +144,7 @@ namespace Gear.PluginSupport
 
         /// @brief Notifies that this plugin must be notified on clock ticks.
         /// This method is for isolate the access to the underline Chip.
-        /// @version V15.03.26 - Added.
+        /// @since V15.03.26 - Added.
         public void NotifyOnClock()
         {
             Chip.NotifyOnClock(this);
@@ -151,7 +155,7 @@ namespace Gear.PluginSupport
         /// @param[in] pin Pin number to drive
         /// @param[in] Floating Boolean to left floating (=true) or to set on input/output (=false).
         /// @param[in] Hi Boolean to set on Hi state (=true) or to set on Low (=false).
-        /// @version V15.03.26 - Added.
+        /// @since V15.03.26 - Added.
         public void DrivePin(int pin, bool Floating, bool Hi)
         {
             Chip.DrivePin(pin, Floating, Hi);
@@ -159,7 +163,7 @@ namespace Gear.PluginSupport
 
         /// @brief Set an immediate breakpoint.
         /// This method is for isolate the access to the underline Chip.
-        /// @version V15.03.26 - Added.
+        /// @since V15.03.26 - Added.
         public void BreakPoint()
         {
             Chip.BreakPoint();
