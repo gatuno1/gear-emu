@@ -35,7 +35,7 @@ namespace Gear.PluginSupport
     /// @brief Custom XML resolver, to locate the DTD definition file in the appropriate folder.
     /// @details Instead of search of DTD file in the location of XML plugin file, this redirects 
 	/// to search in the base directory of the GEAR executable.
-    /// @version v15.03.26 - Added.
+    /// @since v15.03.26 - Added.
     class myDTDLocationResolver : XmlUrlResolver
     {
         public override Uri ResolveUri(Uri baseUri, string relativeUri)
@@ -56,7 +56,7 @@ namespace Gear.PluginSupport
     }
 
     /// @brief Class to hold metadata of the plugin.
-    /// @version v15.03.26 - Added.
+    /// @since v15.03.26 - Added.
     public class PluginData
     {
         /// @brief Version of plugin system.
@@ -102,7 +102,7 @@ namespace Gear.PluginSupport
 
         /// @brief Add an error to the list.
         /// @param errorText Text of the error.
-        /// @version v15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         public void AddError(string errorText)
         {
             if (!string.IsNullOrEmpty(errorText))
@@ -113,7 +113,7 @@ namespace Gear.PluginSupport
         /// the validation state.
         /// @param[in] sender Reference to the object where the exception was raised.
         /// @param[in] args Class with the validation details event.
-        /// @version v15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         public void ValidateXMLPluginEventHandler(object sender, ValidationEventArgs args)
         {
             isValid = false;
@@ -131,7 +131,15 @@ namespace Gear.PluginSupport
         /// @brief Validate the XML against a DTD definition, retrieving the version of it.
         /// @param[in] XR Source of a XML to read of.
         /// @returns True if the XML is valid against DTD definition, False if not.
-        /// @version v15.03.26 - Added.
+        /// @pre This implementation assums the existence of attribute plugin_system_version
+        /// linked to existence of DTD declaration in the XML plugin file. In old XML plugin 
+        /// format (v0.0), there is not defined DTD declaration like 
+        /// @code{.xml} <!DOCTYPE plugin SYSTEM "Resources\plugin_v1.0.dtd"> @endcode 
+        /// or attribute for 
+        /// @code{.xml} <plugin plugin_system_version="1.0"> @endcode 
+        /// XML element, so both conditions are failed together. In V1.0 XML plugin format, 
+        /// both conditions must be fulfilled together for a valid plugin.
+        /// @since v15.03.26 - Added.
         bool ValidateXMLPluginSource(XmlReader XR)
         {
             //read the XML, if it is possible
@@ -167,7 +175,15 @@ namespace Gear.PluginSupport
         /// the possibles and valid DTD definition for plugins.
         /// @param[in] filenameXml File name to check validity.
         /// @returns True if the XML is valid against a DTD definition for plugins.
-        /// @version v15.03.26 - Added.
+        /// @post This implementation assums the existence of attribute plugin_system_version
+        /// linked to existence of DTD declaration in the XML plugin file. In old XML plugin 
+        /// format (v0.0), there is not defined DTD declaration like 
+        /// @code{.xml} <!DOCTYPE plugin SYSTEM "Resources\plugin_v1.0.dtd"> @endcode 
+        /// or attribute for 
+        /// @code{.xml} <plugin plugin_system_version="1.0"> @endcode 
+        /// XML element, so both conditions are failed together. In V1.0 XML plugin format, 
+        /// both conditions must be fulfilled together for a valid plugin.
+        /// @since v15.03.26 - Added.
         public bool ValidateXMLPluginFile(string filenameXml)
         {
             //Settings to be used to validate the XML
@@ -268,7 +284,7 @@ namespace Gear.PluginSupport
 
     
     /// @brief Methods to save and retrieve plugin from files, managing version of files.
-    /// @version v15.03.26 - Added.
+    /// @since v15.03.26 - Added.
     static class PluginPersistence
     {
 
@@ -276,7 +292,7 @@ namespace Gear.PluginSupport
         /// @param[in] filenameXml File name in XML format, version 0.0
         /// @param[in] Data Metadata of the plugin.
         /// @returns State of saving.
-        /// @version v15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         static public bool SaveXML_v0_0(string filenameXml, PluginData Data)
         {
             XmlDocument xmlDoc = new XmlDocument();
@@ -320,7 +336,7 @@ namespace Gear.PluginSupport
         /// @param[in] filenameXml File name in XML format, version 1.0
         /// @param[in] Data Metadata of the plugin.
         /// @returns State of saving, success (=true) or fail (=false).
-        /// @version v15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         static public bool SaveXML_v1_0(string filenameXml, PluginData Data)
         {
             XmlDocument xmlDoc = new XmlDocument();
@@ -495,7 +511,7 @@ namespace Gear.PluginSupport
         /// @returns State of loading: True if it was successful (also filling Data parameter 
         /// with the plugin information), or False if didn't (in this case Data parameter
         /// only should have updated IsValid attribute).
-        /// @version v15.03.26 - Added.
+        /// @since v15.03.26 - Added.
         static public bool ExtractFromXML_v0_0(string filenameXml, ref PluginData Data)
         {
             //Settings to read the XML
@@ -619,7 +635,9 @@ namespace Gear.PluginSupport
         /// @returns State of loading: True if it was successful (also filling Data parameter 
         /// with the plugin information), or False if didn't (in this case Data parameter
         /// only should have updated IsValid attribute).
-        /// @version v15.03.26 - Added.
+        /// @note The date conversion to current locale should be made in front end. Here it is
+        /// only extracted and stored in Data.DateModified member without conversion.
+        /// @since v15.03.26 - Added.
         static public bool ExtractFromXML_v1_0(string filenameXml, ref PluginData Data)
         {
             //Settings to read the XML
@@ -703,7 +721,6 @@ namespace Gear.PluginSupport
                                     break;
                                 case "date_modified":
                                     Data.DateModified = XR.Value;
-                                    /// @todo convert read date to current locale
                                     break;
                                 case "cultural_reference":
                                     Data.CulturalReference = XR.Value;

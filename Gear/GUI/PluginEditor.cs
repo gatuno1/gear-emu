@@ -596,16 +596,16 @@ namespace Gear.GUI
             }
         }
 
-        /// @brief Locate the offender code in code view, corresponding to the current error row.
+        /// @brief Position the cursor in code window, corresponding to selected error row.
         /// @param[in] sender Object who called this on event.
-        /// @param[in] e `EventArgs` class with a list of argument to the event call.
+        /// @param[in] e EventArgs class with a list of argument to the event call.
         private void ErrorView_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (errorListView.SelectedIndices.Count < 1)
                 return;
 
             int i = 0;
-            int index = errorListView.SelectedIndices[0];
+            int index = errorListView.SelectedIndices[0];   //determine the current row
             ListViewItem lvi = errorListView.Items[index];
             try
             {
@@ -617,7 +617,7 @@ namespace Gear.GUI
                 codeEditorView.ScrollToCaret();
                 codeEditorView.Select();
             }
-            catch (FormatException) { }
+            catch (FormatException) { } //on errors do nothing
             return;
         }
 
@@ -631,7 +631,7 @@ namespace Gear.GUI
         {
             int restore_pos = codeEditorView.SelectionStart, pos = 0;    //remember last position
             changeDetectEnabled = false;    //not enable change detection
-            bool commentMode = false;       //initially not in comment mode
+            bool commentMultiline = false;       //initially not in comment mode
             //Foreach line in input, identify key words and format them when 
             // adding to the rich text box.
             String[] lines = LineExpression.Split(codeEditorView.Text);
@@ -646,7 +646,7 @@ namespace Gear.GUI
             foreach (string line in lines)
             {
                 progressHighlight.Value = ++pos;
-                ParseLine(line, ref commentMode);   //remember comment mode between lines
+                ParseLine(line, ref commentMultiline);   //remember comment mode between lines
             }
             //update progress bar
             progressHighlight.Visible = false;
@@ -661,44 +661,46 @@ namespace Gear.GUI
         /// @brief Auxiliary method to check syntax.
         /// Examines line by line, parsing reserved C# words.
         /// @param[in] line Text line from the source code.
-        /// @param[in,out] commentMode Flag to indicate if it is on comment mode between 
-        /// lines (=true) or normal mode (=false).
+        /// @param[in,out] commentMultiline Flag to indicate if it is on comment mode 
+        /// between multilines (=true) or normal mode (=false).
         /// @since v14.07.03 - Added.
-        /// @note Experimental highlighting. Probably will be changes in the future.
-        private void ParseLine(string line, ref bool commentMode)
+        /// @warning Experimental highlighting. Probably will be changes in the future.
+        private void ParseLine(string line, ref bool commentMultiline)
         {
             int index;
 
-            if (commentMode)
+            if (commentMultiline)
             {
                 // Check for a c style end comment
                 index = line.IndexOf("*/");
-                if (index != -1)    //found end comment in this line
+                if (index != -1)    //found end comment in this line?
                 {
                     string comment = line.Substring(0, (index += 2));
                     codeEditorView.SelectionColor = Color.Green;
                     codeEditorView.SelectionFont = defaultFont;
                     codeEditorView.SelectedText = comment;
                     //parse the rest of the line (if any)
-                    commentMode = false;
-                    if (line.Length > index)
-                        ParseLine(line.Substring(index), ref commentMode);
-                    else
-                        codeEditorView.SelectedText = "\n";
+                    commentMultiline = false;
+                    //is there more text after the comment?
+                    if (line.Length > index)    
+                        ParseLine(line.Substring(index), ref commentMultiline);
+                    else  //no more text, so ...
+                        codeEditorView.SelectedText = "\n"; //..finalize the line
                 }
-                else  //not end comment in this line
+                else  //not end comment in this line..
                 {
+                    //.. so all the line will be a comment
                     codeEditorView.SelectionColor = Color.Green;
                     codeEditorView.SelectionFont = defaultFont;
                     codeEditorView.SelectedText = line;
-                    codeEditorView.SelectedText = "\n";
+                    codeEditorView.SelectedText = "\n"; //finalize the line
                 }
             }
-            else  //we are not in comment mode
+            else  //we are not in comment multiline mode
             {
                 bool putEndLine = true;
                 string[] tokens = CodeLine.Split(line);
-
+                //parse the line searching tokens
                 foreach (string token in tokens)
                 {
                     // Check for a c style comment opening
@@ -709,20 +711,23 @@ namespace Gear.GUI
                         //end comment found in the rest of the line?
                         if ((indexEnd != -1) && (indexEnd > index)) 
                         {
+                            //extract the comment text
                             string comment = line.Substring(index, (indexEnd += 2) - index);
                             codeEditorView.SelectionColor = Color.Green;
                             codeEditorView.SelectionFont = defaultFont;
                             codeEditorView.SelectedText = comment;
+                            //is there more text after the comment?
                             if (line.Length > indexEnd)
                             {
-                                ParseLine(line.Substring(indexEnd), ref commentMode);
+                                ParseLine(line.Substring(indexEnd), ref commentMultiline);
                                 putEndLine = false;
                             }
                             break;
                         }
-                        else  //as there is no end comment in the line
+                        else  //as there is no end comment in the line..
                         {
-                            commentMode = true; //we will enter comment mode
+                            //..entering comment multiline mode
+                            commentMultiline = true; 
                             string comment = line.Substring(index, line.Length - index);
                             codeEditorView.SelectionColor = Color.Green;
                             codeEditorView.SelectionFont = defaultFont;

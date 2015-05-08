@@ -1,45 +1,57 @@
 msc {
-#global settings
-hscale="1.00";
+//global settings
+hscale="1.00", wordwraparcs="true";
 
-#List of entities
+//List of entities
 A [label="1"],
 B [label="2"],
 C [label="3"];
 
-#phase separation
+//main phase
 --- [label=" Open the File, check DTD validation and read Plugin data ", linecolor="indigo", textcolor="indigo"];
 
-#titles Phase
+//titles 1
 A box A [label="PluginEditor.\nOpenFile(FileName, showErrors)", url="\ref Gear.GUI.PluginEditor.OpenFile", textbgcolor="#DCE2EF"],
 B box B [label="pluginCandidate = new PluginData()", url="\ref Gear.PluginSupport.PluginData", textbgcolor="#DCE2EF"];
 
-#Transitions Phase
+//Transitions 1
 A => B;
 B rbox B [label="\nCreate a new plugin Data \nObject (from PluginSupport\nnamespace), to manage its data.\n"];
-A <= B;
+A << B [label="PluginData reference or null."];
 
-#titles Phase
+//titles 2
 B box B [label="pluginCandidate.\nValidateXMLPluginFile(\nFileName)", url="\ref Gear.PluginSupport.PluginData.ValidateXMLPluginFile", textbgcolor="#DCE2EF"],
 C box C [label="pluginCandidate.\nValidateXMLPluginSource(\nXMLReader)", url="\ref Gear.PluginSupport.PluginData.ValidateXMLPluginSource", textbgcolor="#DCE2EF"];
 
-#Transitions Phase
+//Transitions 2
 A => B;
 B rbox B [label="\nCreate a XMLReader w/DTD\nvalidation settings.\n"];
 B => C;
 C rbox C [label="\nCheck Validity against DTD,\nand obtain version of plugin\nsystem from XMLReader.\n"];
-B <= C [label="valid result?"];
+B << C [label="Validity result & version."];
+B abox B [label="\nIs not valid Result and DTD not detected?\n", textbgcolour="orange"];
 
-#phase separation
---- [label=" [Case If not detected DTD data on XML file]  ", linecolor="indigo", textcolor="indigo"];
+//beggining of case 1
+--- [label=" [Case A1: not valid result, but DTD detected] ", linecolor="indigo", textcolor="indigo"];
+A <<= B [label="Not valid & error\nmessages generated."];
+--- [label=" [end Case A1]  ", linecolor="indigo", textcolor="indigo"];
+//end of case 2
+
+//beggining of case 2
+--- [label=" [Case A2: If not detected DTD data on XML file] ", linecolor="indigo", textcolor="indigo"];
 
 B rbox B [label="\nAdd a '0.0' DTD version definition on XML file and try to validate again.\n"];
 B => C;
 C rbox C [label="\nCheck Validity against DTD,\nand obtain version of plugin\nsystem from XMLReader.\n"];
-B <= C [label="valid result?"];
+B << C [label="Validity result & version."];
+B abox B [label="\nIs valid?\n", textbgcolour="orange"];
+--- [label=" [end Case A2]  ", linecolor="indigo", textcolor="indigo"];
+//end of case 2
 
-#phase separation
---- [label=" [end Case]  ", linecolor="indigo", textcolor="indigo"];
+//Transitions 2
+|||;	//small gap
+A << B [label="Validation result."];
 
+A abox A [label="What plugin system version is?", textbgcolour="orange"];
 
 }
