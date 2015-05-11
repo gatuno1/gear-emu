@@ -801,12 +801,12 @@ namespace Gear.EmulationCore
 
         /// @brief Drive a pin of Propeller.
         /// It validates the pin range, or do nothing, to be safe on external plugin use.
-        /// @version 15.03.26 - Added validation for pin range.
+        /// @version 15.03.26 - new validation for pin range.
         public void DrivePin(int pin, bool Floating, bool Hi)
         {
             if ( (pin >= 0) & (pin < TOTAL_PINS) )  //prevent pin overflow.
             {
-                ulong mask = (ulong)1 << pin;
+                ulong mask = (ulong)0x1 << pin;
 
                 if (Floating)
                     PinFloat |= mask;

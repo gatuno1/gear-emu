@@ -1,6 +1,18 @@
-<plugin>
-  <instance class="PinNoise" />
-  <code>using Gear.EmulationCore;
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE plugin SYSTEM "Resources\plugin_v1.0.dtd">
+<plugin plugin_system_version="1.0" version="1.0">
+  <metadata>
+    <author>Asterisk</author>
+    <modified_by>Gatuno</modified_by>
+    <date_modified>11-05-2015</date_modified>
+    <cultural_reference>es-CL</cultural_reference>
+    <release_notes><![CDATA[* Moved variables initialization to OnReset() method. * Version 1.0 of the plugin was generated to update the plugin to System 1.0.]]></release_notes>
+    <description><![CDATA[Alternate pin(s) to produce 'pin noise' to the Propeller chip.]]></description>
+    <usage><![CDATA[Open it with the Plugin Editor to change pin and frequency. Version 1.0 of the plugin was generated to update the plugin to System 1.0. Also, moved variable initialization to OnReset() method.]]></usage>
+    <link />
+  </metadata>
+  <instance_class>PinNoise</instance_class>
+  <code><![CDATA[using Gear.EmulationCore;
 using Gear.PluginSupport;
 
 class PinNoise : PluginBase
@@ -11,9 +23,7 @@ class PinNoise : PluginBase
 
 	public PinNoise(PropellerCPU chip) : base(chip) 
 	{ 
-		Drive = 0;
-		Clock = false;
-		last = 0.0;
+		OnReset();
 	}
 
 	public override string Title
@@ -33,18 +43,25 @@ class PinNoise : PluginBase
 		if (Drive % 3 == 0)
 		{
 			// DrivePin(int pin_number, bool Floating, bool Hi)
-			DrivePin(3, false, (Drive &amp; 1) == 1);
+			DrivePin(3, false, (Drive & 1) == 1);
 		}
 	}
 
 	public override void OnClock(double time, uint sysCounter)
 	{
-		if (time - last &gt;= 0.00001)
+		if (time - last >= 0.00001)
 		{
 			last += 0.00001;
 			Clock = !Clock;
 			DrivePin(2, false, Clock);
 		}
 	}
-}</code>
+	public override void OnReset()
+	{
+		Drive = 0;
+		Clock = false;
+		last = 0.0;
+	}
+}
+]]></code>
 </plugin>

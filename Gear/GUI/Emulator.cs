@@ -85,7 +85,7 @@ namespace Gear.GUI
         }
 
         /// @brief Make a stop on the emulation.
-        /// @details This method would be called when a plug in determine to stop, for example
+        /// @details This method would be called when a plugin want to stop, for example
         /// when a breakpoint condition is satisfied.
         public void BreakPoint()
         {

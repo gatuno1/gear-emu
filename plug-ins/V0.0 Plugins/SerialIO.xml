@@ -1,25 +1,11 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE plugin SYSTEM "Resources\plugin_v1.0.dtd">
-<plugin plugin_system_version="1.0" version="1.0">
-  <metadata>
-    <author>Asterick</author>
-    <author>Ben Levitt</author>
-    <modified_by>Gatuno</modified_by>
-    <date_modified>11-05-2015</date_modified>
-    <cultural_reference>es-CL</cultural_reference>
-    <release_notes><![CDATA[Converted to plugin system 1.0, and added metadata.]]></release_notes>
-    <description><![CDATA[Allows connecting to a FullDuplexSerial object running on the PropellerCPU chip.]]></description>
-    <usage><![CDATA[Set the bauds, rx & tx pins to connect.]]></usage>
-    <link />
-  </metadata>
-  <instance_class>SerialIO</instance_class>
-  <code><![CDATA[//
-// SerialIO v1.0
+<plugin>
+  <instance class="SerialIO" />
+  <code>//
+// SerialIO v0.4
 //    A Plugin to the Gear PropellerCPU Simulator that allows connecting
 //    to a FullDuplexSerial object running on the PropellerCPU chip.
 //
 // CHANGELOG
-// v1.0 - Converted to plugin system 1.0, and added metadata.
 // v0.4 - Fix tab order.  Clear transmit buffer on "Clear Text" button click.
 // v0.3 - Adds a scrollbar and automatically scrolls down as text comes in.
 // v0.2 - Fixes a bug in handling receiving a 0 byte.
@@ -275,7 +261,7 @@ class SerialIO : PluginBase
 
 	private void HandleRx(double time)
 	{
-		bool bit = ((Chip.OUT & ((ulong)1 << rxPin)) != 0);
+		bool bit = ((Chip.OUT &amp; ((ulong)1 &lt;&lt; rxPin)) != 0);
 
 		if (rxPhase == 0)
 		{
@@ -298,7 +284,7 @@ class SerialIO : PluginBase
 		{
 			double delta = time - rxLastTime;
 
-			if (delta > bitTime)
+			if (delta &gt; bitTime)
 			{
 				this.GetBit(bit);
 				rxLastTime += bitTime;
@@ -311,7 +297,7 @@ class SerialIO : PluginBase
 	{
 		if (bit)
 		{
-			rxCurrentByte |= (1 << rxBitPos);
+			rxCurrentByte |= (1 &lt;&lt; rxBitPos);
 		}
 		rxBitPos++;
 
@@ -324,7 +310,7 @@ class SerialIO : PluginBase
 			{
 				displayBuffer += "\r\n";
 			}
-			else if (rxCurrentByte > 0)
+			else if (rxCurrentByte &gt; 0)
 			{
 				displayBuffer += Convert.ToChar(rxCurrentByte);
 			}
@@ -350,7 +336,7 @@ class SerialIO : PluginBase
 		{
 			double delta = time - txLastTime;
 
-			if (delta > bitTime)
+			if (delta &gt; bitTime)
 			{
 				this.SendBit();
 				txLastTime += bitTime;
@@ -360,9 +346,9 @@ class SerialIO : PluginBase
 		{
 			double delta = time - txLastTime;
 
-			if (delta > bitTime)
+			if (delta &gt; bitTime)
 			{
-				txPhase = ((txBuffer.Length > 0) ? 1 : 0);
+				txPhase = ((txBuffer.Length &gt; 0) ? 1 : 0);
 			}
 			return;
 		}
@@ -381,7 +367,7 @@ class SerialIO : PluginBase
 		}
 
 		int sendByte = (int)(txBuffer[0]);
-		bool bit = ((sendByte & (1 << txBitPos)) != 0);
+		bool bit = ((sendByte &amp; (1 &lt;&lt; txBitPos)) != 0);
 		DrivePin(txPin, false, bit);
 
 		txBitPos++;
@@ -408,7 +394,7 @@ class SerialIO : PluginBase
 	{
 		displayBuffer = "";
 		this.bodyField.Text = displayBuffer;
-		if (txBuffer.Length > 0)
+		if (txBuffer.Length &gt; 0)
 		{
 			txBuffer = txBuffer.Substring(0, 1);
 		}
@@ -417,7 +403,7 @@ class SerialIO : PluginBase
 
 	private void txt_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
 	{
-		if ((Control.ModifierKeys & Keys.Control) != 0)
+		if ((Control.ModifierKeys &amp; Keys.Control) != 0)
 		{
 			return;
 		}
@@ -458,7 +444,5 @@ class SerialIO : PluginBase
 		this.OnReset();
 		this.bodyField.Focus();
 	}
-}
-
-]]></code>
+}</code>
 </plugin>

@@ -52,13 +52,14 @@ namespace Gear.GUI
             System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
             System.Windows.Forms.ToolStripLabel classNameLabel;
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PluginEditor));
-            System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("Author(s)", System.Windows.Forms.HorizontalAlignment.Center);
-            System.Windows.Forms.ListViewGroup listViewGroup2 = new System.Windows.Forms.ListViewGroup("Modified By", System.Windows.Forms.HorizontalAlignment.Center);
-            System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("Date Modified", System.Windows.Forms.HorizontalAlignment.Center);
-            System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("Version", System.Windows.Forms.HorizontalAlignment.Center);
-            System.Windows.Forms.ListViewGroup listViewGroup5 = new System.Windows.Forms.ListViewGroup("Description", System.Windows.Forms.HorizontalAlignment.Center);
-            System.Windows.Forms.ListViewGroup listViewGroup6 = new System.Windows.Forms.ListViewGroup("Usage", System.Windows.Forms.HorizontalAlignment.Center);
-            System.Windows.Forms.ListViewGroup listViewGroup7 = new System.Windows.Forms.ListViewGroup("Link(s)", System.Windows.Forms.HorizontalAlignment.Center);
+            System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("Author(s)", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup2 = new System.Windows.Forms.ListViewGroup("Modified By", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("Date Modified", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("Version", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup5 = new System.Windows.Forms.ListViewGroup("Release Notes", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup6 = new System.Windows.Forms.ListViewGroup("Description", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup7 = new System.Windows.Forms.ListViewGroup("Usage", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup8 = new System.Windows.Forms.ListViewGroup("Link(s)", System.Windows.Forms.HorizontalAlignment.Left);
             System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
             "Your name"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
             System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem(new string[] {
@@ -68,10 +69,12 @@ namespace Gear.GUI
             System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem(new string[] {
             "1.0"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
             System.Windows.Forms.ListViewItem listViewItem5 = new System.Windows.Forms.ListViewItem(new string[] {
-            "Description for the plugin"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
+            "Description of version changes."}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
             System.Windows.Forms.ListViewItem listViewItem6 = new System.Windows.Forms.ListViewItem(new string[] {
-            "How to use the plugin"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
+            "Description for the plugin"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
             System.Windows.Forms.ListViewItem listViewItem7 = new System.Windows.Forms.ListViewItem(new string[] {
+            "How to use the plugin"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
+            System.Windows.Forms.ListViewItem listViewItem8 = new System.Windows.Forms.ListViewItem(new string[] {
             "Web Link to more information"}, -1, System.Drawing.SystemColors.InactiveCaption, System.Drawing.Color.Empty, null);
             this.toolStripMain = new System.Windows.Forms.ToolStrip();
             this.openButton = new System.Windows.Forms.ToolStripButton();
@@ -81,6 +84,7 @@ namespace Gear.GUI
             this.instanceName = new System.Windows.Forms.ToolStripTextBox();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.syntaxButton = new System.Windows.Forms.ToolStripButton();
+            this.progressHighlight = new System.Windows.Forms.ToolStripProgressBar();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.embeddedCode = new System.Windows.Forms.ToolStripButton();
             this.referencePanel = new System.Windows.Forms.Panel();
@@ -100,7 +104,6 @@ namespace Gear.GUI
             this.addPluginMetadataButton = new System.Windows.Forms.ToolStripButton();
             this.removePluginMetadataButton = new System.Windows.Forms.ToolStripButton();
             this.detailsPanel = new System.Windows.Forms.Panel();
-            this.progressHighlight = new System.Windows.Forms.ToolStripProgressBar();
             this.errorSplitter = new Gear.GUI.CollapsibleSplitter();
             this.referencesSplitter = new Gear.GUI.CollapsibleSplitter();
             this.metadataSplitter = new Gear.GUI.CollapsibleSplitter();
@@ -216,6 +219,12 @@ namespace Gear.GUI
             this.syntaxButton.Text = "Syntax Highlight";
             this.syntaxButton.ToolTipText = "Syntax Highlight the code";
             this.syntaxButton.Click += new System.EventHandler(this.syntaxButton_Click);
+            // 
+            // progressHighlight
+            // 
+            this.progressHighlight.Name = "progressHighlight";
+            this.progressHighlight.Size = new System.Drawing.Size(80, 22);
+            this.progressHighlight.Visible = false;
             // 
             // toolStripSeparator3
             // 
@@ -357,26 +366,21 @@ namespace Gear.GUI
             this.pluginMetadataList.FullRowSelect = true;
             this.pluginMetadataList.GridLines = true;
             listViewGroup1.Header = "Author(s)";
-            listViewGroup1.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
             listViewGroup1.Name = "Authors";
             listViewGroup2.Header = "Modified By";
-            listViewGroup2.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
             listViewGroup2.Name = "ModifiedBy";
             listViewGroup3.Header = "Date Modified";
-            listViewGroup3.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
             listViewGroup3.Name = "DateModified";
             listViewGroup4.Header = "Version";
-            listViewGroup4.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
             listViewGroup4.Name = "Version";
-            listViewGroup5.Header = "Description";
-            listViewGroup5.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
-            listViewGroup5.Name = "Description";
-            listViewGroup6.Header = "Usage";
-            listViewGroup6.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
-            listViewGroup6.Name = "Usage";
-            listViewGroup7.Header = "Link(s)";
-            listViewGroup7.HeaderAlignment = System.Windows.Forms.HorizontalAlignment.Center;
-            listViewGroup7.Name = "Links";
+            listViewGroup5.Header = "Release Notes";
+            listViewGroup5.Name = "ReleaseNotes";
+            listViewGroup6.Header = "Description";
+            listViewGroup6.Name = "Description";
+            listViewGroup7.Header = "Usage";
+            listViewGroup7.Name = "Usage";
+            listViewGroup8.Header = "Link(s)";
+            listViewGroup8.Name = "Links";
             this.pluginMetadataList.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
             listViewGroup1,
             listViewGroup2,
@@ -384,7 +388,8 @@ namespace Gear.GUI
             listViewGroup4,
             listViewGroup5,
             listViewGroup6,
-            listViewGroup7});
+            listViewGroup7,
+            listViewGroup8});
             this.pluginMetadataList.HideSelection = false;
             listViewItem1.Group = listViewGroup1;
             listViewItem1.StateImageIndex = 0;
@@ -396,11 +401,13 @@ namespace Gear.GUI
             listViewItem4.Group = listViewGroup4;
             listViewItem4.ToolTipText = "Version number of the plugin";
             listViewItem5.Group = listViewGroup5;
-            listViewItem5.ToolTipText = "What does the plugin.";
+            listViewItem5.ToolTipText = "Description of changes of this version of the plugin.";
             listViewItem6.Group = listViewGroup6;
-            listViewItem6.ToolTipText = "How it is supposed to be used the plugin.";
+            listViewItem6.ToolTipText = "What does the plugin.";
             listViewItem7.Group = listViewGroup7;
-            listViewItem7.ToolTipText = "Web links for the plugin.";
+            listViewItem7.ToolTipText = "How it is supposed to be used the plugin.";
+            listViewItem8.Group = listViewGroup8;
+            listViewItem8.ToolTipText = "Web links for the plugin.";
             this.pluginMetadataList.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
             listViewItem1,
             listViewItem2,
@@ -408,7 +415,8 @@ namespace Gear.GUI
             listViewItem4,
             listViewItem5,
             listViewItem6,
-            listViewItem7});
+            listViewItem7,
+            listViewItem8});
             this.pluginMetadataList.LabelEdit = true;
             this.pluginMetadataList.Location = new System.Drawing.Point(0, 0);
             this.pluginMetadataList.MultiSelect = false;
@@ -477,12 +485,6 @@ namespace Gear.GUI
             this.detailsPanel.Name = "detailsPanel";
             this.detailsPanel.Size = new System.Drawing.Size(200, 417);
             this.detailsPanel.TabIndex = 2;
-            // 
-            // progressHighlight
-            // 
-            this.progressHighlight.Name = "progressHighlight";
-            this.progressHighlight.Size = new System.Drawing.Size(80, 22);
-            this.progressHighlight.Visible = false;
             // 
             // errorSplitter
             // 

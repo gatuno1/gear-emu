@@ -1,13 +1,15 @@
 <!ELEMENT plugin (metadata, instance_class, reference*, code+)>
-    <!ATTLIST plugin plugin_system_version CDATA "1.0">
-    <!ATTLIST plugin version               CDATA #REQUIRED>
+<!ATTLIST plugin plugin_system_version CDATA "1.0">
+<!ATTLIST plugin version               CDATA #REQUIRED>
 
-<!ELEMENT metadata (author+, modified_by, date_modified, cultural_reference, description, usage, link+)>
+<!ELEMENT metadata (author+, modified_by, date_modified, cultural_reference, release_notes, 
+  description, usage, link+)>
 
         <!ELEMENT author              (#PCDATA)>
         <!ELEMENT modified_by         (#PCDATA)>
         <!ELEMENT date_modified       (#PCDATA)>
         <!ELEMENT cultural_reference  (#PCDATA)>
+        <!ELEMENT release_notes       ANY>        <!-- use CDATA -->
         <!ELEMENT description         ANY>        <!-- use CDATA -->
         <!ELEMENT usage               ANY>        <!-- use CDATA -->
         <!ELEMENT link                ANY>        <!-- use CDATA -->

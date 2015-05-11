@@ -325,6 +325,7 @@ namespace Gear.GUI
                             SetElementOfMetadata("Authors", pluginCandidate.Authors);
                             SetElementOfMetadata("ModifiedBy", pluginCandidate.Modifier);
                             SetElementOfMetadata("DateModified", pluginCandidate.DateModified);
+                            SetElementOfMetadata("ReleaseNotes", pluginCandidate.ReleaseNotes);
                             SetElementOfMetadata("Description", pluginCandidate.Description);
                             SetElementOfMetadata("Usage", pluginCandidate.Usage);
                             SetElementOfMetadata("Links", pluginCandidate.Links);
@@ -367,6 +368,8 @@ namespace Gear.GUI
                 GetElementsFromMetadata("DateModified", false)[0];//always expect 1 element
             //cultural reference should be the one actually used in run time
             data.CulturalReference = CultureInfo.CurrentCulture.Name;
+            //TODO [ASB]: add try section & detect exception thrown
+            data.ReleaseNotes = GetElementsFromMetadata("ReleaseNotes")[0]; //always expect 1 element
             //TODO [ASB]: add try section & detect exception thrown
             data.Description = GetElementsFromMetadata("Description")[0]; //always expect 1 element
             //TODO [ASB]: add try section & detect exception thrown
@@ -1003,6 +1006,9 @@ namespace Gear.GUI
                     break;
                 case "Version":
                     tex = "1.0";
+                    break;
+                case "ReleaseNotes":
+                    tex = "Description of version changes.";
                     break;
                 case "Description":
                     tex = "Description for the plugin";

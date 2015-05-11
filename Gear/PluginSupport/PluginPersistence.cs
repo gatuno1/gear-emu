@@ -68,6 +68,7 @@ namespace Gear.PluginSupport
         public string Modifier;             //!< @brief Last author of modifications.
         public string DateModified;         //!< @brief Date of modifications,
         public string CulturalReference;    //!< @brief To store the cultural reference of dates.
+        public string ReleaseNotes;         //!< @brief Release notes (modif. of the version).
         public string Description;          //!< @brief Description of the plugin.
         public string Usage;                //!< @brief Guides to use the plugin.
         public string[] Links;              //!< @brief Links supporting the plugin.
@@ -208,7 +209,7 @@ namespace Gear.PluginSupport
                 if (ValidateXMLPluginSource(XR)) 
                     return true;
                 else 
-                    switch (this.PluginVersion)
+                    switch (this.PluginSystemVersion)
                 {   //case of not valid XML, so let's see the plugin system version detected
                     case null:
                         //we have to try adding default DTD definition to the XML source, because
@@ -408,6 +409,14 @@ namespace Gear.PluginSupport
                 {
                     textElement = xmlDoc.CreateTextNode(Data.CulturalReference);
                     childElement.AppendChild(textElement);
+                }
+                //level 2 element - release_notes
+                childElement = xmlDoc.CreateElement("release_notes");
+                instance.AppendChild(childElement);
+                if (Data.ReleaseNotes.Length > 0)
+                {
+                    cdata = xmlDoc.CreateCDataSection(Data.ReleaseNotes);
+                    childElement.AppendChild(cdata);
                 }
                 //level 2 element - description
                 childElement = xmlDoc.CreateElement("description");
@@ -725,6 +734,9 @@ namespace Gear.PluginSupport
                                 case "cultural_reference":
                                     Data.CulturalReference = XR.Value;
                                     break;
+                                case "release_notes":
+                                    Data.ReleaseNotes = XR.Value;
+                                    break;
                                 case "description":
                                     Data.Description = XR.Value;
                                     break;
@@ -752,6 +764,9 @@ namespace Gear.PluginSupport
                         case XmlNodeType.CDATA:
                             switch (lastElement.Peek())
                             {
+                                case "release_notes":
+                                    Data.ReleaseNotes = XR.Value;
+                                    break;
                                 case "description":
                                     Data.Description = XR.Value;
                                     break;
