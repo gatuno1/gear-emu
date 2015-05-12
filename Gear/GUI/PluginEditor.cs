@@ -233,17 +233,16 @@ namespace Gear.GUI
             //Determine if the XML is valid, and for which DTD version
             if (!pluginCandidate.ValidateXMLPluginFile(FileName))
             {
-                //if not valid, show the errors.
-                foreach(string strText in pluginCandidate.ValidationErrors)
-                {
-                    /// @todo change to show a dialog with the errors in load
-                    errorListView.Items.Clear();
-                    ListViewItem item = new ListViewItem("OpenFile", 0);
-                    item.SubItems.Add("");
-                    item.SubItems.Add("");
-                    item.SubItems.Add(strText);
-                    errorListView.Items.Add(item);
-                }
+                string allMessages = "";
+                //case not valid file, so show the errors.
+                foreach (string strText in pluginCandidate.ValidationErrors)
+                    allMessages += (strText.Trim() + "\r\n");
+                /// @todo Add a custom dialog to show every error message in a grid.
+                //show messages
+                MessageBox.Show(allMessages,
+                    "Plugin Editor - Open File.",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
                 return false;
             }
             else  //...XML plugin file is valid & system version is determined
@@ -262,12 +261,11 @@ namespace Gear.GUI
                             PluginPersistence.ExtractFromXML_v1_0(FileName, ref pluginCandidate);
                         break;
                     default:
-                        ListViewItem item = new ListViewItem("OpenFile", 0);
-                        item.SubItems.Add("");
-                        item.SubItems.Add("");
-                        item.SubItems.Add(string.Format("Unknow version \"{0}\" for Plugin system.",
-                            pluginCandidate.PluginSystemVersion));
-                        errorListView.Items.Add(item);
+                        MessageBox.Show(string.Format("Plugin system version '{}' not recognized "+
+                            "on file \"" + FileName + "\".", pluginCandidate.PluginSystemVersion),
+                            "Plugin Editor - Open File.",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
                         IsSuccess = false;
                         break;
                 }
@@ -344,72 +342,94 @@ namespace Gear.GUI
             }
         }
 
-        /// @brief Take the plugin information from screen and call the persistence to store 
-        /// in a file.
+        /// @brief Take the plugin information from screen and call the persistence class 
+        /// to store it in a XML file.
         /// @details Take care of update change state of the window. It use methods from
         /// Gear.PluginSupport.PluginPersistence class to store in file.
         /// @param[in] FileName Name of the file to save.
         /// @param[in] version String with the version of plugin system to use for saving.
-        public void SaveFile(string FileName, string version)
+        public void SaveFile(string FileName, string systemVersion)
         {
             PluginData data = new PluginData();
             //fill struct with data from screen controls
-            data.PluginSystemVersion = version; //version of plugin system
-            //data.PluginVersion - version of the plugin itself
+            data.PluginSystemVersion = systemVersion; //version of plugin system
             //TODO [ASB]: add try section & detect exception thrown
-            data.PluginVersion = 
-                GetElementsFromMetadata("Version", false)[0];    //always expect 1 element
-            //TODO [ASB]: add try section & detect exception thrown
-            data.Authors = GetElementsFromMetadata("Authors");
-            //TODO [ASB]: add try section & detect exception thrown
-            data.Modifier = GetElementsFromMetadata("ModifiedBy")[0];   //always expect 1 element
-            //TODO [ASB]: add try section & detect exception thrown
-            data.DateModified = 
-                GetElementsFromMetadata("DateModified", false)[0];//always expect 1 element
-            //cultural reference should be the one actually used in run time
-            data.CulturalReference = CultureInfo.CurrentCulture.Name;
-            //TODO [ASB]: add try section & detect exception thrown
-            data.ReleaseNotes = GetElementsFromMetadata("ReleaseNotes")[0]; //always expect 1 element
-            //TODO [ASB]: add try section & detect exception thrown
-            data.Description = GetElementsFromMetadata("Description")[0]; //always expect 1 element
-            //TODO [ASB]: add try section & detect exception thrown
-            data.Usage = GetElementsFromMetadata("Usage")[0];             //always expect 1 element
-            //TODO [ASB]: add try section & detect exception thrown
-            data.Links = GetElementsFromMetadata("Links");
+            try
+            {
+                data.PluginVersion =
+                    GetElementsFromMetadata("Version", false)[0];    //always expect 1 element
+                //TODO [ASB]: add try section & detect exception thrown
+                data.Authors = GetElementsFromMetadata("Authors");
+                //TODO [ASB]: add try section & detect exception thrown
+                data.Modifier = GetElementsFromMetadata("ModifiedBy")[0];   //always expect 1 element
+                //TODO [ASB]: add try section & detect exception thrown
+                data.DateModified =
+                    GetElementsFromMetadata("DateModified", false)[0];//always expect 1 element
+                //cultural reference should be the one actually used in run time
+                data.CulturalReference = CultureInfo.CurrentCulture.Name;
+                //TODO [ASB]: add try section & detect exception thrown
+                data.ReleaseNotes = GetElementsFromMetadata("ReleaseNotes")[0]; //always expect 1 element
+                //TODO [ASB]: add try section & detect exception thrown
+                data.Description = GetElementsFromMetadata("Description")[0]; //always expect 1 element
+                //TODO [ASB]: add try section & detect exception thrown
+                data.Usage = GetElementsFromMetadata("Usage")[0];             //always expect 1 element
+                //TODO [ASB]: add try section & detect exception thrown
+                data.Links = GetElementsFromMetadata("Links");
 
-            data.InstanceName = instanceName.Text;
-            string[] references;
-            if (referencesList.Items.Count > 0)
-            {
-                references = new string[referencesList.Items.Count];
-                for (int i = 0; i < referencesList.Items.Count; i++)
-                    references[i] = referencesList.Items[i].ToString();
-                data.References = references;
-            }
-            switch (version)
-            {
-                case "1.0":
-                    //TODO ASB: manage multiple files from user interface
-                    data.UseExtFiles = new bool[1] { (!embeddedCode.Checked) };
-                    string separateFileName = Path.Combine(Path.GetDirectoryName(FileName),
-                        Path.GetFileNameWithoutExtension(FileName) + ".cs");
-                    data.ExtFiles = new string[1] { 
+                data.InstanceName = instanceName.Text;
+                string[] references;
+                if (referencesList.Items.Count > 0)
+                {
+                    references = new string[referencesList.Items.Count];
+                    for (int i = 0; i < referencesList.Items.Count; i++)
+                        references[i] = referencesList.Items[i].ToString();
+                    data.References = references;
+                }
+                switch (systemVersion)
+                {
+                    case "1.0":
+                        //TODO ASB: manage multiple files from user interface
+                        data.UseExtFiles = new bool[1] { (!embeddedCode.Checked) };
+                        string separateFileName = Path.Combine(Path.GetDirectoryName(FileName),
+                            Path.GetFileNameWithoutExtension(FileName) + ".cs");
+                        data.ExtFiles = new string[1] { 
                         ((!embeddedCode.Checked) ? separateFileName : "") };
-                    data.Codes = new string[1] { codeEditorView.Text };
-                    //update modified state for the plugin
-                    CodeChanged = !PluginPersistence.SaveXML_v1_0(FileName, data);
-                    break;
-                case "0.0":
-                    //manage only one file on user interface
-                    data.UseExtFiles = new bool[1] { false };
-                    data.ExtFiles = new string[1] { "" };
-                    data.Codes = new string[1] { codeEditorView.Text };
-                    //update modified state for the plugin
-                    CodeChanged = !PluginPersistence.SaveXML_v0_0(FileName,data);
-                    break;
-            }
+                        data.Codes = new string[1] { codeEditorView.Text };
+                        //update modified state for the plugin
+                        CodeChanged = !PluginPersistence.SaveXML_v1_0(FileName, data);
+                        //if it was succesfully saved
+                        if (!CodeChanged) //clear metadata if it was succesfully saved
+                        {
+                            ClearMetadata(true);    //reset metadata in screen, enabling it
+                        };
+                        break;
+                    case "0.0":
+                        //manage only one file on user interface
+                        data.UseExtFiles = new bool[1] { false };
+                        data.ExtFiles = new string[1] { "" };
+                        data.Codes = new string[1] { codeEditorView.Text };
+                        //update modified state for the plugin
+                        CodeChanged = !PluginPersistence.SaveXML_v0_0(FileName, data);
+                        if (!CodeChanged) //clear metadata if it was succesfully saved
+                        {
+                            ClearMetadata(false);   //reset metadata in screen, disabling it
+                        }
+                        break;
+                }
 
-            m_SaveFileName = FileName;
+                m_SaveFileName = FileName;
+            }
+            catch (Exception e)
+            {
+                /// @todo Add a custom dialog to show every error message in a grid.
+                string msg = "Save Failed:" + "\r\n" + e.Message + "\r\n at" + 
+                    e.Source + " method.";
+                //show messages
+                MessageBox.Show(msg,
+                    "Plugin Editor - Save File.",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
         }
 
         /// @brief Method to compile C# source code to check errors on it.
@@ -1188,7 +1208,10 @@ namespace Gear.GUI
                     }
                     else
                     {
-                        //TODO ASB : throw an exception to the caller: always have to exist all the metadata elements!
+                        //always have to exist all the metadata elements!
+                        throw new Exception(string.Format(
+                            "Couldn't retrieve elements for '{1}' metadata group. " + 
+                            "Please check the parameters for GetElementsFromMetadata() method.", groupName));
                     }
                 }
             }

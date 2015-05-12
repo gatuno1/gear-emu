@@ -292,7 +292,7 @@ namespace Gear.PluginSupport
         /// @brief Save a plugin to XML as version 0.0
         /// @param[in] filenameXml File name in XML format, version 0.0
         /// @param[in] Data Metadata of the plugin.
-        /// @returns State of saving.
+        /// @returns State of saving, as success (=true), or failure (=false).
         /// @since v15.03.26 - Added.
         static public bool SaveXML_v0_0(string filenameXml, PluginData Data)
         {
@@ -328,8 +328,6 @@ namespace Gear.PluginSupport
             root.AppendChild(instance);
             //saving XML document
             xmlDoc.Save(filenameXml);
-
-            //TODO [ASB] : catch exceptions and return false if any.
             return true;
         }
 
@@ -509,8 +507,6 @@ namespace Gear.PluginSupport
             }
             //saving XML document
             xmlDoc.Save(filenameXml);
-
-            //TODO [ASB] : catch exceptions and return false if any.
             return true;
         }
 
