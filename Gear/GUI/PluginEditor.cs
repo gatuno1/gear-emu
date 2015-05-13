@@ -43,9 +43,9 @@ namespace Gear.GUI
     {
         /// @brief File name of current plugin on editor window.
         /// @note Include full path and name to the file.
-        private string m_SaveFileName;
+        private string _saveFileName;
         /// @brief Plugin System Version of the file for a plugin. 
-        private string m_FormatVersion;
+        private string _systemFormatVersion;
         /// @brief Text for plugin Metadata
         /// @details Indicates the version of plugin system for the current plugin.
         /// @since v15.03.26 - Added.
@@ -53,14 +53,14 @@ namespace Gear.GUI
         {
             get 
             {
-                if (m_FormatVersion == null)
+                if (_systemFormatVersion == null)
                     return "Metadata of plugin";
-                else switch (m_FormatVersion)
+                else switch (_systemFormatVersion)
                 {
                     case "0.0":
-                        return "No Metadata for plugin V" + m_FormatVersion;
+                        return "No Metadata for plugin v" + _systemFormatVersion;
                     default:
-                        return "Metadata of plugin V" + m_FormatVersion;
+                        return "Metadata of plugin v" + _systemFormatVersion;
                 }
             }
         }
@@ -134,16 +134,16 @@ namespace Gear.GUI
             {
                 try
                 {
-                    codeEditorView.LoadFile(
-                        "Resources\\PluginTemplate.cs", RichTextBoxStreamType.PlainText);
+                    codeEditorView.LoadFile("Resources\\PluginTemplate.cs",
+                        RichTextBoxStreamType.PlainText);
                 }
                 catch (IOException) { }         //do nothing, maintaining empty the code text box
                 catch (ArgumentException) { }   //
                 finally { }                     //
             }
 
-            m_SaveFileName = null;
-            m_FormatVersion = null;
+            _saveFileName = null;
+            _systemFormatVersion = null;
             changeDetectEnabled = true;
             CodeChanged = false;
 
@@ -164,12 +164,11 @@ namespace Gear.GUI
             //retrieve from settings the last state for embedded code
             SetEmbeddedCodeButton(Properties.Settings.Default.EmbeddedCode);
 
-            //setup the metadata with the default names.
+            //setup the metadata with the default texts and tooltips.
             foreach (ListViewItem item in pluginMetadataList.Items)
             {
                 item.Text = GetDefaultTextMetadataElement(item.Group);
-                if ((item.Group.Name == "DateModified") || (item.Group.Name == "Version"))
-                    SetUserDefinedMetadataElement(item, true);
+                item.ToolTipText = GetDefaultTooltipMetadataElement(item.Group);
             }
         }
 
@@ -178,7 +177,7 @@ namespace Gear.GUI
         /// @since v15.03.26 - Added.
         public string GetLastPlugin
         {
-            get { return m_SaveFileName; }
+            get { return _saveFileName; }
         }
 
         /// @brief Attribute for changed plugin detection.
@@ -199,13 +198,13 @@ namespace Gear.GUI
         {
             get
             {
-                if (!String.IsNullOrEmpty(m_SaveFileName))
-                    return new FileInfo(m_SaveFileName).Name;
+                if (!String.IsNullOrEmpty(_saveFileName))
+                    return new FileInfo(_saveFileName).Name;
                 else return "<New plugin>";
             }
             set
             {
-                m_SaveFileName = value;
+                _saveFileName = value;
                 UpdateTitles();
             }
         }
@@ -271,7 +270,7 @@ namespace Gear.GUI
                 }
                 if (IsSuccess)  //data is read succesfully from XML into pluginCandidate
                 {
-                    m_FormatVersion = pluginCandidate.PluginSystemVersion;
+                    _systemFormatVersion = pluginCandidate.PluginSystemVersion;
                     //initial cleanup of screen elements
                     if (referencesList.Items.Count > 0) 
                         referencesList.Items.Clear();   //clear out the reference list
@@ -333,7 +332,7 @@ namespace Gear.GUI
                             break;
                     }
                     //store the name of the last file opened
-                    m_SaveFileName = FileName;
+                    _saveFileName = FileName;
                     //clean up
                     errorListView.Items.Clear();
                     UpdateTitles();
@@ -353,30 +352,22 @@ namespace Gear.GUI
             PluginData data = new PluginData();
             //fill struct with data from screen controls
             data.PluginSystemVersion = systemVersion; //version of plugin system
-            //TODO [ASB]: add try section & detect exception thrown
             try
             {
                 data.PluginVersion =
                     GetElementsFromMetadata("Version", false)[0];    //always expect 1 element
-                //TODO [ASB]: add try section & detect exception thrown
                 data.Authors = GetElementsFromMetadata("Authors");
-                //TODO [ASB]: add try section & detect exception thrown
                 data.Modifier = GetElementsFromMetadata("ModifiedBy")[0];   //always expect 1 element
-                //TODO [ASB]: add try section & detect exception thrown
                 data.DateModified =
                     GetElementsFromMetadata("DateModified", false)[0];//always expect 1 element
                 //cultural reference should be the one actually used in run time
                 data.CulturalReference = CultureInfo.CurrentCulture.Name;
-                //TODO [ASB]: add try section & detect exception thrown
                 data.ReleaseNotes = GetElementsFromMetadata("ReleaseNotes")[0]; //always expect 1 element
-                //TODO [ASB]: add try section & detect exception thrown
                 data.Description = GetElementsFromMetadata("Description")[0]; //always expect 1 element
-                //TODO [ASB]: add try section & detect exception thrown
                 data.Usage = GetElementsFromMetadata("Usage")[0];             //always expect 1 element
-                //TODO [ASB]: add try section & detect exception thrown
                 data.Links = GetElementsFromMetadata("Links");
-
                 data.InstanceName = instanceName.Text;
+
                 string[] references;
                 if (referencesList.Items.Count > 0)
                 {
@@ -417,7 +408,7 @@ namespace Gear.GUI
                         break;
                 }
 
-                m_SaveFileName = FileName;
+                _saveFileName = FileName;
             }
             catch (Exception e)
             {
@@ -520,9 +511,9 @@ namespace Gear.GUI
                 OpenFileDialog dialog = new OpenFileDialog();
                 dialog.Filter = "Gear plug-in component (*.xml)|*.xml|All Files (*.*)|*.*";
                 dialog.Title = "Open Gear Plug-in...";
-                if (!String.IsNullOrEmpty(m_SaveFileName))
+                if (!String.IsNullOrEmpty(_saveFileName))
                     //retrieve from last plugin edited
-                    dialog.InitialDirectory = Path.GetDirectoryName(m_SaveFileName);
+                    dialog.InitialDirectory = Path.GetDirectoryName(_saveFileName);
                 else
                     if (!String.IsNullOrEmpty(Properties.Settings.Default.LastPlugin))
                         //retrieve from global last plugin
@@ -541,8 +532,8 @@ namespace Gear.GUI
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         private void SaveButton_Click(object sender, EventArgs e)
         {
-            if (!String.IsNullOrEmpty(m_SaveFileName) & (m_FormatVersion != null))
-                SaveFile(m_SaveFileName, m_FormatVersion);
+            if (!String.IsNullOrEmpty(_saveFileName) & (_systemFormatVersion != null))
+                SaveFile(_saveFileName, _systemFormatVersion);
             else
                 SaveAsButton_Click(sender, e);
 
@@ -558,10 +549,10 @@ namespace Gear.GUI
             dialog.Filter = "New format Gear plug-in (*.xml)|*.xml|" +
                 "Old format Gear plug-in (*.xml)|*.xml|" +
                 "All Files (*.*)|*.*";
-            if (m_FormatVersion == null)
+            if (_systemFormatVersion == null)
                 dialog.FilterIndex = 1; //default if not format selected
             else
-                switch (m_FormatVersion)
+                switch (_systemFormatVersion)
                 {
                     case "0.0":
                         dialog.FilterIndex = 2;
@@ -571,9 +562,9 @@ namespace Gear.GUI
                         break;
                 };
             dialog.Title = "Save Gear Plug-in...";
-            if (!String.IsNullOrEmpty(m_SaveFileName))
+            if (!String.IsNullOrEmpty(_saveFileName))
                 //retrieve from last plugin edited
-                dialog.InitialDirectory = Path.GetDirectoryName(m_SaveFileName);   
+                dialog.InitialDirectory = Path.GetDirectoryName(_saveFileName);   
             else
                 if (!String.IsNullOrEmpty(Properties.Settings.Default.LastPlugin))
                     //retrieve from global last plugin
@@ -584,10 +575,10 @@ namespace Gear.GUI
             {
                 //select the version to use for saving the plugin
                 if (dialog.FilterIndex == 2)
-                    m_FormatVersion = "0.0";
+                    _systemFormatVersion = "0.0";
                 else
-                    m_FormatVersion = "1.0";
-                SaveFile(dialog.FileName, m_FormatVersion);
+                    _systemFormatVersion = "1.0";
+                SaveFile(dialog.FileName, _systemFormatVersion);
                 UpdateTitles();   //update title window
             }
         }
@@ -654,7 +645,7 @@ namespace Gear.GUI
         {
             int restore_pos = codeEditorView.SelectionStart, pos = 0;    //remember last position
             changeDetectEnabled = false;    //not enable change detection
-            bool commentMultiline = false;       //initially not in comment mode
+            bool commentMultiline = false;  //initially not in comment mode
             //Foreach line in input, identify key words and format them when 
             // adding to the rich text box.
             String[] lines = LineExpression.Split(codeEditorView.Text);
@@ -908,6 +899,7 @@ namespace Gear.GUI
             if ( !String.IsNullOrEmpty(textPluginMetadataBox.Text) &&
                 (pluginMetadataList.SelectedIndices.Count > 0))
             {
+                bool isUserValue;
                 ListViewItem SelectedItem = null;    //selected item reference
                 foreach(ListViewItem item in pluginMetadataList.SelectedItems)
                 {
@@ -915,20 +907,30 @@ namespace Gear.GUI
                 };
                 //get the group the selected item belongs
                 ListViewGroup group = SelectedItem.Group;
-                //filter only groups for metadata elements with many items allowed (>1)
-                if (!IsUserDefinedMetadataElement(SelectedItem) ||
+                isUserValue = (textPluginMetadataBox.Text != GetDefaultTextMetadataElement(group));
+                //is a metadata element with many items allowed (>1) or is the default (first one)
+                if (!isUserValue | 
+                    !IsUserDefinedMetadataElement(SelectedItem) | 
                     ((group.Name != "Authors") && (group.Name != "Links")) )
                 {
                     SelectedItem.Text = textPluginMetadataBox.Text;
-                    //set color to normal text
-                    SetUserDefinedMetadataElement(SelectedItem, true);
+                    //set color according is user or default value
+                    SetUserDefinedMetadataElement(SelectedItem, isUserValue);
+                    //set tooltip according is user or default value
+                    SelectedItem.ToolTipText = (isUserValue) ? 
+                        SelectedItem.Text :                         //use the text entered
+                        GetDefaultTooltipMetadataElement(group);    //use the default tooltip text
                 }
                 else 
                 { 
                     //create new item with the text given and same group as item selected
                     ListViewItem newItem = new ListViewItem(textPluginMetadataBox.Text, group);
-                    //set color to normal text
-                    SetUserDefinedMetadataElement(newItem, true);
+                    //set color according is user or default value
+                    SetUserDefinedMetadataElement(newItem, isUserValue);
+                    //set tooltip according is user or default value
+                    newItem.ToolTipText = (isUserValue) ?
+                        newItem.Text :                              //use the text entered
+                        GetDefaultTooltipMetadataElement(group);    //use the default tooltip text
                     //add to the list
                     pluginMetadataList.Items.Add(newItem);
                 }
@@ -968,6 +970,7 @@ namespace Gear.GUI
                         //instead reset the text to default
                         ItemToDelete.Text = ResetText;
                         SetUserDefinedMetadataElement(ItemToDelete, false);
+                        ItemToDelete.ToolTipText = GetDefaultTooltipMetadataElement(group);
                     }
                     //mark as changed
                     CodeChanged = true;
@@ -1046,6 +1049,47 @@ namespace Gear.GUI
             return tex;
         }
 
+        /// @brief Determine the default tooltip text for the group of metadata element 
+        /// given as parameter.
+        /// @param[in] group Group of metadata element.
+        /// @returns Default tooltip text for the given group.
+        /// @since v15.03.26 - Added.
+        private string GetDefaultTooltipMetadataElement(ListViewGroup group)
+        {
+            string tex = null;
+            switch (group.Name)
+            {
+                case "Authors":
+                    tex = "The name of original author of the plugin.";
+                    break;
+                case "ModifiedBy":
+                    tex = "The name of the last modifier.";
+                    break;
+                case "DateModified":
+                    tex = "When the last modification was made.";
+                    break;
+                case "Version":
+                    tex = "Version number of the plugin.";
+                    break;
+                case "ReleaseNotes":
+                    tex = "Description of changes of this version of the plugin.";
+                    break;
+                case "Description":
+                    tex = "What does the plugin.";
+                    break;
+                case "Usage":
+                    tex = "How this plugin is supposed to be used.";
+                    break;
+                case "Links":
+                    tex = "Web links for the plugin.";
+                    break;
+                default:
+                    tex = "Not recognized metadata element";
+                    break;
+            }
+            return tex;
+        }
+
         /// @brief Set the visibility of the given metadata element.
         /// @param[in] item Metadata element to set.
         /// @param[in] userDefined User defined (=true), or default value used (=false).
@@ -1105,8 +1149,11 @@ namespace Gear.GUI
                 group.Items[0].Text = GetDefaultTextMetadataElement(group);
                 //change visibility to default text
                 SetUserDefinedMetadataElement(group.Items[0], false);
+                //change tooltip to default text for each group
+                group.Items[0].ToolTipText = GetDefaultTooltipMetadataElement(group);
             }
             pluginMetadataList.Enabled = enable;
+            pluginMetadataList.HideSelection = !enable;
             pluginMetadataList.EndUpdate();
             toolStripLinks.Enabled = enable;
         }
@@ -1123,17 +1170,24 @@ namespace Gear.GUI
             {
                 if (group.Name == groupName)    //Is the desired group?
                 {
-                    if (string.IsNullOrEmpty(value))    //the text given as parameter is valid?
+                    //we need to use the default value?
+                    bool isDefaultValue = ( (value == GetDefaultTextMetadataElement(group)) |
+                        string.IsNullOrEmpty(value) );
+                    if (isDefaultValue)    
                     {
                         group.Items[0].Text = GetDefaultTextMetadataElement(group);
                         //change visibility to default text
                         SetUserDefinedMetadataElement(group.Items[0], false);
+                        //use the default tooltip tex
+                        group.Items[0].ToolTipText = GetDefaultTooltipMetadataElement(group);
                     }
                     else
                     {
                         group.Items[0].Text = value;
                         //change visibility to user text
                         SetUserDefinedMetadataElement(group.Items[0], true);
+                        //use the value of the text
+                        group.Items[0].ToolTipText = value;
                     }
                     break;
                 }
@@ -1170,6 +1224,10 @@ namespace Gear.GUI
                                 group.Items[i].Text = val;
                             //set the visibility as is using a default value or not
                             SetUserDefinedMetadataElement(group.Items[i], isValid);
+                            //set the tooltip according to using the default value or not
+                            group.Items[i].ToolTipText = (isValid) ?
+                                val :                                   //use the user value
+                                GetDefaultTooltipMetadataElement(group);//use the default tooltip
                         }
                         break;
                     }
@@ -1242,7 +1300,7 @@ namespace Gear.GUI
             ListViewItem SelectedItem = null;    //selected item reference
             foreach (ListViewItem item in pluginMetadataList.SelectedItems)
             {
-                SelectedItem = item;    //should be only one, so will get the last
+                SelectedItem = item;    //should be only one, but to be sure will get the last
             };
             switch (e.Label)    //detect changes on edited text
             {
@@ -1264,11 +1322,15 @@ namespace Gear.GUI
             {
                 //then change visibility to user defined
                 SetUserDefinedMetadataElement(SelectedItem, true);
+                //and set tooltip to the same text
+                SelectedItem.ToolTipText = labelValue;
             }
             else
             {
                 //then change visibility to default text
                 SetUserDefinedMetadataElement(SelectedItem, false);
+                //and set tooltip to the default tooltip
+                SelectedItem.ToolTipText = GetDefaultTooltipMetadataElement(SelectedItem.Group);
             }
         }
 
