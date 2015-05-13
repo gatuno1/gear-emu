@@ -136,5 +136,8 @@ namespace Gear.PluginSupport
                 throw new Exception("Exception generated when compiling plugin class into memory. " + "Message: \"" + e.Message + "\"", e);
             }
         }
+
+        // TODO: [high priority] Add the method to replace pieces of code for V0.0 plugin system.
+    
     }
 }

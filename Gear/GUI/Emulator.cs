@@ -197,6 +197,7 @@ namespace Gear.GUI
         /// compilation fails, then it opens the plugin editor to show errors and source code.
         /// @param[in] FileName Name and path to the XML plugin file to open
         /// @returns Reference to the new plugin instance (on success) or NULL (on fail).
+        /// @todo Modify the method to enable to work with old and new plugin system formats.
         public PluginBase LoadPlugin(string FileName)
         {
             XmlReaderSettings settings = new XmlReaderSettings();
@@ -236,6 +237,8 @@ namespace Gear.GUI
                     }
                 }
 
+                /// TODO: [high priority] Add the invocation to new method to replace pieces of code for V0.0 plugin system.
+
                 //Dynamic load and compile the plugin module as a class, giving the chip 
                 // instance as a parameter.
                 PluginBase plugin = ModuleCompiler.LoadModule(
@@ -252,6 +255,8 @@ namespace Gear.GUI
                     pe.OpenFile(FileName, true);
                     pe.MdiParent = this.MdiParent;
                     pe.Show();
+                    // TODO: [high priority] Add the errors returned to the error grid
+                    ModuleCompiler.EnumerateErrors(pe.EnumErrors);
                 }
                 else               //if success compiling & instantiate the new class...
                 {

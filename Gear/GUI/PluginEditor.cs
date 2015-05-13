@@ -429,6 +429,7 @@ namespace Gear.GUI
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         private void CheckSource_Click(object sender, EventArgs e)
         {
+            /// @todo Modify this to support multiple code windows
             if (String.IsNullOrEmpty(codeEditorView.Text))
             {
                 MessageBox.Show("No source code to check. Please add code.",
@@ -448,6 +449,7 @@ namespace Gear.GUI
                     string[] refs = new string[referencesList.Items.Count];
                     foreach (string s in referencesList.Items)
                         refs[i++] = s;
+                    // TODO: [high priority] Add the invocation to new method to replace pieces of code for V0.0 plugin system.
                     try
                     {
                         if (ModuleCompiler.LoadModule(codeEditorView.Text, 
@@ -484,7 +486,7 @@ namespace Gear.GUI
 
         /// @brief Add error details on screen list.
         /// @param[in] e `CompileError` object.
-        private void EnumErrors(CompilerError e)
+        public void EnumErrors(CompilerError e)
         {
             ListViewItem item = new ListViewItem(e.ErrorNumber, 0);
 

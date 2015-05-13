@@ -40,6 +40,8 @@ namespace Gear.PluginSupport
     /// Original thread on GEAR with explanation of plugin class</a>
     /// @remarks To see examples of how to use it, see the directory 'plugins' included with 
     /// the source code.
+#pragma warning disable 612
+    [Obsolete("This class should be used only for old plugin compatibility. For another uses use PluginBase class instead.", false)]    
     public class PluginBaseV0_0 : UserControl
     {
 
@@ -61,7 +63,9 @@ namespace Gear.PluginSupport
         /// propeller chip (so you can drive the pins). 
         /// @note Source: <a href="http://forums.parallax.com/showthread.php/91084-GEAR-Propeller-Debugging-Environment?p=625629&viewfull=1#post625629">
         /// API GEAR described on GEAR original Post</a>
-        public virtual void PresentChip(Propeller host) { }    
+#pragma warning disable 618
+        public virtual void PresentChip(Propeller host) { }
+#pragma warning restore 618
 
         /// @brief Event when the chip is reset.
         /// Handy to reset plugin's components or data, to their initial states.
@@ -91,11 +95,20 @@ namespace Gear.PluginSupport
         public virtual void Repaint(bool force) { }
 
     }
+#pragma warning restore 612
 
+}
+
+namespace Gear.EmulationCore
+{
     /// @brief Synonim for PropellerCPU class, to use it with old plugin system.
+#pragma warning disable 612
+    [Obsolete("This class should be used only for old plugin compatibility. For another uses use PropellerCPU class instead.", false)]
     public class Propeller : PropellerCPU 
     {
         Propeller(GUI.Emulator em) : base(em) { }
     }
+#pragma warning restore 612
+
 }
 
