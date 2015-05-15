@@ -115,7 +115,7 @@ namespace Gear.PluginSupport
         /// @param[in] sender Reference to the object where the exception was raised.
         /// @param[in] args Class with the validation details event.
         /// @since v15.03.26 - Added.
-        public void ValidateXMLPluginEventHandler(object sender, ValidationEventArgs args)
+        public void ValidatePluginXMLEventHandler(object sender, ValidationEventArgs args)
         {
             isValid = false;
             if (args.Exception.GetType() == typeof(System.Xml.Schema.XmlSchemaException) )
@@ -141,7 +141,7 @@ namespace Gear.PluginSupport
         /// XML element, so both conditions are failed together. In V1.0 XML plugin format, 
         /// both conditions must be fulfilled together for a valid plugin.
         /// @since v15.03.26 - Added.
-        bool ValidateXMLPluginSource(XmlReader XR)
+        bool ValidatePluginXML(XmlReader XR)
         {
             //read the XML, if it is possible
             while (XR.Read())
@@ -185,7 +185,7 @@ namespace Gear.PluginSupport
         /// XML element, so both conditions are failed together. In V1.0 XML plugin format, 
         /// both conditions must be fulfilled together for a valid plugin.
         /// @since v15.03.26 - Added.
-        public bool ValidateXMLPluginFile(string filenameXml)
+        public bool ValidatePluginFile(string filenameXml)
         {
             //Settings to be used to validate the XML
             // reference from https://msdn.microsoft.com/en-us/library/vstudio/z2adhb2f%28v=vs.100%29.aspx
@@ -195,7 +195,7 @@ namespace Gear.PluginSupport
             settings.IgnoreComments = true;
             settings.IgnoreProcessingInstructions = true;
             settings.IgnoreWhitespace = true;
-            settings.ValidationEventHandler += new ValidationEventHandler(ValidateXMLPluginEventHandler);
+            settings.ValidationEventHandler += new ValidationEventHandler(ValidatePluginXMLEventHandler);
             XmlUrlResolver myResolver = new myDTDLocationResolver();
             myResolver.Credentials = System.Net.CredentialCache.DefaultCredentials;
             settings.XmlResolver = myResolver;
@@ -206,7 +206,7 @@ namespace Gear.PluginSupport
                 //Open a XML reader with the file name and settings given
                 XmlReader XR = XmlReader.Create(filenameXml, settings);
                 //validate the file as it is, expecting it have embedded DTD definition
-                if (ValidateXMLPluginSource(XR)) 
+                if (ValidatePluginXML(XR)) 
                     return true;
                 else 
                     switch (this.PluginSystemVersion)
@@ -238,7 +238,7 @@ namespace Gear.PluginSupport
                         //we will read from the memory stream, with the original settings
                         XR = XmlReader.Create(mem, settings);
                         //validate from the XML source with default DTD definition
-                        if (ValidateXMLPluginSource(XR))
+                        if (ValidatePluginXML(XR))
                             return true;
                         else
                         {
@@ -653,7 +653,7 @@ namespace Gear.PluginSupport
             settings.IgnoreProcessingInstructions   = true;
             settings.IgnoreWhitespace               = true;
             settings.ValidationEventHandler += 
-                new ValidationEventHandler(Data.ValidateXMLPluginEventHandler);
+                new ValidationEventHandler(Data.ValidatePluginXMLEventHandler);
             XmlUrlResolver resolver = new myDTDLocationResolver();
             resolver.Credentials = System.Net.CredentialCache.DefaultCredentials;
             settings.XmlResolver = resolver;

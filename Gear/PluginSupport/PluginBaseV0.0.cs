@@ -40,6 +40,7 @@ namespace Gear.PluginSupport
     /// Original thread on GEAR with explanation of plugin class</a>
     /// @remarks To see examples of how to use it, see the directory 'plugins' included with 
     /// the source code.
+    /// @since 2015.03.26 - Added.
 #pragma warning disable 612
     [Obsolete("This class should be used only for old plugin compatibility. For another uses use PluginBase class instead.", false)]    
     public class PluginBaseV0_0 : UserControl
@@ -57,6 +58,25 @@ namespace Gear.PluginSupport
         /// @brief Attribute to allow the window to be closed (default) or not (like cog windows).
         /// @remarks Not to be used in Plugin Editor by user plugins.
         public virtual Boolean IsClosable { get { return true; } }
+
+        /// @brief Counter of number of instances.
+        private static int countInstances = 0;
+
+        /// @brief Determine if there are instances of this plugin class.
+        /// @details It is used to validate if it worth to traverse a list of old format plugins
+        /// if there are not any on them.
+        public static bool haveInstances { get { return (countInstances > 0); } }
+
+        /// @brief Default constructor.
+        public PluginBaseV0_0() : base()
+        {
+            countInstances++;
+        }
+        /// @brief Default destructor.
+        ~PluginBaseV0_0()
+        {
+            countInstances--;
+        }
 
         /// @brief Points to propeller instance.
         /// @note Asterisk's: Occurs once the plugin is loaded. It gives you a reference to the 

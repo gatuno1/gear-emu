@@ -227,10 +227,10 @@ namespace Gear.GUI
         /// with the appropriate method.
         public bool OpenFile(string FileName, bool displayErrors)
         {
-            //create the structure to fill from file
+            //create the structure to fill data from file
             PluginData pluginCandidate = new PluginData();
             //Determine if the XML is valid, and for which DTD version
-            if (!pluginCandidate.ValidateXMLPluginFile(FileName))
+            if (!pluginCandidate.ValidatePluginFile(FileName))
             {
                 string allMessages = "";
                 //case not valid file, so show the errors.
@@ -346,7 +346,7 @@ namespace Gear.GUI
         /// @details Take care of update change state of the window. It use methods from
         /// Gear.PluginSupport.PluginPersistence class to store in file.
         /// @param[in] FileName Name of the file to save.
-        /// @param[in] version String with the version of plugin system to use for saving.
+        /// @param[in] systemVersion String with the version of plugin system to use for saving.
         public void SaveFile(string FileName, string systemVersion)
         {
             PluginData data = new PluginData();
@@ -452,8 +452,12 @@ namespace Gear.GUI
                     // TODO: [high priority] Add the invocation to new method to replace pieces of code for V0.0 plugin system.
                     try
                     {
-                        if (ModuleCompiler.LoadModule(codeEditorView.Text, 
-                            instanceName.Text, refs, null) != null)
+                        if (null != ModuleCompiler.LoadModule(
+                                codeEditorView.Text, 
+                                instanceName.Text, 
+                                refs, 
+                                null,
+                                PluginSystem.GetPluginBaseClass(_systemFormatVersion)))
                             MessageBox.Show("Plugin compiled without errors.", 
                                 "Plugin Editor - Check source.",
                                 MessageBoxButtons.OK,

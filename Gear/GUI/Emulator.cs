@@ -198,100 +198,175 @@ namespace Gear.GUI
         /// @param[in] FileName Name and path to the XML plugin file to open
         /// @returns Reference to the new plugin instance (on success) or NULL (on fail).
         /// @todo Modify the method to enable to work with old and new plugin system formats.
-        public PluginBase LoadPlugin(string FileName)
+        public void LoadPlugin(string FileName)
         {
-            XmlReaderSettings settings = new XmlReaderSettings();
-            settings.IgnoreComments = true;
-            settings.IgnoreProcessingInstructions = true;
-            settings.IgnoreWhitespace = true;
-            XmlReader tr = XmlReader.Create(FileName, settings);
-            bool ReadText = false;
-
-            List<string> references = new List<string>();
-            string instanceName = "";
-            string code = "";
-
-            try
+            //create the structure to fill data from file
+            PluginData pluginCandidate = new PluginData();
+            //Determine if the XML is valid, and for which DTD version
+            if (!pluginCandidate.ValidatePluginFile(FileName))
             {
-
-                while (tr.Read())
+                string allMessages = "";
+                //case not valid file, so show the errors.
+                foreach (string strText in pluginCandidate.ValidationErrors)
+                    allMessages += (strText.Trim() + "\r\n");
+                /// @todo Add a custom dialog to show every error message in a grid.
+                //show messages
+                MessageBox.Show(allMessages,
+                    "Plugin Editor - Open File.",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            else  //...XML plugin file is valid & system version is determined
+            {   
+                bool IsSuccess = true;
+                //as is valid, we have the version to look for the correct method to 
+                // load it
+                switch (pluginCandidate.PluginSystemVersion)
                 {
-                    if (tr.NodeType == XmlNodeType.Text && ReadText)
-                    {
-                        code = tr.Value;
-                        ReadText = false;
-                    }
-
-                    switch (tr.Name.ToLower())
-                    {
-                        case "reference":
-                            if (!tr.IsEmptyElement)     //prevent empty element generates error
-                                references.Add(tr.GetAttribute("name"));
-                            break;
-                        case "instance":
-                            instanceName = tr.GetAttribute("class");
-                            break;
-                        case "code":
-                            ReadText = true;
-                            break;
-                    }
+                    case "0.0" :
+                        if (PluginPersistence.ExtractFromXML_v0_0(FileName, ref pluginCandidate))
+                        {
+                            /// TODO: [high priority] Add the invocation to new method to replace pieces of code for V0.0 plugin system.
+                        }
+                        break;
+                    case "1.0":
+                        PluginPersistence.ExtractFromXML_v1_0(FileName, ref pluginCandidate);
+                        break;
+                    default:
+                        MessageBox.Show(string.Format("Plugin system version '{0}' not recognized "+
+                            "on file \"{1}\".", pluginCandidate.PluginSystemVersion, FileName),
+                            "Plugin Editor - Open File.",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+                        return;
+                        break;
                 }
-
-                /// TODO: [high priority] Add the invocation to new method to replace pieces of code for V0.0 plugin system.
-
-                //Dynamic load and compile the plugin module as a class, giving the chip 
-                // instance as a parameter.
-                PluginBase plugin = ModuleCompiler.LoadModule(
-                    code, 
-                    instanceName, 
-                    references.ToArray(), 
-                    Chip
-                );
-
-                if (plugin == null)     //if it fails...
+                //data is read succesfully from XML into pluginCandidate
+                try
                 {
-                    // ...open plugin editor in other window
+                    //Dynamic load and compile the plugin module as a class, giving the chip 
+                    // instance as a parameter, and casting to appropiate class
+                    object plugin = ModuleCompiler.LoadModule(
+                        pluginCandidate.Codes[0],
+                        pluginCandidate.InstanceName,
+                        pluginCandidate.References,
+                        Chip,
+                        PluginSystem.GetPluginBaseClass(pluginCandidate.PluginSystemVersion));
+                    if (plugin == null)
+                        throw new Exception();
+                    else //if success compiling & instantiate the new instance...
+                    {
+                        //...add to the corresponding plugin list of the emulator instance
+                        // TODO [high priority] Construct the appropiate casting to plugin base class
+                        AttachPlugin(plugin);
+                            
+                    }
+                    //update location of last plugin
+                    Properties.Settings.Default.LastPlugin = FileName;
+                    Properties.Settings.Default.Save();
+                }
+                catch (Exception)
+                {
+                    //open plugin editor in other window
                     PluginEditor pe = new PluginEditor(false);   
                     pe.OpenFile(FileName, true);
                     pe.MdiParent = this.MdiParent;
                     pe.Show();
-                    // TODO: [high priority] Add the errors returned to the error grid
+                    //the compilation errors are displayed in the error grid
                     ModuleCompiler.EnumerateErrors(pe.EnumErrors);
                 }
-                else               //if success compiling & instantiate the new class...
-                {
-                    //...add the reference to the plugin list of the emulator instance
-                    AttachPlugin(plugin);   
-                    Properties.Settings.Default.LastPlugin = FileName;  //update location of last plugin
-                    Properties.Settings.Default.Save();
-                }
+            }
+        
+            //XmlReaderSettings settings = new XmlReaderSettings();
+            //settings.IgnoreComments = true;
+            //settings.IgnoreProcessingInstructions = true;
+            //settings.IgnoreWhitespace = true;
+            //XmlReader tr = XmlReader.Create(FileName, settings);
+            //bool ReadText = false;
 
-                return plugin;
-            }
-            catch (IOException ioe)
-            {
-                MessageBox.Show(this,
-                    ioe.Message,
-                    "Failed to load program binary",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Exclamation);
+            //List<string> references = new List<string>();
+            //string instanceName = "";
+            //string code = "";
 
-                return null;
-            }
-            catch (XmlException xmle)
-            {
-                MessageBox.Show(this,
-                    xmle.Message,
-                    "Failed to load program binary",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Exclamation);
+            //try
+            //{
 
-                return null;
-            }
-            finally
-            {
-                tr.Close();
-            }
+            //    while (tr.Read())
+            //    {
+            //        if (tr.NodeType == XmlNodeType.Text && ReadText)
+            //        {
+            //            code = tr.Value;
+            //            ReadText = false;
+            //        }
+
+            //        switch (tr.Name.ToLower())
+            //        {
+            //            case "reference":
+            //                if (!tr.IsEmptyElement)     //prevent empty element generates error
+            //                    references.Add(tr.GetAttribute("name"));
+            //                break;
+            //            case "instance":
+            //                instanceName = tr.GetAttribute("class");
+            //                break;
+            //            case "code":
+            //                ReadText = true;
+            //                break;
+            //        }
+            //    }
+
+            //    //Dynamic load and compile the plugin module as a class, giving the chip 
+            //    // instance as a parameter.
+            //    PluginBase plugin = ModuleCompiler.LoadModule(
+            //        code, 
+            //        instanceName, 
+            //        references.ToArray(), 
+            //        Chip
+            //    );
+
+            //    if (plugin == null)     //if it fails...
+            //    {
+            //        // ...open plugin editor in other window
+            //        PluginEditor pe = new PluginEditor(false);   
+            //        pe.OpenFile(FileName, true);
+            //        pe.MdiParent = this.MdiParent;
+            //        pe.Show();
+            //        // TODO: [high priority] Add the errors returned to the error grid
+            //        ModuleCompiler.EnumerateErrors(pe.EnumErrors);
+            //    }
+            //    else               //if success compiling & instantiate the new class...
+            //    {
+            //        //...add the reference to the plugin list of the emulator instance
+            //        AttachPlugin(plugin);   
+            //        Properties.Settings.Default.LastPlugin = FileName;  //update location of last plugin
+            //        Properties.Settings.Default.Save();
+            //    }
+
+            //    return plugin;
+            //}
+            //catch (IOException ioe)
+            //{
+            //    MessageBox.Show(this,
+            //        ioe.Message,
+            //        "Failed to load program binary",
+            //        MessageBoxButtons.OK,
+            //        MessageBoxIcon.Exclamation);
+
+            //    return null;
+            //}
+            //catch (XmlException xmle)
+            //{
+            //    MessageBox.Show(this,
+            //        xmle.Message,
+            //        "Failed to load program binary",
+            //        MessageBoxButtons.OK,
+            //        MessageBoxIcon.Exclamation);
+
+            //    return null;
+            //}
+            //finally
+            //{
+            //    tr.Close();
+            //}
         }
 
         /// @brief Select binary propeller image to load.

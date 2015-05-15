@@ -21,6 +21,11 @@
  * --------------------------------------------------------------------------------
  */
 
+/// @file 
+/// ModuleCompiler.cs is the new name of old file ModuleLoader.cs. This is more appropiate
+/// as a description of what it does.
+/// @since v15.03.26 - Changed the file name from ModuleLoader.cs.
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -65,12 +70,16 @@ namespace Gear.PluginSupport
         /// See notes for defaults used.
         /// @param[in] obj Reference to a PropellerCPU of this instance, to be passed as a 
         /// parameter to the constructor of the new plugin class instance.
+        /// @param[in] pluginBaseClass Type of the target class to compile.
         /// @returns New Plugin class instance compiled (on success), or NULL (on fail).
         /// @throws Any compiling exception is detected and thrown again to the caller of this method.
         /// @note There are some references already added, so you don't need to include on your plugins: 
         /// @li `using System;` @li `using System.Data;` @li `using System.Drawing;`
         /// @li `using System.Windows.Forms;` @li `using System.Xml;`
-        static public PluginBase LoadModule(string code, string module, string[] references, object obj)
+        /// 
+        /// @version v15.03.26 - added parameter pluginBaseClass.
+        static public object LoadModule(string code, string module, string[] references, 
+            object obj, Type pluginBaseClass)
         {
             CodeDomProvider provider = new Microsoft.CSharp.CSharpCodeProvider();
             CompilerParameters cp = new CompilerParameters();
@@ -119,25 +128,65 @@ namespace Gear.PluginSupport
                     m_Errors = new CompilerErrorCollection(new CompilerError[] { c });
                     return null;
                 }
-                else if (!(target is PluginBase))
+                else if (!PluginSystem.InstanceOneOfValidClasses(target))
                 {
                     CompilerError c = new CompilerError("", 0, 0, "CS0029",
                         "Cannot implicitly convert type '" + target.GetType().FullName +
-                        "' to 'Gear.PluginSupport.BusModule'");
+                        "' to '" + pluginBaseClass.FullName + "'");
                     m_Errors = new CompilerErrorCollection(new CompilerError[] { c });
                     return null;
                 }
 
                 m_Errors = null;
-                return (PluginBase)target;
+                return target;
             }
             catch (Exception e)
             {
                 throw new Exception("Exception generated when compiling plugin class into memory. " + "Message: \"" + e.Message + "\"", e);
             }
         }
-
-        // TODO: [high priority] Add the method to replace pieces of code for V0.0 plugin system.
     
     }
+
+    /// @brief Provides information about the plugin system.
+    /// @since v15.03.26 - Added.
+    public static class PluginSystem 
+    {
+        /// @brief Type of plugin base class for current 
+        public static Type GetPluginBaseClass(string pluginSystemVersion)
+        {
+            if (!string.IsNullOrEmpty(pluginSystemVersion))
+                switch (pluginSystemVersion)
+                {
+                    case "1.0":
+                        return typeof(PluginBase);
+                    case "0.0":
+#pragma warning disable 618
+                        return typeof(PluginBaseV0_0);
+#pragma warning restore 618
+                    default:
+                        throw new Exception(string.Format(
+                            "Plugin system version '{0}' not recognized", pluginSystemVersion));
+                }
+            else throw new Exception("Parameter pluginSystemVersion is null or empty, on " +
+                "calling of 'PluginData.pluginBaseClass(string pluginSystemVersion)'!");
+        }
+
+        /// @brief Determine if the object passed as parameter is on of the valid Plugin 
+        /// base classes
+        public static bool InstanceOneOfValidClasses(object obj)
+        {
+            if (obj == null)
+                return false;
+            else
+                return (
+                    (obj is PluginBase) ||
+#pragma warning disable 618
+                    (obj is PluginBaseV0_0) 
+#pragma warning restore 618
+                    );
+        }
+    
+    }
+
 }

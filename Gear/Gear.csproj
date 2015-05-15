@@ -174,7 +174,7 @@
     <Compile Include="PluginSupport\PluginBase.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="PluginSupport\ModuleLoader.cs" />
+    <Compile Include="PluginSupport\ModuleCompiler.cs" />
     <Compile Include="GearProgram.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Content Include="Resources\PluginTemplate.cs">
