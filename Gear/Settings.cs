@@ -22,15 +22,11 @@ namespace Gear.Properties {
         }
 
         /// @todo Document Gear.Properties.SettingChangingEventHandler(.)
-        /// @param sender
-        /// @param e
         private void SettingChangingEventHandler(object sender, System.Configuration.SettingChangingEventArgs e) {
             // Agregar código para administrar aquí el evento SettingChangingEvent.
         }
 
         /// @todo Document Gear.Properties.SettingsSavingEventHandler(.)
-        /// @param sender
-        /// @param e
         private void SettingsSavingEventHandler(object sender, System.ComponentModel.CancelEventArgs e) {
             // Agregar código para administrar aquí el evento SettingsSaving.
         }
@@ -42,34 +38,34 @@ namespace Gear.Properties {
         /// @property EmbeddedCode
         /// @brief Determine if the code for the plugin is embedded in the XML file or resides on 
         /// a separate file.
-        /// @version V15.03.26 - Added as a User property of the program.
+        /// @since V15.03.26 - Added as a User property of the program.
 
         /// @property LastPlugin
         /// @brief Last plugin succesfully opened or saved.
         /// @details Include complete path and name.
-        /// @version V15.03.26 - Added as a User property of the program.
+        /// @since V15.03.26 - Added as a User property of the program.
 
         /// @property LastBinary
         /// @brief Last binary file succesfully opened.
         /// @details Include complete path and name.
-        /// @version V15.03.26 - Added as a User property of the program.
+        /// @since V15.03.26 - Added as a User property of the program.
 
         /// @property LastTickMarkGrid
         /// @brief Last value used as grid separation in the logic view plugin.
-        /// @version V15.03.26 - Added as a User property of the program.
+        /// @since V15.03.26 - Added as a User property of the program.
 
         /// @property LastTimeFrame
         /// @brief Last value used as a width in the logic view plugin.
-        /// @version V15.03.26 - Added as a User property of the program.
+        /// @since V15.03.26 - Added as a User property of the program.
 
         /// @property UseNoTemplate
         /// @brief Indicates to use the default template on the creation of a new plugin (=false), or to 
         /// do not use a template (blank content intially) (=true).
-        /// @version V15.03.26 - Added as a User property of the program.
+        /// @since V15.03.26 - Added as a User property of the program.
 
         /// @property UpdateEachSteps
         /// @brief Number of steps before update the windows and tabs.
-        /// @version V15.03.26 - Added as a User property of the program.
+        /// @since V15.03.26 - Added as a User property of the program.
 
     }
 }

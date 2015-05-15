@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using Gear.EmulationCore;
 using Gear.PluginSupport;
-using System.Collections.Generic;
 
 namespace Gear.GUI
 {
-    public partial class MemoryWatch : PluginBase
+    public partial class MemoryWatch : Gear.PluginSupport.PluginBase
     {
         /// @brief List of watches
         List<MemWatcher> Watches;

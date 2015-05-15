@@ -35,7 +35,7 @@ namespace Gear.GUI
     /// @brief View class for PropellerCPU emulator instance.
     /// @details This class implements a view over a propeller emulator, with interface to control 
     /// the chip, like start, go through steps, reset or reload.
-    public partial class Emulator : Form
+    public partial class Emulator : System.Windows.Forms.Form
     {
         private PropellerCPU Chip;          //!< @brief Reference to PropellerCPU running instance.
         private String Source;              //!< @brief Name of Binary program loaded.
@@ -109,13 +109,9 @@ namespace Gear.GUI
             documentsTab.SelectedTab = t;
             //Maintain the close button availability
             if (plugin.IsClosable)
-            {
                 closeButton.Enabled = true;
-            }
             else
-            {
                 closeButton.Enabled = false;
-            }
         }
 
         /// @brief Delete a plugin from a propeller chip instance.
@@ -662,7 +658,7 @@ namespace Gear.GUI
 /// - @subpage PluginLoadInsidePluginEditor "Loading inside Plugin Editor."
 /// - @subpage PluginEditorOpenFileCommonFig "Common sequences inside PluginEditor.OpenFile()."
 
-/// @page PluginLoadingInEmulatorPage Plugin Loading Sequence in Emulator.
+/// @page PluginLoadingInEmulatorPage Load a Plugin in Emulator.
 /// @par Main Sequence.
 /// Sequence of plugin loading, after the user presses the button in the emulator window (ideal 
 /// flow case).

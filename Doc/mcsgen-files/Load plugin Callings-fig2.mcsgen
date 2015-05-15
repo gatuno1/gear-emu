@@ -20,25 +20,27 @@ B box B [label="plugin.PresentChip()", url="\ref Gear.GUI.Emulator.LoadPlugin", 
 A => B [label="Invoking the compiled\nplugin method."];
 
 #phase separation
---- [label="Optional calling, defined by the contents of PresentChip() method.", linecolor="indigo", textcolor="indigo"];
+--- [label="Case: NotifyOnPins() is called.", linecolor="indigo", textcolor="indigo"];
 
 #titles Phase
 C box C [label="plugin.NotifyOnPins()", url="\ref Gear.EmulationCore.PropellerCPU.NotifyOnPins", textbgcolor="#DCE2EF"],
-D box D [label="Chip.NotifyOnPins(plugin)", url="\ref Gear.EmulationCore.PropellerCPU.NotifyOnPins", textbgcolor="#DCE2EF"],
+D box D [label="Chip.NotifyOnPins(\nplugin)", url="\ref Gear.EmulationCore.PropellerCPU.NotifyOnPins", textbgcolor="#DCE2EF"],
 E box E [label="Chip.PinHandlers.Add(plugin)", url="\ref Gear.EmulationCore.PropellerCPU.PinHandlers", textbgcolor="#DCE2EF"];
 
 #Transicions phase
-B rbox B [label="Method contains calling to NotifyOnPins()."];
+B abox B [label="\nNotifyOnPins() is called inside PresentChip().\n", textbgcolor="orange"];
 B => C;
 C => D;
 D => E [label="Add plugin reference."];
-E rbox E [label="Plugin reference added to general list of pin handlers of the CPU."];
-D <= E;
-C <= D;
-B <= C;
+E rbox E [label="\nPlugin reference added to general list of pin handlers of the CPU.\n", textbgcolor="yellow"];
+D << E;
+C << D;
+B << C;
 
 #phase separation
---- [label="Optional calling, defined by the contents of PresentChip() method.", linecolor="indigo", textcolor="indigo"];
+--- [label="End Case.", textcolor="indigo"];
+|||;
+--- [label="Case: NotifyOnClock is called.", linecolor="indigo", textcolor="indigo"];
 
 #titles Phase
 C box C [label="plugin.NotifyOnClock()", url="\ref Gear.EmulationCore.PropellerCPU.NotifyOnClock", textbgcolor="#DCE2EF"],
@@ -46,21 +48,23 @@ D box D [label="Chip.NotifyOnClock(plugin)", url="\ref Gear.EmulationCore.Propel
 E box E [label="Chip.TickHandlers.Add(plugin)", url="\ref Gear.EmulationCore.PropellerCPU.TickHandlers", textbgcolor="#DCE2EF"];
 
 #Transicions phase
-B rbox B [label="Method contains calling to NotifyOnClock()."];
+B abox B [label="\nNotifyOnClock() is called inside PresentChip().\n", textbgcolor="orange"];
 B => C;
 C => D;
 D => E [label="Add plugin reference."];
-E rbox E [label="Plugin reference added to general list of tick handlers of the CPU."];
-D <= E;
-C <= D;
-B <= C;
+E rbox E [label="\nPlugin reference added to general list of tick handlers of the CPU.\n", textbgcolor="yellow"];
+D << E;
+C << D;
+B << C;
 
 #phase separation
+--- [label="End Case.", textcolor="indigo"];
+|||;
 --- [label="Optional calling, defined by the contents of PresentChip() method.", linecolor="indigo", textcolor="indigo"];
 
 #Transicions phase
-B rbox B [label="Other possible initialization here, by choice of plugin programmer."];
-A <= B;
+B rbox B [label="\nOther possible initialization here, by choice of plugin programmer.\n", textbgcolor="yellow"];
+A << B;
 
 #phase separation
 --- [label="", linecolor="indigo", textcolor="indigo"];

@@ -16,18 +16,18 @@ B box B [label="pluginCandidate = new PluginData()", url="\ref Gear.PluginSuppor
 
 //Transitions 1
 A => B;
-B rbox B [label="\nCreate a new plugin Data \nObject (from PluginSupport\nnamespace), to manage its data.\n"];
+B rbox B [label="\nCreate a new plugin Data \nObject (from PluginSupport\nnamespace), to manage its data.\n", textbgcolor="yellow"];
 A << B [label="PluginData reference or null."];
 
 //titles 2
-B box B [label="pluginCandidate.\nValidateXMLPluginFile(\nFileName)", url="\ref Gear.PluginSupport.PluginData.ValidateXMLPluginFile", textbgcolor="#DCE2EF"],
-C box C [label="pluginCandidate.\nValidateXMLPluginSource(\nXMLReader)", url="\ref Gear.PluginSupport.PluginData.ValidateXMLPluginSource", textbgcolor="#DCE2EF"];
+B box B [label="pluginCandidate.\ValidatePluginFile(\nFileName)", url="\ref Gear.PluginSupport.PluginData.ValidatePluginFile", textbgcolor="#DCE2EF"],
+C box C [label="pluginCandidate.\ValidatePluginXML(\nXMLReader)", url="\ref Gear.PluginSupport.PluginData.ValidatePluginXML", textbgcolor="#DCE2EF"];
 
 //Transitions 2
 A => B;
-B rbox B [label="\nCreate a XMLReader w/DTD\nvalidation settings.\n"];
+B rbox B [label="\nCreate a XMLReader w/DTD\nvalidation settings.\n", textbgcolor="yellow"];
 B => C;
-C rbox C [label="\nCheck Validity against DTD,\nand obtain version of plugin\nsystem from XMLReader.\n"];
+C rbox C [label="\nCheck Validity against DTD,\nand obtain version of plugin\nsystem from XMLReader.\n", textbgcolor="yellow"];
 B << C [label="Validity result & version."];
 B abox B [label="\nIs not valid Result and DTD not detected?\n", textbgcolour="orange"];
 
@@ -40,9 +40,9 @@ A <<= B [label="Not valid & error\nmessages generated."];
 //beggining of case 2
 --- [label=" [Case A2: If not detected DTD data on XML file] ", linecolor="indigo", textcolor="indigo"];
 
-B rbox B [label="\nAdd a '0.0' DTD version definition on XML file and try to validate again.\n"];
+B rbox B [label="\nAdd a '0.0' DTD version definition on XML file and try to validate again.\n", textbgcolor="yellow"];
 B => C;
-C rbox C [label="\nCheck Validity against DTD,\nand obtain version of plugin\nsystem from XMLReader.\n"];
+C rbox C [label="\nCheck Validity against DTD,\nand obtain version of plugin\nsystem from XMLReader.\n", textbgcolor="yellow"];
 B << C [label="Validity result & version."];
 B abox B [label="\nIs valid?\n", textbgcolour="orange"];
 --- [label=" [end Case A2]  ", linecolor="indigo", textcolor="indigo"];

@@ -40,7 +40,7 @@ namespace Gear.PluginSupport
     /// Original thread on GEAR with explanation of plugin class</a>
     /// @remarks To see examples of how to use it, see the directory 'plugins' included with 
     /// the source code.
-    public class PluginBase : UserControl
+    public class PluginBase : System.Windows.Forms.UserControl
     {
         /// @brief Reference to PropellerCPU for the plugin.
         /// @version V15.03.26 - Added reference to keep PropellerCPU internal to class.

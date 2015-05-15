@@ -1353,7 +1353,7 @@ namespace Gear.GUI
 /// @mscfile "Plugin_Editor_OpenFile_Common-fig.mscgen" "Figure: Common case inside PluginEditor.OpenFile(.)"
 
 
-/// @page PluginLoadInsidePluginEditor Plugin Loading Sequence from inside Plugin Editor.
+/// @page PluginLoadInsidePluginEditor Load a Plugin from Plugin Editor.
 /// @par Main Sequence.
 /// Sequence of plugin loading, after the user presses the "Open" button in the editor window (ideal 
 /// flow case).

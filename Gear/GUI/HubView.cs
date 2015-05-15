@@ -32,7 +32,7 @@ using Gear.EmulationCore;
 
 namespace Gear.GUI
 {
-    public partial class HubView : UserControl
+    public partial class HubView : System.Windows.Forms.UserControl
     {
         private PropellerCPU m_Host;
 

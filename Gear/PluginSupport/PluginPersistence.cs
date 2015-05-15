@@ -36,7 +36,7 @@ namespace Gear.PluginSupport
     /// @details Instead of search of DTD file in the location of XML plugin file, this redirects 
 	/// to search in the base directory of the GEAR executable.
     /// @since v15.03.26 - Added.
-    class myDTDLocationResolver : XmlUrlResolver
+    class myDTDLocationResolver : System.Xml.XmlUrlResolver
     {
         public override Uri ResolveUri(Uri baseUri, string relativeUri)
         {

@@ -20,16 +20,16 @@ D box D [label="ModuleCompiler.\nLoadModule()", url="\ref Gear.PluginSupport.Mod
 
 #Transitions Phase
 A => B; 
-B rbox B [label="Read XML file:\nextract code & refs"];
+B rbox B [label="\nRead XML file:\nextract code & refs\n", textbgcolor="yellow"];
 B => C;
 C => D [label="Assign pointer to\nPluginBase."];
-D rbox D [label="Try to compile a\nnew instance."];
+D rbox D [label="\nTry to compile a\nnew instance.\n", textbgcolor="yellow"];
 C << D [label="Pointer to new\nPluginBase (or NULL)."];
-B <= C;
-B rbox B [label="Assure the plugin reference is valid or throw exception and abort."];
+B << C;
+B rbox B [label="\nAssure the plugin reference is valid or throw exception and abort.\n", textbgcolor="yellow"];
 
 #phase separation
---- [label="Register the plugin in the CPU", linecolor="indigo", textcolor="indigo"];
+--- [label="Register the plugin in the CPU as plugin is a valid Plugin instance", linecolor="indigo", textcolor="indigo"];
 
 #titles Phase
 C box C [label="Emulator.\nAttachPlugin(plugin)", url="\ref Gear.GUI.Emulator.AttachPlugin", textbgcolor="#DCE2EF"],
@@ -37,27 +37,27 @@ D box D [label="PropellerCPU.\nIncludePlugin(plugin)", url="\ref Gear.EmulationC
 E box E [label="PropellerCPU.\nPlugIns.Add(plugin)", url="\ref Gear.EmulationCore.PropellerCPU.IncludePlugin", textbgcolor="#DCE2EF"];
 
 #Transitions Phase
-B => C [label="From here plugin is a\nvalid Plugin instance."];
+B => C;
 C => D;
 D => E;
-E rbox E [label="Add plugin ref to the general list of plugins of the CPU"];
-D <= E;
+E rbox E [label="\nAdd plugin to the general list of plugins of the CPU\n", textbgcolor="yellow"];
+D << E;
 
 #phase separation
 --- [label="Detail for Registering OnPinChange & OnClock Methods on Figure 2.", linecolor="indigo", textcolor="indigo"];
 
 #Transitions Phase
-D note E [label="\nMore details on\nFigure 2.\n", url="\ref PluginLoadingInEmulatorFig2", textbgcolor="#7FFF7F"];
+C note E [label="\nMore details on\nFigure 2.\n", url="\ref PluginLoadingInEmulatorFig2", textbgcolor="#7FFF7F"];
 
 #phase separation
 --- [label="After registering OnPinChange & OnClock Methods.", linecolor="indigo", textcolor="indigo"];
 
 #Transitions Phase
-C <= D;
-B <= C;
-A <= B;
+C << D;
+B << C;
+A << B;
 
 #phase separation
---- [label="End: Plugin ready to running.", linecolor="indigo", textcolor="indigo"];
+--- [label="End of plugin loading: now it is ready to run with the emulator.", linecolor="indigo", textcolor="indigo"];
 
 }
