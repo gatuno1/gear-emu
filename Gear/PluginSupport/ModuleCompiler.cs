@@ -61,25 +61,27 @@ namespace Gear.PluginSupport
         }
 
         /// @brief Dynamic compiling & loading for a plugin.
-        /// @details Try to dynamically compile a module for the plugin, based on supplied C# code
-        /// and other C# modules referenced. If the compiling fails, it gives a list of errors, 
-        /// intended to be showed in the plugin view.
+        /// @details Try to dynamically compile a module for the plugin, based on supplied 
+        /// C# code and other C# modules referenced. If the compiling fails, it gives a list 
+        /// of errors, intended to be showed in the plugin view.
         /// @param[in] code C# Source code based on PluginBase class, to implement your plugin.
         /// @param[in] module Class name of the plugin.
         /// @param[in] references String array with auxiliary references used by your plugin. 
         /// See notes for defaults used.
-        /// @param[in] obj Reference to a PropellerCPU of this instance, to be passed as a 
-        /// parameter to the constructor of the new plugin class instance.
+        /// @param[in] objInstance Reference to a PropellerCPU of this instance, to be passed 
+        /// as a parameter to the constructor of the new plugin class instance.
         /// @param[in] pluginBaseClass Type of the target class to compile.
         /// @returns New Plugin class instance compiled (on success), or NULL (on fail).
-        /// @throws Any compiling exception is detected and thrown again to the caller of this method.
-        /// @note There are some references already added, so you don't need to include on your plugins: 
+        /// @throws Any compiling exception is detected and thrown again to the caller of 
+        /// this method.
+        /// @note There are some references already added, so you don't need to include on your 
+        /// plugins: 
         /// @li `using System;` @li `using System.Data;` @li `using System.Drawing;`
         /// @li `using System.Windows.Forms;` @li `using System.Xml;`
         /// 
         /// @version v15.03.26 - added parameter pluginBaseClass.
-        static public object LoadModule(string code, string module, string[] references, 
-            object obj, Type pluginBaseClass)
+        static public PluginCommon LoadModule(string code, string module, string[] references, 
+            object objInstance, string version)
         {
             CodeDomProvider provider = new Microsoft.CSharp.CSharpCodeProvider();
             CompilerParameters cp = new CompilerParameters();
@@ -111,15 +113,18 @@ namespace Gear.PluginSupport
             //compile plugin with parameters
             try
             {
-                object target = results.CompiledAssembly.CreateInstance(
-                    module,                                         //name of class
-                    false,                                          //=false: case sensitive
-                    BindingFlags.Public | BindingFlags.Instance,    //flags to delimit the candidates
-                    null,                                           //default binder object
-                    new object[] { obj },                           //parameter lists
-                    null,                                           //default culture
-                    null                                            //default activation object
-                );
+                object target =
+                    Convert.ChangeType(
+                        results.CompiledAssembly.CreateInstance(
+                            module,                         //string typeName
+                            false,                          //bool ignoreCase
+                            BindingFlags.Public | BindingFlags.Instance, //BindingFlags bindingAttr
+                            null,                           //Binder binder
+                            new object[] { objInstance },   //object[] args
+                            null,                           //CultureInfo culture
+                            null                            //object[] activationAttributes
+                        ), 
+                        PluginSystem.GetPluginBaseClass(version) );
                 if (target == null)
                 {
                     CompilerError c = new CompilerError("", 0, 0, "CS0103",
@@ -132,59 +137,18 @@ namespace Gear.PluginSupport
                 {
                     CompilerError c = new CompilerError("", 0, 0, "CS0029",
                         "Cannot implicitly convert type '" + target.GetType().FullName +
-                        "' to '" + pluginBaseClass.FullName + "'");
+                        "' to '" + PluginSystem.GetPluginBaseClass(version).FullName + "'");
                     m_Errors = new CompilerErrorCollection(new CompilerError[] { c });
                     return null;
                 }
 
                 m_Errors = null;
-                return target;
+                return (PluginCommon)target;
             }
             catch (Exception e)
             {
                 throw new Exception("Exception generated when compiling plugin class into memory. " + "Message: \"" + e.Message + "\"", e);
             }
-        }
-    
-    }
-
-    /// @brief Provides information about the plugin system.
-    /// @since v15.03.26 - Added.
-    public static class PluginSystem 
-    {
-        /// @brief Type of plugin base class for current 
-        public static Type GetPluginBaseClass(string pluginSystemVersion)
-        {
-            if (!string.IsNullOrEmpty(pluginSystemVersion))
-                switch (pluginSystemVersion)
-                {
-                    case "1.0":
-                        return typeof(PluginBase);
-                    case "0.0":
-#pragma warning disable 618
-                        return typeof(PluginBaseV0_0);
-#pragma warning restore 618
-                    default:
-                        throw new Exception(string.Format(
-                            "Plugin system version '{0}' not recognized", pluginSystemVersion));
-                }
-            else throw new Exception("Parameter pluginSystemVersion is null or empty, on " +
-                "calling of 'PluginData.pluginBaseClass(string pluginSystemVersion)'!");
-        }
-
-        /// @brief Determine if the object passed as parameter is on of the valid Plugin 
-        /// base classes
-        public static bool InstanceOneOfValidClasses(object obj)
-        {
-            if (obj == null)
-                return false;
-            else
-                return (
-                    (obj is PluginBase) ||
-#pragma warning disable 618
-                    (obj is PluginBaseV0_0) 
-#pragma warning restore 618
-                    );
         }
     
     }

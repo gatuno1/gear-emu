@@ -76,7 +76,7 @@ namespace Gear.GUI
         /// To determine changes, it includes not only the C# code, but also class name and 
         /// reference list.
         /// @since v15.03.26 - Added.
-        private bool m_CodeChanged;
+        private bool codeChanged;
         /// @brief Enable or not change detection event.
         /// @since v15.03.26 - Added.
         private bool changeDetectEnabled;
@@ -184,10 +184,10 @@ namespace Gear.GUI
         /// @since v15.03.26 - Added.
         private bool CodeChanged
         {
-            get { return m_CodeChanged; }
+            get { return codeChanged; }
             set  
             {
-                m_CodeChanged = value;
+                codeChanged = value;
                 UpdateTitles();
             }
         }
@@ -453,11 +453,11 @@ namespace Gear.GUI
                     try
                     {
                         if (null != ModuleCompiler.LoadModule(
-                                codeEditorView.Text, 
-                                instanceName.Text, 
-                                refs, 
-                                null,
-                                PluginSystem.GetPluginBaseClass(_systemFormatVersion)))
+                                codeEditorView.Text,    //string code
+                                instanceName.Text,      //string module
+                                refs,                   //string[] references
+                                null,                   //object obj 
+                                _systemFormatVersion))  //string version
                             MessageBox.Show("Plugin compiled without errors.", 
                                 "Plugin Editor - Check source.",
                                 MessageBoxButtons.OK,

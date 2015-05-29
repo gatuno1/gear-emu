@@ -97,9 +97,9 @@ namespace Gear.GUI
         /// @details Attach a plugin, linking the propeller instance to the plugin, opening a new 
         /// tab window and enabling the close button by plugin's closable property.
         /// @param[in] plugin Instance of a Gear.PluginSupport.PluginBase class to be attached.
-        private void AttachPlugin(PluginBase plugin)
+        private void AttachPlugin(PluginCommon plugin)
         {
-            Chip.IncludePlugin(plugin);     //include into plugin lists of a PropellerCPU instance
+            Chip.IncludePlugin(plugin); //include into plugin lists of a PropellerCPU instance
             plugin.PresentChip();       //invoke initial setup of plugin.
 
             TabPage t = new TabPage(plugin.Title);
@@ -242,12 +242,12 @@ namespace Gear.GUI
                 {
                     //Dynamic load and compile the plugin module as a class, giving the chip 
                     // instance as a parameter, and casting to appropiate class
-                    object plugin = ModuleCompiler.LoadModule(
-                        pluginCandidate.Codes[0],
-                        pluginCandidate.InstanceName,
-                        pluginCandidate.References,
-                        Chip,
-                        PluginSystem.GetPluginBaseClass(pluginCandidate.PluginSystemVersion));
+                    PluginCommon plugin = ModuleCompiler.LoadModule(
+                        pluginCandidate.Codes[0],               //string code
+                        pluginCandidate.InstanceName,           //string module
+                        pluginCandidate.References,             //string[] references
+                        Chip,                                   //object objInstance
+                        pluginCandidate.PluginSystemVersion);   //string version
                     if (plugin == null)
                         throw new Exception();
                     else //if success compiling & instantiate the new instance...

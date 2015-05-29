@@ -42,8 +42,8 @@ namespace Gear.PluginSupport
     /// the source code.
     /// @since 2015.03.26 - Added.
 #pragma warning disable 612
-    [Obsolete("This class should be used only for old plugin compatibility. For another uses use PluginBase class instead.", false)]    
-    public class PluginBaseV0_0 : UserControl
+    [Obsolete("This class should be used only for old plugin compatibility. For another uses use PluginBase class instead.", false)]
+    public class PluginBaseV0_0 : PluginCommon
     {
 
         /// @brief Title of the tab window.

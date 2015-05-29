@@ -40,7 +40,7 @@ namespace Gear.PluginSupport
     /// Original thread on GEAR with explanation of plugin class</a>
     /// @remarks To see examples of how to use it, see the directory 'plugins' included with 
     /// the source code.
-    public class PluginBase : System.Windows.Forms.UserControl
+    public class PluginBase : PluginCommon
     {
         /// @brief Reference to PropellerCPU for the plugin.
         /// @version V15.03.26 - Added reference to keep PropellerCPU internal to class.
@@ -139,7 +139,8 @@ namespace Gear.PluginSupport
         /// @since V15.03.26 - Added.
         public void NotifyOnPins()
         {
-            Chip.NotifyOnPins(this);
+            if (Chip != null)
+                Chip.NotifyOnPins(this);
         }
 
         /// @brief Notifies that this plugin must be notified on clock ticks.
@@ -147,7 +148,8 @@ namespace Gear.PluginSupport
         /// @since V15.03.26 - Added.
         public void NotifyOnClock()
         {
-            Chip.NotifyOnClock(this);
+            if (Chip != null)
+                Chip.NotifyOnClock(this);
         }
 
         /// @brief Drive a pin of PropellerCPU
@@ -158,7 +160,8 @@ namespace Gear.PluginSupport
         /// @since V15.03.26 - Added.
         public void DrivePin(int pin, bool Floating, bool Hi)
         {
-            Chip.DrivePin(pin, Floating, Hi);
+            if (Chip != null)
+                Chip.DrivePin(pin, Floating, Hi);
         }
 
         /// @brief Set an immediate breakpoint.
@@ -166,7 +169,8 @@ namespace Gear.PluginSupport
         /// @since V15.03.26 - Added.
         public void BreakPoint()
         {
-            Chip.BreakPoint();
+            if (Chip != null)
+                Chip.BreakPoint();
         }
 
     }

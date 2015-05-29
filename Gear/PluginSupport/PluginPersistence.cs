@@ -36,7 +36,7 @@ namespace Gear.PluginSupport
     /// @details Instead of search of DTD file in the location of XML plugin file, this redirects 
 	/// to search in the base directory of the GEAR executable.
     /// @since v15.03.26 - Added.
-    class myDTDLocationResolver : System.Xml.XmlUrlResolver
+    class DTDResolver : System.Xml.XmlUrlResolver
     {
         public override Uri ResolveUri(Uri baseUri, string relativeUri)
         {
@@ -196,7 +196,7 @@ namespace Gear.PluginSupport
             settings.IgnoreProcessingInstructions = true;
             settings.IgnoreWhitespace = true;
             settings.ValidationEventHandler += new ValidationEventHandler(ValidatePluginXMLEventHandler);
-            XmlUrlResolver myResolver = new myDTDLocationResolver();
+            XmlUrlResolver myResolver = new DTDResolver();
             myResolver.Credentials = System.Net.CredentialCache.DefaultCredentials;
             settings.XmlResolver = myResolver;
             settings.ValidationFlags = XmlSchemaValidationFlags.ReportValidationWarnings;
@@ -654,7 +654,7 @@ namespace Gear.PluginSupport
             settings.IgnoreWhitespace               = true;
             settings.ValidationEventHandler += 
                 new ValidationEventHandler(Data.ValidatePluginXMLEventHandler);
-            XmlUrlResolver resolver = new myDTDLocationResolver();
+            XmlUrlResolver resolver = new DTDResolver();
             resolver.Credentials = System.Net.CredentialCache.DefaultCredentials;
             settings.XmlResolver = resolver;
             bool success = true;    //status to return

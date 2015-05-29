@@ -167,6 +167,9 @@
     <Compile Include="GUI\SpinView.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="PluginSupport\PluginSystem.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="PluginSupport\PluginBaseV0.0.cs">
       <SubType>UserControl</SubType>
     </Compile>

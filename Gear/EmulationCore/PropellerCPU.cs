@@ -152,11 +152,11 @@ namespace Gear.EmulationCore
         private Emulator emulator;
 
         /// @brief List of Handlers for clock ticks on plugins.
-        private List<PluginBase> TickHandlers;      
+        private List<PluginCommon> TickHandlers;      
         /// @brief List of Handlers for Pin changes on plugins.
-        private List<PluginBase> PinHandlers;
+        private List<PluginCommon> PinHandlers;
         /// @brief List of active PlugIns (include system ones, like cog views, etc).
-        private List<PluginBase> PlugIns;          
+        private List<PluginCommon> PlugIns;          
 
         //Expose constants declarations of P1 Chip to use on the emulation. 
         /// @brief Cogs implemented in emulator for P1 Chip.
@@ -186,9 +186,9 @@ namespace Gear.EmulationCore
             PinFloat = PIN_FULL_MASK;
             CogsRunning = 0;
 
-            TickHandlers = new List<PluginBase>();
-            PinHandlers = new List<PluginBase>();
-            PlugIns = new List<PluginBase>();
+            TickHandlers = new List<PluginCommon>();
+            PinHandlers = new List<PluginCommon>();
+            PlugIns = new List<PluginCommon>();
 
             Time = 0;
             RingPosition = 0;
@@ -501,7 +501,7 @@ namespace Gear.EmulationCore
         /// @brief Include a plugin in active plugin list of propeller instance.
         /// @details It see if the plugin exist already to insert or not.
         /// @param[in] plugin Compiled plugin reference to include.
-        public void IncludePlugin(PluginBase plugin)
+        public void IncludePlugin(PluginCommon plugin)
         {
             if (!(PlugIns.Contains(plugin)))
             {
