@@ -457,7 +457,8 @@ namespace Gear.GUI
                                 instanceName.Text,      //string module
                                 refs,                   //string[] references
                                 null,                   //object obj 
-                                _systemFormatVersion))  //string version
+                                _systemFormatVersion)   //string version
+                            )
                             MessageBox.Show("Plugin compiled without errors.", 
                                 "Plugin Editor - Check source.",
                                 MessageBoxButtons.OK,

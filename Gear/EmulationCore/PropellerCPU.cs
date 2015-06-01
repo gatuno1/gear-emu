@@ -514,11 +514,13 @@ namespace Gear.EmulationCore
         /// Before detach, the `OnClose()` method of plugin is invoqued, to do
         /// housekeeping, for example to clear pins managed by the plugin.
         /// @param[in] plugin Compiled plugin reference to remove
-        public void RemovePlugin(PluginBase plugin)
+        public void RemovePlugin(PluginCommon plugin)
         {
             if (PlugIns.Contains(plugin))
             {
-                plugin.OnClose();      //call the event of instanciated plugin before remove 
+                if (plugin is PluginBase)
+                    //call the event before remove, but only for modern plugins
+                    ((PluginBase)plugin).OnClose();      
                 PlugIns.Remove(plugin);
             }
         }
@@ -526,7 +528,7 @@ namespace Gear.EmulationCore
         /// @brief Add a plugin to be notified on clock ticks.
         /// @details It see if the plugin exist already to insert or not.
         /// @param[in] plugin Compiled plugin reference to include.
-        public void NotifyOnClock(PluginBase plugin)
+        public void NotifyOnClock(PluginCommon plugin)
         {
             if (!(TickHandlers.Contains(plugin)))
                 TickHandlers.Add(plugin);
@@ -535,7 +537,7 @@ namespace Gear.EmulationCore
         /// @brief Remove a plugin from the clock notify list.
         /// @details Only if the plugin exists on the list, this method removes from it. 
         /// @param[in] plugin Compiled plugin reference to remove.
-        public void RemoveOnClock(PluginBase plugin)
+        public void RemoveOnClock(PluginCommon plugin)
         {
             if (TickHandlers.Contains(plugin))
                 TickHandlers.Remove(plugin);
@@ -544,7 +546,7 @@ namespace Gear.EmulationCore
         /// @brief Add a plugin to be notified on pin changes.
         /// @details It see if the plugin exist already to insert or not.
         /// @param[in] plugin Compiled plugin reference to include.
-        public void NotifyOnPins(PluginBase plugin)
+        public void NotifyOnPins(PluginCommon plugin)
         {
             if (!(PinHandlers.Contains(plugin)))
                 PinHandlers.Add(plugin);
@@ -553,7 +555,7 @@ namespace Gear.EmulationCore
         /// @brief Remove a plugin from the pin changed notify list.
         /// @details Only if the plugin exists on the list, this method removes from it. 
         /// @param[in] plugin Compiled plugin reference to remove.
-        public void RemoveOnPins(PluginBase plugin)
+        public void RemoveOnPins(PluginCommon plugin)
         {
             if (PinHandlers.Contains(plugin))
                 PinHandlers.Remove(plugin);
@@ -634,7 +636,7 @@ namespace Gear.EmulationCore
 
             PinChanged();   //update situation of pins
 
-            foreach (PluginBase plugin in PlugIns)
+            foreach (PluginCommon plugin in PlugIns)
             {
                 plugin.OnReset();
             }
@@ -755,9 +757,14 @@ namespace Gear.EmulationCore
             SystemCounter++;
 
             // Run each module of the list on time event (calling OnClock()).
-            foreach (PluginBase plugin in TickHandlers)
+            foreach (PluginCommon plugin in TickHandlers)
             {
-                plugin.OnClock(Time, SystemCounter);
+#pragma warning disable 618
+                if (((PluginBaseV0_0.numInstances != 0) && (plugin is PluginBaseV0_0)))
+                    ((PluginBaseV0_0)plugin).OnClock(Time);
+#pragma warning restore 618
+                else
+                    ((PluginBase)plugin).OnClock(Time, SystemCounter);
             }
 
             if (pinsPrev != IN || dirPrev != DIR || pinChange)
@@ -795,7 +802,7 @@ namespace Gear.EmulationCore
             }
 
             //traverse across plugins that use OnPinChange()
-            foreach (PluginBase plugin in PinHandlers)
+            foreach (PluginCommon plugin in PinHandlers)
                 plugin.OnPinChange(Time, PinStates);
         }
 
@@ -1053,9 +1060,10 @@ namespace Gear.EmulationCore
         /// @since 15.03.26 - Added.
         public void OnClose(object sender, FormClosingEventArgs e)
         { 
-            foreach(PluginBase plugin in PlugIns)
+            foreach(PluginCommon plugin in PlugIns)
             {
-                plugin.OnClose();
+                if (plugin is PluginBase)
+                    ((PluginBase)plugin).OnClose();
             }
         }
 

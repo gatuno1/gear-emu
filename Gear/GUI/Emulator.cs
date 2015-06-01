@@ -96,11 +96,16 @@ namespace Gear.GUI
         /// @brief Include a plugin to a propeller chip instance.
         /// @details Attach a plugin, linking the propeller instance to the plugin, opening a new 
         /// tab window and enabling the close button by plugin's closable property.
-        /// @param[in] plugin Instance of a Gear.PluginSupport.PluginBase class to be attached.
+        /// @param[in] plugin Instance of a Gear.PluginSupport.PluginCommon class to be attached.
         private void AttachPlugin(PluginCommon plugin)
         {
             Chip.IncludePlugin(plugin); //include into plugin lists of a PropellerCPU instance
-            plugin.PresentChip();       //invoke initial setup of plugin.
+#pragma warning disable 618
+            if (((PluginBaseV0_0.numInstances != 0) && (plugin is PluginBaseV0_0)))
+                ((PluginBaseV0_0)plugin).PresentChip((Propeller)Chip);    //invoke old style plugin way
+#pragma warning restore 618
+            else
+                ((PluginBase)plugin).PresentChip();   //invoke modern plugin way
 
             TabPage t = new TabPage(plugin.Title);
             t.Parent = documentsTab;
@@ -118,10 +123,10 @@ namespace Gear.GUI
         /// 
         /// Delete a plugin from the actives plugins of the propeller instance, effectively stopping 
         /// the plugin. Remove also from pins and clock watch list.
-        /// @param[in] plugin Instance of a Gear.PluginSupport.PluginBase class to be detached.
+        /// @param[in] plugin Instance of a Gear.PluginSupport.PluginCommon class to be detached.
         /// @since V15.03.26 - Added.
         //Added method to detach a plugin from the active plugin list of the propeller instance.
-        private void DetachPlugin(PluginBase plugin)
+        private void DetachPlugin(PluginCommon plugin)
         {
             if (plugin.IsClosable)      //check if the plugin is closable, then remove...
             {
@@ -189,7 +194,7 @@ namespace Gear.GUI
         /// @details Try to open the XML definition for the plugin from the file name given as 
         /// parameter. Then extract information from the XML (class name, auxiliary references 
         /// and source code to compile), trying to compile the C# source code (based on 
-        /// Gear.PluginSupport.PluginBase class) and returning the new class instance. If the 
+        /// Gear.PluginSupport.PluginCommon class) and returning the new class instance. If the 
         /// compilation fails, then it opens the plugin editor to show errors and source code.
         /// @param[in] FileName Name and path to the XML plugin file to open
         /// @returns Reference to the new plugin instance (on success) or NULL (on fail).
@@ -214,7 +219,6 @@ namespace Gear.GUI
             }
             else  //...XML plugin file is valid & system version is determined
             {   
-                bool IsSuccess = true;
                 //as is valid, we have the version to look for the correct method to 
                 // load it
                 switch (pluginCandidate.PluginSystemVersion)
@@ -235,7 +239,6 @@ namespace Gear.GUI
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
                         return;
-                        break;
                 }
                 //data is read succesfully from XML into pluginCandidate
                 try
@@ -246,20 +249,19 @@ namespace Gear.GUI
                         pluginCandidate.Codes[0],               //string code
                         pluginCandidate.InstanceName,           //string module
                         pluginCandidate.References,             //string[] references
-                        Chip,                                   //object objInstance
+                        this.Chip,                              //object objInstance
                         pluginCandidate.PluginSystemVersion);   //string version
                     if (plugin == null)
                         throw new Exception();
                     else //if success compiling & instantiate the new instance...
                     {
                         //...add to the corresponding plugin list of the emulator instance
-                        // TODO [high priority] Construct the appropiate casting to plugin base class
                         AttachPlugin(plugin);
-                            
+                        //update location of last plugin
+                        Properties.Settings.Default.LastPlugin = FileName;
+                        Properties.Settings.Default.Save();
                     }
-                    //update location of last plugin
-                    Properties.Settings.Default.LastPlugin = FileName;
-                    Properties.Settings.Default.Save();
+
                 }
                 catch (Exception)
                 {
@@ -409,11 +411,11 @@ namespace Gear.GUI
             Control c = pinnedPanel.GetNextControl(null, true);
 
             if (c != null)
-                ((PluginBase)c).Repaint(true);
+                ((PluginCommon)c).Repaint(true);
 
             if ( (documentsTab.SelectedTab != null) && 
                  ((c = documentsTab.SelectedTab.GetNextControl(null, true)) != null) )
-                ((PluginBase)c).Repaint(true);
+                ((PluginCommon)c).Repaint(true);
 
             hubView.DataChanged();
         }
@@ -443,9 +445,9 @@ namespace Gear.GUI
         private void closeActiveTab_Click(object sender, EventArgs e)
         {
             TabPage tp = documentsTab.SelectedTab;
-            PluginBase p = (PluginBase)tp.Controls[0];
-            
-            if (p != null)          //test if cast to PluginBase works...
+            PluginCommon p = (PluginCommon)tp.Controls[0];
+
+            if (p != null)          //test if cast to PluginCommon works...
             {
                 if (p.IsClosable)   //... so, test if we can close the tab 
                 {
@@ -597,7 +599,7 @@ namespace Gear.GUI
 
         /// @brief Determine availability of close plugin button when tab is changed.
         /// @details Enable close plugin button based on if active tab is subclass of 
-        /// Gear.PluginSupport.PluginBase and if that class permit close the window. Typically 
+        /// Gear.PluginSupport.PluginCommon and if that class permit close the window. Typically 
         /// the user plugins enabled it; but the cog window, main memory, logic probe, etc, 
         /// don't allow to close.
         /// @param[in] sender Reference to object where event was raised.
@@ -606,9 +608,9 @@ namespace Gear.GUI
         private void documentsTab_Click(object sender, EventArgs e)
         {
             TabPage tp = documentsTab.SelectedTab;
-            if (tp.Controls[0] is PluginBase)
+            if (tp.Controls[0] is PluginCommon)
             {
-                PluginBase b = (tp.Controls[0]) as PluginBase;
+                PluginCommon b = (tp.Controls[0]) as PluginCommon;
                 if (b.IsClosable)
                     closeButton.Enabled = true;
                 else
@@ -624,9 +626,9 @@ namespace Gear.GUI
         /// 
         private void documentsTab_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (ActiveControl is PluginBase)
+            if (ActiveControl is PluginCommon)
             {
-                PluginBase b = ActiveControl as PluginBase;
+                PluginCommon b = ActiveControl as PluginCommon;
                 if (b.AllowHotKeys != true)
                     return;
             }

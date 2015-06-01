@@ -47,20 +47,23 @@ namespace Gear.PluginSupport
     {
 
         /// @brief Title of the tab window.
-        public virtual string Title { get { return "Bus Module"; } }
+        public override string Title { get { return "Bus Module"; } }
 
         /// @brief Attribute to allow key press detecting on the plugin. 
         /// @note Mirror's: allows hot keys to be disabled for a plugin.
         /// @note Source: <a href="http://forums.parallax.com/showthread.php/100380-More-GEAR-Improved-Emulation-of-the-Propeller">
         /// Mirror Post for Version V08_10_16 in propeller forums</a>
-        public virtual Boolean AllowHotKeys { get { return true; } }
+        public override Boolean AllowHotKeys { get { return true; } }
 
         /// @brief Attribute to allow the window to be closed (default) or not (like cog windows).
         /// @remarks Not to be used in Plugin Editor by user plugins.
-        public virtual Boolean IsClosable { get { return true; } }
+        public override Boolean IsClosable { get { return true; } }
 
         /// @brief Counter of number of instances.
         private static int countInstances = 0;
+
+        /// @brief Property to get number of lives instances.
+        public static int numInstances { get { return countInstances; } }
 
         /// @brief Determine if there are instances of this plugin class.
         /// @details It is used to validate if it worth to traverse a list of old format plugins
@@ -84,35 +87,35 @@ namespace Gear.PluginSupport
         /// @note Source: <a href="http://forums.parallax.com/showthread.php/91084-GEAR-Propeller-Debugging-Environment?p=625629&viewfull=1#post625629">
         /// API GEAR described on GEAR original Post</a>
 #pragma warning disable 618
-        public virtual void PresentChip(Propeller host) { }
+        public virtual /*override*/ void PresentChip(Propeller host) { }
 #pragma warning restore 618
 
         /// @brief Event when the chip is reset.
         /// Handy to reset plugin's components or data, to their initial states.
-        public virtual void OnReset() { }
+        //public virtual void OnReset() { }
 
         /// @brief Event when a clock tick is informed to the plugin, in clock units.
         /// @param[in] time Time in seconds of the emulation.
         public virtual void OnClock(double time) { }
 
-        /// @brief Event when some pin changed and is informed to the plugin.
-        /// @note Asterisk's: occurs every time a pin has changed states. PinState tells you if 
-        /// either the propeller or another component has set the pin Hi or Lo, or if the pin is 
-        /// floating.
-        /// @note Source: <a href="http://forums.parallax.com/showthread.php/91084-GEAR-Propeller-Debugging-Environment?p=625629&viewfull=1#post625629">
-        /// API GEAR described on GEAR original Post</a>
-        /// @param[in] time Time in seconds.
-        /// @param[in] pins Array of pins with the current state.
-        public virtual void OnPinChange(double time, PinState[] pins) { }
+        // @brief Event when some pin changed and is informed to the plugin.
+        // @note Asterisk's: occurs every time a pin has changed states. PinState tells you if 
+        // either the propeller or another component has set the pin Hi or Lo, or if the pin is 
+        // floating.
+        // @note Source: <a href="http://forums.parallax.com/showthread.php/91084-GEAR-Propeller-Debugging-Environment?p=625629&viewfull=1#post625629">
+        // API GEAR described on GEAR original Post</a>
+        // @param[in] time Time in seconds.
+        // @param[in] pins Array of pins with the current state.
+        //public virtual void OnPinChange(double time, PinState[] pins) { }
 
-        /// @brief Event to repaint the plugin screen (if used).
-        /// @note Asterisk's: occurs when the GUI has finished executing a emulation 'frame' 
-        /// (variable number of clocks). Force is always true (this means that the call wants to 
-        /// 'force' an update, this is provided so you can pass a false for non-forced repaints).
-        /// @note Source: <a href="http://forums.parallax.com/showthread.php/91084-GEAR-Propeller-Debugging-Environment?p=625629&viewfull=1#post625629">
-        /// API GEAR described on GEAR original Post</a>
-        /// @param[in] force Flag to indicate the intention to force the repaint.
-        public virtual void Repaint(bool force) { }
+        // @brief Event to repaint the plugin screen (if used).
+        // @note Asterisk's: occurs when the GUI has finished executing a emulation 'frame' 
+        // (variable number of clocks). Force is always true (this means that the call wants to 
+        // 'force' an update, this is provided so you can pass a false for non-forced repaints).
+        // @note Source: <a href="http://forums.parallax.com/showthread.php/91084-GEAR-Propeller-Debugging-Environment?p=625629&viewfull=1#post625629">
+        // API GEAR described on GEAR original Post</a>
+        // @param[in] force Flag to indicate the intention to force the repaint.
+        //public virtual void Repaint(bool force) { }
 
     }
 #pragma warning restore 612

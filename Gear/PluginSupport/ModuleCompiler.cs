@@ -70,7 +70,7 @@ namespace Gear.PluginSupport
         /// See notes for defaults used.
         /// @param[in] objInstance Reference to a PropellerCPU of this instance, to be passed 
         /// as a parameter to the constructor of the new plugin class instance.
-        /// @param[in] pluginBaseClass Type of the target class to compile.
+        /// @param[in] version Witch plugin system version to compile.
         /// @returns New Plugin class instance compiled (on success), or NULL (on fail).
         /// @throws Any compiling exception is detected and thrown again to the caller of 
         /// this method.
