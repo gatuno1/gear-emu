@@ -40,6 +40,7 @@ namespace Gear.GUI
         private PropellerCPU Chip;          //!< @brief Reference to PropellerCPU running instance.
         private String Source;              //!< @brief Name of Binary program loaded.
         private String LastFileName;        //!< @brief Last file name opened.
+        public uint stepInterval;           //!< @brief How many steps to update screen.
         private List<Control> FloatControls;//!< @brief List of floating controls.
 
         /// @brief Stepwatch to periodically rerun a step of the emulation
@@ -72,6 +73,7 @@ namespace Gear.GUI
             runTimer.Tick += new EventHandler(RunEmulatorStep);
 
             hubView.Host = Chip;
+            stepInterval = Properties.Settings.Default.UpdateEachSteps;
         }
 
         /// @brief Get the last binary opened successfully.
@@ -102,10 +104,10 @@ namespace Gear.GUI
             Chip.IncludePlugin(plugin); //include into plugin lists of a PropellerCPU instance
 #pragma warning disable 618
             if (((PluginBaseV0_0.numInstances != 0) && (plugin is PluginBaseV0_0)))
-                ((PluginBaseV0_0)plugin).PresentChip((Propeller)Chip);    //invoke old style plugin way
+                ((PluginBaseV0_0)plugin).PresentChip((Propeller)Chip);//invoke plugin old style way
 #pragma warning restore 618
             else
-                ((PluginBase)plugin).PresentChip();   //invoke modern plugin way
+                ((PluginBase)plugin).PresentChip();   //invoke plugin in modern way
 
             TabPage t = new TabPage(plugin.Title);
             t.Parent = documentsTab;
@@ -145,7 +147,7 @@ namespace Gear.GUI
         /// @param[in] e Event data arguments.
         private void RunEmulatorStep(object sender, EventArgs e)
         {
-            for (uint i = 0; i < Properties.Settings.Default.UpdateEachSteps; i++)
+            for (uint i = 0; i < stepInterval; i++)
                 if (!Chip.Step())
                 {
                     runTimer.Stop();

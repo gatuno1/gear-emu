@@ -32,7 +32,7 @@ using Gear.EmulationCore;
 
 namespace Gear.GUI
 {
-    class SpinView : PluginBase
+    class SpinView : Gear.PluginSupport.PluginBase
     {
         private Font MonoSpace;
         private TreeView objectView;

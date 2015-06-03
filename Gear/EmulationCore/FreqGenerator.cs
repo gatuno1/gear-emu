@@ -187,7 +187,9 @@ namespace Gear.EmulationCore
         {
             get
             {
-                return (OutA ? PinAMask : 0) | (OutB ? PinBMask : 0) | PhaseLockLoop.Pins;
+                return (OutA ? PinAMask : 0) | 
+                    (OutB ? PinBMask : 0) | 
+                    PhaseLockLoop.Pins;
             }
         }
 
