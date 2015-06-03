@@ -74,20 +74,20 @@ namespace Gear.PluginSupport
         /// @version V15.03.26 - change the default name.
         public override string Title { get { return "Plugin Base"; } }
 
-        /// @brief Attribute to allow key press detecting on the plugin. 
-        /// @note Mirror's: allows hot keys to be disabled for a plugin.
-        /// @note Source: <a href="http://forums.parallax.com/showthread.php/100380-More-GEAR-Improved-Emulation-of-the-Propeller">
-        /// Mirror Post for Version V08_10_16 in propeller forums</a>
-        public override Boolean AllowHotKeys { get { return true; } }
+        // @brief Attribute to allow key press detecting on the plugin. 
+        // @note Mirror's: allows hot keys to be disabled for a plugin.
+        // @note Source: <a href="http://forums.parallax.com/showthread.php/100380-More-GEAR-Improved-mulation-of-the-Propeller">
+        // Mirror Post for Version V08_10_16 in propeller forums</a>
+        //public override Boolean AllowHotKeys { get { return true; } }
 
-        /// @brief Attribute to allow the window to be closed (default) or not (like cog windows).
-        /// @remarks Not to be used in Plugin Editor by user plugins.
-        public override Boolean IsClosable { get { return true; } }
+        // @brief Attribute to allow the window to be closed (default) or not (like cog windows).
+        // @remarks Not to be used in Plugin Editor by user plugins.
+        //public override Boolean IsClosable { get { return true; } }
 
-        /// @brief Identify a plugin as user (=true) or system (=false).
-        /// @remarks Not to be used in Plugin Editor by user plugins.
-        /// @since V15.03.26 - Added.
-        public virtual Boolean IsUserPlugin { get { return true; } }
+        // @brief Identify a plugin as user (=true) or system (=false).
+        // @remarks Not to be used in Plugin Editor by user plugins.
+        // @since V15.03.26 - Added.
+        //public virtual Boolean IsUserPlugin { get { return true; } }
 
         /// @brief Points to propeller instance.
         /// @note Asterisk's: Occurs once the plugin is loaded. It gives you a reference to the 
@@ -97,8 +97,8 @@ namespace Gear.PluginSupport
         /// @version V15.03.26 - Changed to method without parameters.
         public virtual void PresentChip() { }    
 
-        /// @brief Event when the chip is reset.
-        /// Handy to reset plugin's components or data, to their initial states.
+        // @brief Event when the chip is reset.
+        // Handy to reset plugin's components or data, to their initial states.
         //public virtual void OnReset() { }
 
         /// @brief Event when the plugin is closing.

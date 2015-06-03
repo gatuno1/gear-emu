@@ -215,7 +215,7 @@ namespace Gear.GUI
                 /// @todo Add a custom dialog to show every error message in a grid.
                 //show messages
                 MessageBox.Show(allMessages,
-                    "Plugin Editor - Open File.",
+                    "Emulator - OpenPlugin.",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
@@ -226,18 +226,18 @@ namespace Gear.GUI
                 switch (pluginCandidate.PluginSystemVersion)
                 {
                     case "0.0" :
-                        if (PluginPersistence.ExtractFromXML_v0_0(FileName, ref pluginCandidate))
+                        if (PluginPersistence.GetDataFromXML_v0_0(FileName, ref pluginCandidate))
                         {
                             /// TODO: [high priority] Add the invocation to new method to replace pieces of code for V0.0 plugin system.
                         }
                         break;
                     case "1.0":
-                        PluginPersistence.ExtractFromXML_v1_0(FileName, ref pluginCandidate);
+                        PluginPersistence.GetDataFromXML_v1_0(FileName, ref pluginCandidate);
                         break;
                     default:
                         MessageBox.Show(string.Format("Plugin system version '{0}' not recognized "+
                             "on file \"{1}\".", pluginCandidate.PluginSystemVersion, FileName),
-                            "Plugin Editor - Open File.",
+                            "Emulator - Open File.",
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
                         return;
@@ -254,7 +254,8 @@ namespace Gear.GUI
                         this.Chip,                              //object objInstance
                         pluginCandidate.PluginSystemVersion);   //string version
                     if (plugin == null)
-                        throw new Exception();
+                        throw new Exception("Emulator - OpenPlugin: plugin object not generated!" +
+                            " (null response from memory loading).");
                     else //if success compiling & instantiate the new instance...
                     {
                         //...add to the corresponding plugin list of the emulator instance
@@ -277,96 +278,6 @@ namespace Gear.GUI
                 }
             }
         
-            //XmlReaderSettings settings = new XmlReaderSettings();
-            //settings.IgnoreComments = true;
-            //settings.IgnoreProcessingInstructions = true;
-            //settings.IgnoreWhitespace = true;
-            //XmlReader tr = XmlReader.Create(FileName, settings);
-            //bool ReadText = false;
-
-            //List<string> references = new List<string>();
-            //string instanceName = "";
-            //string code = "";
-
-            //try
-            //{
-
-            //    while (tr.Read())
-            //    {
-            //        if (tr.NodeType == XmlNodeType.Text && ReadText)
-            //        {
-            //            code = tr.Value;
-            //            ReadText = false;
-            //        }
-
-            //        switch (tr.Name.ToLower())
-            //        {
-            //            case "reference":
-            //                if (!tr.IsEmptyElement)     //prevent empty element generates error
-            //                    references.Add(tr.GetAttribute("name"));
-            //                break;
-            //            case "instance":
-            //                instanceName = tr.GetAttribute("class");
-            //                break;
-            //            case "code":
-            //                ReadText = true;
-            //                break;
-            //        }
-            //    }
-
-            //    //Dynamic load and compile the plugin module as a class, giving the chip 
-            //    // instance as a parameter.
-            //    PluginBase plugin = ModuleCompiler.LoadModule(
-            //        code, 
-            //        instanceName, 
-            //        references.ToArray(), 
-            //        Chip
-            //    );
-
-            //    if (plugin == null)     //if it fails...
-            //    {
-            //        // ...open plugin editor in other window
-            //        PluginEditor pe = new PluginEditor(false);   
-            //        pe.OpenFile(FileName, true);
-            //        pe.MdiParent = this.MdiParent;
-            //        pe.Show();
-            //        // TODO: [high priority] Add the errors returned to the error grid
-            //        ModuleCompiler.EnumerateErrors(pe.EnumErrors);
-            //    }
-            //    else               //if success compiling & instantiate the new class...
-            //    {
-            //        //...add the reference to the plugin list of the emulator instance
-            //        AttachPlugin(plugin);   
-            //        Properties.Settings.Default.LastPlugin = FileName;  //update location of last plugin
-            //        Properties.Settings.Default.Save();
-            //    }
-
-            //    return plugin;
-            //}
-            //catch (IOException ioe)
-            //{
-            //    MessageBox.Show(this,
-            //        ioe.Message,
-            //        "Failed to load program binary",
-            //        MessageBoxButtons.OK,
-            //        MessageBoxIcon.Exclamation);
-
-            //    return null;
-            //}
-            //catch (XmlException xmle)
-            //{
-            //    MessageBox.Show(this,
-            //        xmle.Message,
-            //        "Failed to load program binary",
-            //        MessageBoxButtons.OK,
-            //        MessageBoxIcon.Exclamation);
-
-            //    return null;
-            //}
-            //finally
-            //{
-            //    tr.Close();
-            //}
         }
 
         /// @brief Select binary propeller image to load.
@@ -384,8 +295,10 @@ namespace Gear.GUI
                 OpenFile(openFileDialog.FileName);
         }
 
-        /// @todo Document Gear.GUI.Emulator.reloadBinary_Click()
-        /// 
+        /// @brief Event to reload the whole %Propeller program from bynary file.
+        /// @details It also reset the %Propeller Chip and all the plugins.
+        /// @param[in] sender Reference to object where event was raised.
+        /// @param[in] e Event data arguments.
         private void reloadBinary_Click(object sender, EventArgs e)
         {
             OpenFile(LastFileName);
@@ -422,8 +335,9 @@ namespace Gear.GUI
             hubView.DataChanged();
         }
 
-        /// @todo Document Gear.GUI.Emulator.resetEmulator_Click()
-        /// 
+        /// @brief Event to reset the whole %Propeller Chip.
+        /// @param[in] sender Reference to object where event was raised.
+        /// @param[in] e Event data arguments.
         private void resetEmulator_Click(object sender, EventArgs e)
         {
             Chip.Reset();
@@ -531,8 +445,9 @@ namespace Gear.GUI
             }
         }
 
-        /// @todo Document Gear.GUI.Emulator.runEmulator_Click()
-        /// 
+        /// @brief Event to run freely the emulator.
+        /// @param[in] sender Reference to the object where this event was called.
+        /// @param[in] e Class with the details event.
         private void runEmulator_Click(object sender, EventArgs e)
         {
             runTimer.Start();
@@ -548,8 +463,9 @@ namespace Gear.GUI
             RepaintViews(); //added the repaint, to refresh the views
         }
 
-        /// @todo Document Gear.GUI.Emulator.stepInstruction_Click()
-        /// 
+        /// @brief Event to run one instruction in emulator.
+        /// @param[in] sender Reference to the object where this event was called.
+        /// @param[in] e Class with the details event.
         private void stepInstruction_Click(object sender, EventArgs e)
         {
             if (documentsTab.SelectedTab != null)
@@ -585,8 +501,9 @@ namespace Gear.GUI
                 LoadPlugin(dialog.FileName);
         }
 
-        /// @todo Document Gear.GUI.Emulator.Emulator_FormClosing()
-        /// 
+        /// @brief Event when the Emulator windows begin to close.
+        /// @param[in] sender Reference to the object where this event was called.
+        /// @param[in] e Class with the details event.
         private void Emulator_FormClosing(object sender, FormClosingEventArgs e)
         {
             Chip.OnClose(sender, e);

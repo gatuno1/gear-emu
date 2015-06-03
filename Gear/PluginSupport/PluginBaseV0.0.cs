@@ -49,15 +49,15 @@ namespace Gear.PluginSupport
         /// @brief Title of the tab window.
         public override string Title { get { return "Bus Module"; } }
 
-        /// @brief Attribute to allow key press detecting on the plugin. 
-        /// @note Mirror's: allows hot keys to be disabled for a plugin.
-        /// @note Source: <a href="http://forums.parallax.com/showthread.php/100380-More-GEAR-Improved-Emulation-of-the-Propeller">
-        /// Mirror Post for Version V08_10_16 in propeller forums</a>
-        public override Boolean AllowHotKeys { get { return true; } }
+        // @brief Attribute to allow key press detecting on the plugin. 
+        // @note Mirror's: allows hot keys to be disabled for a plugin.
+        // @note Source: <a href="http://forums.parallax.com/showthread.php/100380-More-GEAR-Improved-Emulation-of-the-Propeller">
+        // Mirror Post for Version V08_10_16 in propeller forums</a>
+        //public override Boolean AllowHotKeys { get { return true; } }
 
-        /// @brief Attribute to allow the window to be closed (default) or not (like cog windows).
-        /// @remarks Not to be used in Plugin Editor by user plugins.
-        public override Boolean IsClosable { get { return true; } }
+        // @brief Attribute to allow the window to be closed (default) or not (like cog windows).
+        // @remarks Not to be used in Plugin Editor by user plugins.
+        //public override Boolean IsClosable { get { return true; } }
 
         /// @brief Counter of number of instances.
         private static int countInstances = 0;
@@ -87,11 +87,11 @@ namespace Gear.PluginSupport
         /// @note Source: <a href="http://forums.parallax.com/showthread.php/91084-GEAR-Propeller-Debugging-Environment?p=625629&viewfull=1#post625629">
         /// API GEAR described on GEAR original Post</a>
 #pragma warning disable 618
-        public virtual /*override*/ void PresentChip(Propeller host) { }
+        public virtual void PresentChip(Propeller host) { }
 #pragma warning restore 618
 
-        /// @brief Event when the chip is reset.
-        /// Handy to reset plugin's components or data, to their initial states.
+        // @brief Event when the chip is reset.
+        // Handy to reset plugin's components or data, to their initial states.
         //public virtual void OnReset() { }
 
         /// @brief Event when a clock tick is informed to the plugin, in clock units.

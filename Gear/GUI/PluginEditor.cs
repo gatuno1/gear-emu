@@ -253,11 +253,11 @@ namespace Gear.GUI
                 {
                     case "0.0" :
                         IsSuccess = 
-                            PluginPersistence.ExtractFromXML_v0_0(FileName, ref pluginCandidate);
+                            PluginPersistence.GetDataFromXML_v0_0(FileName, ref pluginCandidate);
                         break;
                     case "1.0":
                         IsSuccess = 
-                            PluginPersistence.ExtractFromXML_v1_0(FileName, ref pluginCandidate);
+                            PluginPersistence.GetDataFromXML_v1_0(FileName, ref pluginCandidate);
                         break;
                     default:
                         MessageBox.Show(string.Format("Plugin system version '{}' not recognized "+
@@ -387,7 +387,7 @@ namespace Gear.GUI
                         ((!embeddedCode.Checked) ? separateFileName : "") };
                         data.Codes = new string[1] { codeEditorView.Text };
                         //update modified state for the plugin
-                        CodeChanged = !PluginPersistence.SaveXML_v1_0(FileName, data);
+                        CodeChanged = !PluginPersistence.SaveDatoToXML_v1_0(FileName, data);
                         //if it was succesfully saved
                         if (!CodeChanged) //clear metadata if it was succesfully saved
                         {
@@ -400,7 +400,7 @@ namespace Gear.GUI
                         data.ExtFiles = new string[1] { "" };
                         data.Codes = new string[1] { codeEditorView.Text };
                         //update modified state for the plugin
-                        CodeChanged = !PluginPersistence.SaveXML_v0_0(FileName, data);
+                        CodeChanged = !PluginPersistence.SaveDatoToXML_v0_0(FileName, data);
                         if (!CodeChanged) //clear metadata if it was succesfully saved
                         {
                             ClearMetadata(false);   //reset metadata in screen, disabling it
@@ -468,9 +468,9 @@ namespace Gear.GUI
                             ModuleCompiler.EnumerateErrors(EnumErrors);
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        MessageBox.Show("Compile Error: " + e.ToString(),
+                        MessageBox.Show("Compile Error: " + ex.ToString(),
                             "Plugin Editor - Check source.",
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Error);

@@ -3,7 +3,7 @@
  * Copyright 2007 - Robert Vandiver
  * --------------------------------------------------------------------------------
  * PluginPersistence.cs
- * Provides the reflection base and compiler components for plugins
+ * Provides the reflection base and compiler components for plugins.
  * --------------------------------------------------------------------------------
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -284,17 +284,20 @@ namespace Gear.PluginSupport
     }
 
     
-    /// @brief Methods to save and retrieve plugin from files, managing version of files.
+    /// @brief Methods to save and retrieve plugin from files, managing version of plugin system.
+    /// @details To manage version of plugin system enables to have have different signatures of 
+    /// methods or create new properties in plugins to evolve the system, trying to have
+    /// compatibility with old plugins.
     /// @since v15.03.26 - Added.
     static class PluginPersistence
     {
 
-        /// @brief Save a plugin to XML as version 0.0
+        /// @brief Save plugin data to XML as plugin system version 0.0.
         /// @param[in] filenameXml File name in XML format, version 0.0
         /// @param[in] Data Metadata of the plugin.
         /// @returns State of saving, as success (=true), or failure (=false).
         /// @since v15.03.26 - Added.
-        static public bool SaveXML_v0_0(string filenameXml, PluginData Data)
+        static public bool SaveDatoToXML_v0_0(string filenameXml, PluginData Data)
         {
             XmlDocument xmlDoc = new XmlDocument();
             //Main element - plugin
@@ -331,12 +334,12 @@ namespace Gear.PluginSupport
             return true;
         }
 
-        /// @brief Save a plugin to XML as version 1.0.
+        /// @brief Save a plugin data to XML as plugin system version 1.0.
         /// @param[in] filenameXml File name in XML format, version 1.0
         /// @param[in] Data Metadata of the plugin.
         /// @returns State of saving, success (=true) or fail (=false).
         /// @since v15.03.26 - Added.
-        static public bool SaveXML_v1_0(string filenameXml, PluginData Data)
+        static public bool SaveDatoToXML_v1_0(string filenameXml, PluginData Data)
         {
             XmlDocument xmlDoc = new XmlDocument();
             XmlElement instance;
@@ -510,14 +513,14 @@ namespace Gear.PluginSupport
             return true;
         }
 
-        /// @brief Load a plugin from XML as version 0.0, filling the plugin data.
+        /// @brief Extract data of plugin system version 0.0 from XML.
         /// @param[in] filenameXml File name in XML format, version 0.0
         /// @param[in,out] Data Metadata of the plugin.
         /// @returns State of loading: True if it was successful (also filling Data parameter 
         /// with the plugin information), or False if didn't (in this case Data parameter
         /// only should have updated IsValid attribute).
         /// @since v15.03.26 - Added.
-        static public bool ExtractFromXML_v0_0(string filenameXml, ref PluginData Data)
+        static public bool GetDataFromXML_v0_0(string filenameXml, ref PluginData Data)
         {
             //Settings to read the XML
             XmlReaderSettings settings = new XmlReaderSettings();
@@ -634,7 +637,7 @@ namespace Gear.PluginSupport
             return success;
         }
 
-        /// @brief Load a plugin from XML as version 1.0.
+        /// @brief Extract data of plugin system version 1.0 from XML.
         /// @param[in] filenameXml File name in XML format, version 1.0
         /// @param[in,out] Data Metadata of the plugin.
         /// @returns State of loading: True if it was successful (also filling Data parameter 
@@ -643,7 +646,7 @@ namespace Gear.PluginSupport
         /// @note The date conversion to current locale should be made in front end. Here it is
         /// only extracted and stored in Data.DateModified member without conversion.
         /// @since v15.03.26 - Added.
-        static public bool ExtractFromXML_v1_0(string filenameXml, ref PluginData Data)
+        static public bool GetDataFromXML_v1_0(string filenameXml, ref PluginData Data)
         {
             //Settings to read the XML
             XmlReaderSettings settings = new XmlReaderSettings();

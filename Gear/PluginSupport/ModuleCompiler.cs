@@ -62,8 +62,8 @@ namespace Gear.PluginSupport
 
         /// @brief Dynamic compiling & loading for a plugin.
         /// @details Try to dynamically compile a module for the plugin, based on supplied 
-        /// C# code and other C# modules referenced. If the compiling fails, it gives a list 
-        /// of errors, intended to be showed in the plugin view.
+        /// C# code and other C# modules referenced, using Reflexion. If the compiling fails,  
+        /// it gives a list of errors, intended to be showed in the plugin view.
         /// @param[in] code C# Source code based on PluginBase class, to implement your plugin.
         /// @param[in] module Class name of the plugin.
         /// @param[in] references String array with auxiliary references used by your plugin. 
@@ -99,32 +99,30 @@ namespace Gear.PluginSupport
             cp.ReferencedAssemblies.Add("System.Drawing.dll");
             cp.ReferencedAssemblies.Add("System.Xml.dll");
 
-            foreach (string s in references)
-                cp.ReferencedAssemblies.Add(s);
-
-            CompilerResults results = provider.CompileAssemblyFromSource(cp, code);
-
-            if (results.Errors.HasErrors | results.Errors.HasWarnings)
-            {
-                m_Errors = results.Errors;
-                return null;
-            }
-
-            //compile plugin with parameters
+            foreach (string s in references)    //traverse list adding not null or empty texts
+                if (!string.IsNullOrEmpty(s))
+                    cp.ReferencedAssemblies.Add(s);
             try
             {
-                object target =
-                    Convert.ChangeType(
-                        results.CompiledAssembly.CreateInstance(
-                            module,                         //string typeName
-                            false,                          //bool ignoreCase
-                            BindingFlags.Public | BindingFlags.Instance, //BindingFlags bindingAttr
-                            null,                           //Binder binder
-                            new object[] { objInstance },   //object[] args
-                            null,                           //CultureInfo culture
-                            null                            //object[] activationAttributes
-                        ), 
-                        PluginSystem.GetPluginBaseClass(version) );
+                //first compile surce code
+                CompilerResults results = provider.CompileAssemblyFromSource(cp, code);
+
+                if (results.Errors.HasErrors | results.Errors.HasWarnings)
+                {
+                    m_Errors = results.Errors;
+                    return null;
+                }
+
+                //then instantiate plugin class
+                object target = results.CompiledAssembly.CreateInstance(
+                    module,                         //string typeName
+                    false,                          //bool ignoreCase
+                    BindingFlags.Public | BindingFlags.Instance, //BindingFlags bindingAttr
+                    null,                           //Binder binder
+                    new object[] { objInstance },  //object[] args
+                    null,                           //CultureInfo culture
+                    null);                          //object[] activationAttributes
+                    
                 if (target == null)
                 {
                     CompilerError c = new CompilerError("", 0, 0, "CS0103",
@@ -147,7 +145,8 @@ namespace Gear.PluginSupport
             }
             catch (Exception e)
             {
-                throw new Exception("Exception generated when compiling plugin class into memory. " + "Message: \"" + e.Message + "\"", e);
+                throw new Exception("Exception generated when compiling plugin class into memory. " +
+                    "Message: \"" + e.Message + "\"", e);
             }
         }
     
