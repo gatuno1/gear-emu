@@ -21,9 +21,6 @@
  * --------------------------------------------------------------------------------
  */
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Gear.EmulationCore
 {
@@ -954,7 +951,7 @@ namespace Gear.EmulationCore
             ZeroResult = DataResult == 0;
         }
 
-        /// @brief Ejecute instruction MOV: Set a register to a value.
+        /// @brief Execute instruction MOV: Set a register to a value.
         /// @details Effects: Set D to S
         private void InstructionMOV()
         {
@@ -963,7 +960,7 @@ namespace Gear.EmulationCore
             CarryResult = ((SourceValue & 0x80000000) != 0);
         }
 
-        /// @brief Ejecute instruction MOVS: Set a register's source field to a value.
+        /// @brief Execute instruction MOVS: Set a register's source field to a value.
         /// @details Effects: Insert S[8..0] into D[8..0]
         private void InstructionMOVS()
         {
@@ -973,7 +970,7 @@ namespace Gear.EmulationCore
             CarryResult = Carry;
         }
 
-        /// @brief Ejecute instruction MOVD: Set a register's destination field to a value.
+        /// @brief Execute instruction MOVD: Set a register's destination field to a value.
         /// @details Effects: Insert S[8..0] into D[17..9]
         private void InstructionMOVD()
         {
@@ -983,7 +980,7 @@ namespace Gear.EmulationCore
             CarryResult = Carry;
         }
 
-        /// @brief Ejecute instruction MOVI: Set a register's instruction and effects fields 
+        /// @brief Execute instruction MOVI: Set a register's instruction and effects fields 
         /// to a value.
         /// @details Effects: Insert S[8..0] into D[31..23]
         private void InstructionMOVI()
@@ -994,7 +991,7 @@ namespace Gear.EmulationCore
             CarryResult = Carry;
         }
 
-        /// @brief Ejecute instruction JMPRET: Jump to address with intention to "return" 
+        /// @brief Execute instruction JMPRET: Jump to address with intention to "return" 
         /// to another address.
         /// @details Effects: Insert PC+1 into D[8..0] and set PC to S[8..0].
         /// @version V15.03.26 - corrected Carry flag according to Propeller Manual v1.2.

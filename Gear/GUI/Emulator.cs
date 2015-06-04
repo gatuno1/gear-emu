@@ -43,7 +43,7 @@ namespace Gear.GUI
         public uint stepInterval;           //!< @brief How many steps to update screen.
         private List<Control> FloatControls;//!< @brief List of floating controls.
 
-        /// @brief Stepwatch to periodically rerun a step of the emulation
+        /// @brief Stopwatch to periodically rerun a step of the emulation
         private Timer runTimer;             
 
         /// @brief Default Constructor.
@@ -64,7 +64,7 @@ namespace Gear.GUI
 
             AttachPlugin(new MemoryView(Chip));
             AttachPlugin(new SpinView(Chip));
-            AttachPlugin(new LogicProbe.LogicView(Chip));   //changed to logicprobe be the last tab
+            AttachPlugin(new LogicProbe.LogicView(Chip));   //changed to LogicProbe be the last tab
             documentsTab.SelectedIndex = 0;
 
             // TEMPORARY RUN FUNCTION
@@ -97,7 +97,7 @@ namespace Gear.GUI
 
         /// @brief Include a plugin to a propeller chip instance.
         /// @details Attach a plugin, linking the propeller instance to the plugin, opening a new 
-        /// tab window and enabling the close button by plugin's closable property.
+        /// tab window and enabling the close button by plugin's isClosable property.
         /// @param[in] plugin Instance of a Gear.PluginSupport.PluginCommon class to be attached.
         private void AttachPlugin(PluginCommon plugin)
         {
@@ -122,15 +122,14 @@ namespace Gear.GUI
         }
 
         /// @brief Delete a plugin from a propeller chip instance.
-        /// 
-        /// Delete a plugin from the actives plugins of the propeller instance, effectively stopping 
-        /// the plugin. Remove also from pins and clock watch list.
+        /// @details Delete a plugin from the actives plugins of the propeller instance, 
+        /// effectively stopping the plugin. Remove also from pins and clock watch list.
         /// @param[in] plugin Instance of a Gear.PluginSupport.PluginCommon class to be detached.
         /// @since V15.03.26 - Added.
         //Added method to detach a plugin from the active plugin list of the propeller instance.
         private void DetachPlugin(PluginCommon plugin)
         {
-            if (plugin.IsClosable)      //check if the plugin is closable, then remove...
+            if (plugin.IsClosable)      //check if the plugin is able to close, then remove...
             {
                 Chip.RemoveOnPins(plugin);  //from pins watch list
                 Chip.RemoveOnClock(plugin); //from clock watch list
@@ -242,11 +241,11 @@ namespace Gear.GUI
                             MessageBoxIcon.Error);
                         return;
                 }
-                //data is read succesfully from XML into pluginCandidate
+                //data is read successfully from XML into pluginCandidate
                 try
                 {
                     //Dynamic load and compile the plugin module as a class, giving the chip 
-                    // instance as a parameter, and casting to appropiate class
+                    // instance as a parameter, and casting to appropriate class
                     PluginCommon plugin = ModuleCompiler.LoadModule(
                         pluginCandidate.Codes[0],               //string code
                         pluginCandidate.InstanceName,           //string module
@@ -295,7 +294,7 @@ namespace Gear.GUI
                 OpenFile(openFileDialog.FileName);
         }
 
-        /// @brief Event to reload the whole %Propeller program from bynary file.
+        /// @brief Event to reload the whole %Propeller program from binary file.
         /// @details It also reset the %Propeller Chip and all the plugins.
         /// @param[in] sender Reference to object where event was raised.
         /// @param[in] e Event data arguments.
@@ -573,7 +572,7 @@ namespace Gear.GUI
 //
 
 /// @page PluginDetails Plugin Loading Details
-/// Documentation of sequences of loading a plugin in differents situations.
+/// Documentation of sequences of loading a plugin in different situations.
 /// - @subpage PluginLoadingInEmulatorPage "Loading in Emulator."
 /// - @subpage PluginLoadingFromGearDesktop  "Loading from GEAR Desktop."
 /// - @subpage PluginLoadInsidePluginEditor "Loading inside Plugin Editor."

@@ -34,7 +34,7 @@ namespace Gear.PluginSupport
 {
     /// @brief Custom XML resolver, to locate the DTD definition file in the appropriate folder.
     /// @details Instead of search of DTD file in the location of XML plugin file, this redirects 
-	/// to search in the base directory of the GEAR executable.
+    /// to search in the base directory of the GEAR executable.
     /// @since v15.03.26 - Added.
     class DTDResolver : System.Xml.XmlUrlResolver
     {
@@ -68,7 +68,7 @@ namespace Gear.PluginSupport
         public string Modifier;             //!< @brief Last author of modifications.
         public string DateModified;         //!< @brief Date of modifications,
         public string CulturalReference;    //!< @brief To store the cultural reference of dates.
-        public string ReleaseNotes;         //!< @brief Release notes (modif. of the version).
+        public string ReleaseNotes;         //!< @brief Release notes (version modifications).
         public string Description;          //!< @brief Description of the plugin.
         public string Usage;                //!< @brief Guides to use the plugin.
         public string[] Links;              //!< @brief Links supporting the plugin.
@@ -132,7 +132,7 @@ namespace Gear.PluginSupport
         /// @brief Validate the XML against a DTD definition, retrieving the version of it.
         /// @param[in] XR Source of a XML to read of.
         /// @returns True if the XML is valid against DTD definition, False if not.
-        /// @pre This implementation assums the existence of attribute plugin_system_version
+        /// @pre This implementation assumes the existence of attribute plugin_system_version
         /// linked to existence of DTD declaration in the XML plugin file. In old XML plugin 
         /// format (v0.0), there is not defined DTD declaration like 
         /// @code{.xml} <!DOCTYPE plugin SYSTEM "Resources\plugin_v1.0.dtd"> @endcode 
@@ -176,7 +176,7 @@ namespace Gear.PluginSupport
         /// the possibles and valid DTD definition for plugins.
         /// @param[in] filenameXml File name to check validity.
         /// @returns True if the XML is valid against a DTD definition for plugins.
-        /// @post This implementation assums the existence of attribute plugin_system_version
+        /// @post This implementation assumes the existence of attribute plugin_system_version
         /// linked to existence of DTD declaration in the XML plugin file. In old XML plugin 
         /// format (v0.0), there is not defined DTD declaration like 
         /// @code{.xml} <!DOCTYPE plugin SYSTEM "Resources\plugin_v1.0.dtd"> @endcode 
@@ -285,7 +285,7 @@ namespace Gear.PluginSupport
 
     
     /// @brief Methods to save and retrieve plugin from files, managing version of plugin system.
-    /// @details To manage version of plugin system enables to have have different signatures of 
+    /// @details To manage version of plugin system enables to have different signatures of 
     /// methods or create new properties in plugins to evolve the system, trying to have
     /// compatibility with old plugins.
     /// @since v15.03.26 - Added.

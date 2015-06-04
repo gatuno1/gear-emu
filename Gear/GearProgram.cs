@@ -22,11 +22,9 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
 using Gear.GUI;
 
-using Gear.PluginSupport;
 
 
 /// @brief Main namespace for GEAR Emulator.

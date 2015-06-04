@@ -21,15 +21,9 @@
  * --------------------------------------------------------------------------------
  */
 
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
 using System.Windows.Forms;
 
-using Gear;
 using Gear.PluginSupport;
 using Gear.GUI;
 
@@ -192,10 +186,10 @@ namespace Gear.EmulationCore
 
             Time = 0;
             RingPosition = 0;
-            LocksAvailable = new bool[TOTAL_LOCKS]; // 8 general purpose semaphors
+            LocksAvailable = new bool[TOTAL_LOCKS]; // 8 general purpose semaphores
             LocksState = new bool[TOTAL_LOCKS];
 
-            Memory = new byte[TOTAL_MEMORY];        // 64k of memory (top 32k read-only bios)
+            Memory = new byte[TOTAL_MEMORY];        // 64k of memory (top 32k read-only BIOS)
 
             PinStates = new PinState[TOTAL_PINS];   // We have 64 pins we will be passing on
 
@@ -511,7 +505,7 @@ namespace Gear.EmulationCore
 
         /// @brief Remove a plugin from the active plugin list of propeller instance
         /// @details Only if the plugin exists on the list, this method removes from it.
-        /// Before detach, the `OnClose()` method of plugin is invoqued, to do
+        /// Before detach, the `OnClose()` method of plugin is invoked, to do
         /// housekeeping, for example to clear pins managed by the plugin.
         /// @param[in] plugin Compiled plugin reference to remove
         public void RemovePlugin(PluginCommon plugin)
@@ -610,7 +604,7 @@ namespace Gear.EmulationCore
 
         /// @brief Reset the propeller CPU to initial state.
         /// @details Release cog instances, clock sources, clear locks and pins, and reset plugins.
-        /// @version 15.03.26 - Separate reset loops for clocksources, cogs and locks.
+        /// @version 15.03.26 - Separate reset loops for clock sources, cogs and locks.
         public void Reset()
         {
             ResetMemory.CopyTo(Memory, 0);
@@ -991,8 +985,8 @@ namespace Gear.EmulationCore
 
                     PLLGroup pll = new PLLGroup();
                     ClockSources[cog] = (ClockSource)pll;
-                    uint param = (argument >> 16) & 0xFFFC;     //decode param value
-                    uint progm = (argument >> 2) & 0xFFFC;      //decode program addr to load to
+                    uint param = (argument >> 16) & 0xFFFC;   //decode param value
+                    uint progm = (argument >> 2) & 0xFFFC;    //decode program address to load to
                     if (progm == 0xF004)
                         Cogs[cog] = new InterpretedCog(this, param, CoreFreq, pll);
                     else

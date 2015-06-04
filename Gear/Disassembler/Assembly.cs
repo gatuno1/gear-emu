@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Gear.Disassembler
 {
@@ -82,7 +80,7 @@ namespace Gear.Disassembler
                         }
                         return this.SubInstructions[num];
                 }
-                throw new Exception("Uknown Instruction Type: " + this.Type.ToString());
+                throw new Exception("Unknown Instruction Type: " + this.Type.ToString());
             }
         }
 

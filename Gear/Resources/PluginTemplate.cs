@@ -52,7 +52,7 @@ class YourClassName : PluginBase
 
     //Called every time a pin changes, only if called Chip.NotifyOnPins()  
     // inside of method PresentChip() above. 
-    //Warning: to assure the correct correct operation of the plugin system, 
+    //Warning: to assure the correct operation of the plugin system, 
     //you can't change the parameters of any predefined method: neither the 
     //names or the types. Also you must not add other parameters.
     public override void OnPinChange(double time, PinState[] pins)
@@ -70,7 +70,7 @@ class YourClassName : PluginBase
     
     //Called every clock tick, only if called Chip.NotifyOnClock() inside of 
     // method PresentChip() above. 
-    //Warning: to assure the correct correct operation of the plugin system, 
+    //Warning: to assure the correct operation of the plugin system, 
     //you can't change the parameters of any predefined method: neither the 
     //names or the types. Also you must not add other parameters.
     public override void OnClock(double time, uint sysCounter) 

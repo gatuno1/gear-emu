@@ -41,12 +41,12 @@ namespace Gear.Properties {
         /// @since V15.03.26 - Added as a User property of the program.
 
         /// @property LastPlugin
-        /// @brief Last plugin succesfully opened or saved.
+        /// @brief Last plugin successfully opened or saved.
         /// @details Include complete path and name.
         /// @since V15.03.26 - Added as a User property of the program.
 
         /// @property LastBinary
-        /// @brief Last binary file succesfully opened.
+        /// @brief Last binary file successfully opened.
         /// @details Include complete path and name.
         /// @since V15.03.26 - Added as a User property of the program.
 
@@ -60,7 +60,7 @@ namespace Gear.Properties {
 
         /// @property UseNoTemplate
         /// @brief Indicates to use the default template on the creation of a new plugin (=false), or to 
-        /// do not use a template (blank content intially) (=true).
+        /// do not use a template (blank content initially) (=true).
         /// @since V15.03.26 - Added as a User property of the program.
 
         /// @property UpdateEachSteps

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Gear.EmulationCore;
-using Gear.PluginSupport;
 
 namespace Gear.GUI
 {
@@ -192,14 +191,14 @@ namespace Gear.GUI
 
             /// @brief Create a new Watch for a %Cog memory location.
             /// @param cog Reference to %Cog to inspect its memory.
-            /// @param name Name to asociate the Watch.
+            /// @param name Name to associate the Watch.
             /// @param address Memory address to inspect.
             public MemWatcher(Cog cog, string name, uint address)
             {
                 IsCogBased = true;
                 _chip = null;
                 _cog = cog;
-                Addr = address; //this assigment validate the value or throw an exception
+                Addr = address; //this assignment validate the value or throw an exception
                 //CogSpecialAddress tmp;
                 //if (Enum.IsDefined(typeof(CogSpecialAddress), Addr) &&
                 //    Enum.TryParse(Addr, out tmp))
@@ -218,14 +217,14 @@ namespace Gear.GUI
 
             /// @brief Create a new Watch for a Main memory location.
             /// @param chip Reference to %PropellerCPU to inspect its memory.
-            /// @param name Name to asociate the Watch.
+            /// @param name Name to associate the Watch.
             /// @param address Memory address to inspect.
             public MemWatcher(PropellerCPU chip, string name, uint address)
             {
                 IsCogBased = false;
                 _chip = chip;
                 _cog = null;
-                Addr = address; //this assigment validate the value or throw an exception
+                Addr = address; //this assignment validate the value or throw an exception
                 Name = name;
                 Value = chip.ReadLong(Addr);
                 ComparedValue = 0;

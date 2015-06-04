@@ -28,7 +28,7 @@ using Gear.EmulationCore;
 
 /// @brief Name space for Plugin support.
 /// @details Contains the classes that defines the plugin system: the plugin class  
-/// structure itself, the loading of plugins from XML files, the compiling and instantation 
+/// structure itself, the loading of plugins from XML files, the compiling and instantiation 
 /// of a plugin class. 
 namespace Gear.PluginSupport
 {
@@ -124,7 +124,7 @@ namespace Gear.PluginSupport
 
 namespace Gear.EmulationCore
 {
-    /// @brief Synonim for PropellerCPU class, to use it with old plugin system.
+    /// @brief Synonym for PropellerCPU class, to use it with old plugin system.
 #pragma warning disable 612
     [Obsolete("This class should be used only for old plugin compatibility. For another uses use PropellerCPU class instead.", false)]
     public class Propeller : PropellerCPU 

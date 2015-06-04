@@ -22,8 +22,6 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Gear.Disassembler;
 
 namespace Gear.EmulationCore

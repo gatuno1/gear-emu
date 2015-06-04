@@ -23,7 +23,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Gear.EmulationCore
 {
@@ -452,7 +451,7 @@ namespace Gear.EmulationCore
                             {
                                 Range = Top - Bottom + 1;
 
-                                // Are we inrange?
+                                // Are we in range?
                                 if (Key < Range)
                                 {
                                     PC = Jump + ObjectFrame;
@@ -967,7 +966,7 @@ namespace Gear.EmulationCore
                     return (uint)((int)left + (int)right);
                 case 0x0D:  // Subtract
                     return (uint)((int)left - (int)right);
-                case 0x0E:  // Arithmatic shift right
+                case 0x0E:  // Arithmetic shift right
                     {
                         int shift = (int)right;
                         ulong mask = left;

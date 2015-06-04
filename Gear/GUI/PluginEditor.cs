@@ -22,17 +22,13 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Globalization;
-using System.Windows.Forms;
-using System.Xml;
-using System.IO;
 using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Globalization;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 using Gear.PluginSupport;
 
@@ -118,10 +114,10 @@ namespace Gear.GUI
             "unsafe", "ushort", "using", "value", "var", "virtual", "void",
             "volatile", "where", "while", "yield"
         };
-		
+        
         /// @brief Default constructor.
-        /// Init class, defines columns for error grid, setting on changes detection initially, 
-        /// and try to load the default template for plugin.
+        /// Initialize the class, defines columns for error grid, setting on changes detection  
+        /// initially, and try to load the default template for plugin.
         /// @param[in] loadDefaultTemplate Indicate to load default template (=true) or 
         /// no template at all(=false).
         /// @since v15.03.26 - Added parameter for loading default template for plugin.
@@ -164,7 +160,7 @@ namespace Gear.GUI
             //retrieve from settings the last state for embedded code
             SetEmbeddedCodeButton(Properties.Settings.Default.EmbeddedCode);
 
-            //setup the metadata with the default texts and tooltips.
+            //setup the metadata with the default texts and tool tips.
             foreach (ListViewItem item in pluginMetadataList.Items)
             {
                 item.Text = GetDefaultTextMetadataElement(item.Group);
@@ -268,7 +264,7 @@ namespace Gear.GUI
                         IsSuccess = false;
                         break;
                 }
-                if (IsSuccess)  //data is read succesfully from XML into pluginCandidate
+                if (IsSuccess)  //data is read successfully from XML into pluginCandidate
                 {
                     _systemFormatVersion = pluginCandidate.PluginSystemVersion;
                     //initial cleanup of screen elements
@@ -313,7 +309,7 @@ namespace Gear.GUI
                         if (!string.IsNullOrEmpty(refer))
                             referencesList.Items.Add(refer);
                     }
-                    //load metadata of the plugimn
+                    //load metadata of the plugin
                     switch (pluginCandidate.PluginSystemVersion)
                     {
                         case "1.0":
@@ -388,8 +384,8 @@ namespace Gear.GUI
                         data.Codes = new string[1] { codeEditorView.Text };
                         //update modified state for the plugin
                         CodeChanged = !PluginPersistence.SaveDatoToXML_v1_0(FileName, data);
-                        //if it was succesfully saved
-                        if (!CodeChanged) //clear metadata if it was succesfully saved
+                        //if it was successfully saved
+                        if (!CodeChanged) //clear metadata if it was successfully saved
                         {
                             ClearMetadata(true);    //reset metadata in screen, enabling it
                         };
@@ -401,7 +397,7 @@ namespace Gear.GUI
                         data.Codes = new string[1] { codeEditorView.Text };
                         //update modified state for the plugin
                         CodeChanged = !PluginPersistence.SaveDatoToXML_v0_0(FileName, data);
-                        if (!CodeChanged) //clear metadata if it was succesfully saved
+                        if (!CodeChanged) //clear metadata if it was successfully saved
                         {
                             ClearMetadata(false);   //reset metadata in screen, disabling it
                         }
@@ -653,7 +649,7 @@ namespace Gear.GUI
             int restore_pos = codeEditorView.SelectionStart, pos = 0;    //remember last position
             changeDetectEnabled = false;    //not enable change detection
             bool commentMultiline = false;  //initially not in comment mode
-            //Foreach line in input, identify key words and format them when 
+            //For each line in input, identify key words and format them when 
             // adding to the rich text box.
             String[] lines = LineExpression.Split(codeEditorView.Text);
             //update progress bar
@@ -683,7 +679,7 @@ namespace Gear.GUI
         /// Examines line by line, parsing reserved C# words.
         /// @param[in] line Text line from the source code.
         /// @param[in,out] commentMultiline Flag to indicate if it is on comment mode 
-        /// between multilines (=true) or normal mode (=false).
+        /// between multi lines (=true) or normal mode (=false).
         /// @since v14.07.03 - Added.
         /// @warning Experimental highlighting. Probably will be changes in the future.
         private void ParseLine(string line, ref bool commentMultiline)
@@ -717,7 +713,7 @@ namespace Gear.GUI
                     codeEditorView.SelectedText = "\n"; //finalize the line
                 }
             }
-            else  //we are not in comment multiline mode
+            else  //we are not in comment multi line mode
             {
                 bool putEndLine = true;
                 string[] tokens = CodeLine.Split(line);
@@ -747,7 +743,7 @@ namespace Gear.GUI
                         }
                         else  //as there is no end comment in the line..
                         {
-                            //..entering comment multiline mode
+                            //..entering comment multi line mode
                             commentMultiline = true; 
                             string comment = line.Substring(index, line.Length - index);
                             codeEditorView.SelectionColor = Color.Green;
@@ -1168,7 +1164,7 @@ namespace Gear.GUI
         /// @brief Set an element of metadata, given the group name.
         /// @param[in] groupName Name of the group to set a element.
         /// @param[in] value Value to set.
-        /// @pre The actual algorithm assumes GUI.PluginEditor.ClearMetadata() was ejecuted before.
+        /// @pre The actual algorithm assumes GUI.PluginEditor.ClearMetadata() was executed before.
         /// @since v15.03.26 - Added.
         private void SetElementOfMetadata(string groupName, string value)
         {
@@ -1185,7 +1181,7 @@ namespace Gear.GUI
                         group.Items[0].Text = GetDefaultTextMetadataElement(group);
                         //change visibility to default text
                         SetUserDefinedMetadataElement(group.Items[0], false);
-                        //use the default tooltip tex
+                        //use the default tooltip text
                         group.Items[0].ToolTipText = GetDefaultTooltipMetadataElement(group);
                     }
                     else
@@ -1201,16 +1197,16 @@ namespace Gear.GUI
             }
         }
 
-        /// @brief Set the elemens of metadata, given the group name.
+        /// @brief Set the elements of metadata, given the group name.
         /// @param[in] groupName Name of the group to set elements.
         /// @param[in] values Array of values to set.
-        /// @pre The actual algorithm assumes GUI.PluginEditor.ClearMetadata() was ejecuted before.
+        /// @pre The actual algorithm assumes GUI.PluginEditor.ClearMetadata() was executed before.
         /// @since v15.03.26 - Added.
         private void SetElementOfMetadata(string groupName, string[] values)
         {
             if ((values != null) && (values.Length > 0))  //there are data to set?
             {
-                //lookin for the group of interest
+                //looking for the group of interest
                 foreach (ListViewGroup group in pluginMetadataList.Groups)
                 {
                     if (group.Name == groupName)    //Is the desired group?

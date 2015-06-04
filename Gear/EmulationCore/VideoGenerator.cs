@@ -21,9 +21,6 @@
  * --------------------------------------------------------------------------------
  */
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Gear.EmulationCore
 {
@@ -178,7 +175,7 @@ namespace Gear.EmulationCore
                 ScaleDirty = false;
             }
 
-            FrameClocks = Scale & 0xFFF;    // Copy our frameclocks out of the scale register
+            FrameClocks = Scale & 0xFFF;    // Copy our FrameClocks out of the scale register
             PixelClocks = 1;                // Always serialize out the first pixel on first clock
         }
 
@@ -201,7 +198,7 @@ namespace Gear.EmulationCore
 
                 // --- BASEBAND MODE ---
 
-                // Mix if nessessary
+                // Mix if necessary
                 if (Chroma0)
                 {
                     if (shiftedPhase != 0)
@@ -215,7 +212,7 @@ namespace Gear.EmulationCore
 
                 // --- BROADCAST MODE ---
 
-                // Mix if nessessary
+                // Mix if necessary
                 if (Chroma1)
                 {
                     if (shiftedPhase != 0)

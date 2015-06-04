@@ -22,13 +22,11 @@
  */
 
 /// @file 
-/// ModuleCompiler.cs is the new name of old file ModuleLoader.cs. This is more appropiate
+/// ModuleCompiler.cs is the new name of old file ModuleLoader.cs. This is more appropriate
 /// as a description of what it does.
 /// @since v15.03.26 - Changed the file name from ModuleLoader.cs.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.CodeDom.Compiler;
 using System.Reflection;
 
@@ -104,7 +102,7 @@ namespace Gear.PluginSupport
                     cp.ReferencedAssemblies.Add(s);
             try
             {
-                //first compile surce code
+                //first compile source code
                 CompilerResults results = provider.CompileAssemblyFromSource(cp, code);
 
                 if (results.Errors.HasErrors | results.Errors.HasWarnings)
