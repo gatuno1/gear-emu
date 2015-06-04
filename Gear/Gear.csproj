@@ -86,6 +86,7 @@
     <Compile Include="EmulationCore\PropellerCPU.cs" />
     <Compile Include="EmulationCore\SystemXtal.cs" />
     <Compile Include="EmulationCore\VideoGenerator.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="GUI\AboutGear.cs">
       <SubType>Form</SubType>
     </Compile>

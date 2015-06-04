@@ -156,8 +156,8 @@ namespace Gear.GUI
             RepaintViews();
         }
 
-        /// @todo Document Gear.GUI.Emulator.Unfloat()
-        /// 
+        /// @brief Unfloat the tab object.
+        /// @param c Tab object.
         public void Unfloat(Control c)
         {
             TabPage tp = new TabPage(c.Text);

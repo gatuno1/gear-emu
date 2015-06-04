@@ -1275,8 +1275,9 @@ namespace Gear.GUI
                     {
                         //always have to exist all the metadata elements!
                         throw new Exception(string.Format(
-                            "Couldn't retrieve elements for '{1}' metadata group. " + 
-                            "Please check the parameters for GetElementsFromMetadata() method.", groupName));
+                            "Couldn't retrieve elements for '{0}' metadata group. " + 
+                            "Please check the parameters for GetElementsFromMetadata() method.", 
+                            groupName));
                     }
                 }
             }
