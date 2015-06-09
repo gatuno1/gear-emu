@@ -1,0 +1,8 @@
+-buscar definición "[private]|[public] Propeller Chip;". se debe anotar el nombre de la variable XXX.
+-agregar constructor "public PinNoise(PropellerCPU chip) : base(chip) {  }" justo luego despues de la definición la clase ("class PinNoise : PluginBase {").
+
+optativos
+---------
+-buscar referencias a "Propeller" y cambiar por "PropellerCPU"
+-cambiar definición de "public override void PresentChip( Propeller host ) {" a "public override void PresentChip() {" eliminando el parametro.
+-buscar instancias de "XXX.DrivePin(" y reemplazarlas por "DrivePin(".
