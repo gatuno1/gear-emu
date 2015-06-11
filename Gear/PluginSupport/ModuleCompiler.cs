@@ -84,7 +84,11 @@ namespace Gear.PluginSupport
             CodeDomProvider provider = new Microsoft.CSharp.CSharpCodeProvider();
             CompilerParameters cp = new CompilerParameters();
 
+#if DEBUG
+            cp.IncludeDebugInformation = true;
+#else
             cp.IncludeDebugInformation = false;
+#endif
             cp.GenerateExecutable = false;
             cp.GenerateInMemory = true;
             cp.CompilerOptions = "/optimize";
@@ -110,16 +114,18 @@ namespace Gear.PluginSupport
                     m_Errors = results.Errors;
                     return null;
                 }
-
+                
                 //then instantiate plugin class
                 object target = results.CompiledAssembly.CreateInstance(
-                    module,                         //string typeName
-                    false,                          //bool ignoreCase
-                    BindingFlags.Public | BindingFlags.Instance, //BindingFlags bindingAttr
-                    null,                           //Binder binder
-                    new object[] { objInstance },  //object[] args
-                    null,                           //CultureInfo culture
-                    null);                          //object[] activationAttributes
+                    module,                                         //string typeName
+                    false,                                          //bool ignoreCase
+                    BindingFlags.Public | BindingFlags.Instance,    //BindingFlags bindingAttr
+                    null,                                           //Binder binder
+                    (objInstance != null) ?                         //object[] args
+                        new object[] { objInstance } : 
+                        null,                   
+                    null,                                           //CultureInfo culture
+                    null);                                          //object[] activationAttributes
                     
                 if (target == null)
                 {
@@ -140,6 +146,13 @@ namespace Gear.PluginSupport
 
                 m_Errors = null;
                 return (PluginCommon)target;
+            }
+            catch (MissingMethodException mm)
+            {
+                CompilerError c = new CompilerError("", 0, 0, "Runtime",
+                    string.Format("Plugin '{0}' - {1}", module, mm.Message));
+                m_Errors = new CompilerErrorCollection(new CompilerError[] { c });
+                return null;
             }
             catch (Exception e)
             {

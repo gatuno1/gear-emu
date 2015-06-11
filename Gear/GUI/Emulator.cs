@@ -202,6 +202,7 @@ namespace Gear.GUI
         /// @todo Modify the method to enable to work with old and new plugin system formats.
         public void LoadPlugin(string FileName)
         {
+            object objInst;
             //create the structure to fill data from file
             PluginData pluginCandidate = new PluginData();
             //Determine if the XML is valid, and for which DTD version
@@ -219,7 +220,8 @@ namespace Gear.GUI
                     MessageBoxIcon.Error);
             }
             else  //...XML plugin file is valid & system version is determined
-            {   
+            {
+                objInst = null;
                 //as is valid, we have the version to look for the correct method to 
                 // load it
                 switch (pluginCandidate.PluginSystemVersion)
@@ -227,11 +229,15 @@ namespace Gear.GUI
                     case "0.0" :
                         if (PluginPersistence.GetDataFromXML_v0_0(FileName, ref pluginCandidate))
                         {
-                            /// TODO: [high priority] Add the invocation to new method to replace pieces of code for V0.0 plugin system.
+                            //Search and replace plugin class declaration for V0.0 plugin 
+                            // system compatibility.
+                            pluginCandidate.Codes[0] = 
+                                PluginSystem.ReplaceBaseClassV0_0(pluginCandidate.Codes[0]);
                         }
                         break;
                     case "1.0":
                         PluginPersistence.GetDataFromXML_v1_0(FileName, ref pluginCandidate);
+                        objInst = this.Chip;
                         break;
                     default:
                         MessageBox.Show(string.Format("Plugin system version '{0}' not recognized "+
@@ -250,7 +256,7 @@ namespace Gear.GUI
                         pluginCandidate.Codes[0],               //string code
                         pluginCandidate.InstanceName,           //string module
                         pluginCandidate.References,             //string[] references
-                        this.Chip,                              //object objInstance
+                        objInst,                                //object objInstance
                         pluginCandidate.PluginSystemVersion);   //string version
                     if (plugin == null)
                         throw new Exception("Emulator - OpenPlugin: plugin object not generated!" +

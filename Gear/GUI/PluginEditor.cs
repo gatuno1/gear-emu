@@ -30,6 +30,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
+using Gear.EmulationCore;
 using Gear.PluginSupport;
 
 namespace Gear.GUI
@@ -435,24 +436,35 @@ namespace Gear.GUI
             }
             else
             {
-                string aux = null;
+                string aux = null, codeToCompile;
                 if (DetectClassName(codeEditorView.Text, out aux))  //class name detected?
                 {
                     int i = 0;
+                    object objInst = null;
                     instanceName.Text = aux;        //show the name found in the screen field
                     errorListView.Items.Clear();    //clear error list, if any
                     //prepare reference list
                     string[] refs = new string[referencesList.Items.Count];
                     foreach (string s in referencesList.Items)
                         refs[i++] = s;
-                    // TODO: [high priority] Add the invocation to new method to replace pieces of code for V0.0 plugin system.
+                    if (_systemFormatVersion == "0.0")
+                    {
+                        //Search and replace plugin class declaration for V0.0 plugin 
+                        // system compatibility.
+                        codeToCompile = PluginSystem.ReplaceBaseClassV0_0(codeEditorView.Text);
+                    }
+                    else
+                    {
+                        codeToCompile = codeEditorView.Text;
+                        objInst = new PropellerCPU(null);
+                    }
                     try
                     {
                         if (null != ModuleCompiler.LoadModule(
-                                codeEditorView.Text,    //string code
+                                codeToCompile,          //string code
                                 instanceName.Text,      //string module
                                 refs,                   //string[] references
-                                null,                   //object obj 
+                                objInst,                //object obj 
                                 _systemFormatVersion)   //string version
                             )
                             MessageBox.Show("Plugin compiled without errors.", 
@@ -627,7 +639,11 @@ namespace Gear.GUI
             try
             {
                 int line = Convert.ToInt32(lvi.SubItems[1].Text) - 1;
+                if (line < 0)
+                    line = 0;
                 int column = Convert.ToInt32(lvi.SubItems[2].Text) - 1;
+                if (column < 0)
+                    column = 0;
                 while (line != codeEditorView.GetLineFromCharIndex(i++)) ;
                 i += column;
                 codeEditorView.SelectionStart = i;

@@ -71,10 +71,11 @@ namespace Gear.PluginSupport
         public static bool haveInstances { get { return (countInstances > 0); } }
 
         /// @brief Default constructor.
-        public PluginBaseV0_0() : base()
+        public PluginBaseV0_0()
         {
             countInstances++;
         }
+
         /// @brief Default destructor.
         ~PluginBaseV0_0()
         {

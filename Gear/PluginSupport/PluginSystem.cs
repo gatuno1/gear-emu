@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 using Gear.EmulationCore;
 
@@ -87,6 +88,20 @@ namespace Gear.PluginSupport
                 return ( (obj is PluginBase) || (obj is PluginBaseV0_0));
 #pragma warning restore 618
                 
+        }
+
+        /// @brief Replace base class for proper inheritance, for to use with v0.0 plugin 
+        /// system plugins.
+        /// @since v15.03.26 - Added.
+        public static string ReplaceBaseClassV0_0(string codeText)
+        {
+            // Search Plugin class declaration for V0.0 plugin system compatibility.
+            Regex ClassNameToChange = new Regex(
+                @"(\bclass\s+)(?<Class>[@]?[_]*[A-Z|a-z|0-9]+[A-Z|a-z|0-9|_]*)(\s*\:\s*)" +
+                @"(?<BaseClass>PluginBase\b)",
+                RegexOptions.Compiled);
+            // Replace "PluginBase" with "PluginBaseV0_0" to compile with correct class.
+            return ClassNameToChange.Replace(codeText, "$1${Class}$2PluginBaseV0_0", 1);
         }
 
     }

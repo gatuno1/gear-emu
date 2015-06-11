@@ -6,52 +6,43 @@ using Gear.PluginSupport;
 
 class PinNoise : PluginBase
 {
-	private int Drive;
-	private bool Clock;
-	private double last;
+    private Propeller Chip;
+    private int Drive;
+    private bool Clock;
+    private double last;
 
-	public PinNoise(PropellerCPU chip) : base(chip) 
-	{ 
-		OnReset();
-	}
+    public override string Title
+    {
+        get { return "Pin Noise"; }
+    }
 
-	public override string Title
-	{
-		get { return "Pin Noise"; }
-	}
+    public override void PresentChip(Propeller host)
+    {
+        last = 0;
+        Chip = host;
+        Chip.NotifyOnPins(this);
+        Chip.NotifyOnClock(this);
+    }
 
-	public override void PresentChip()
-	{
-		NotifyOnPins();
-		NotifyOnClock();
-	}
+    public override void OnPinChange(double time, PinState[] pins)
+    {
+        Drive++;
+        if (Drive % 3 == 0)
+        {
+            // Chip.DrivePin(int pin_number, bool Floating, bool Hi)
+            Chip.DrivePin(3, false, (Drive &amp; 1) == 1);
+        }
+    }
 
-	public override void OnPinChange(double time, PinState[] pins)
-	{
-		Drive++;
-		if (Drive % 3 == 0)
-		{
-			// DrivePin(int pin_number, bool Floating, bool Hi)
-			DrivePin(3, false, (Drive &amp; 1) == 1);
-		}
-	}
-
-	public override void OnClock(double time, uint sysCounter)
-	{
-		if (time - last &gt;= 0.00001)
-		{
-			last += 0.00001;
-			Clock = !Clock;
-			DrivePin(2, false, Clock);
-		}
-	}
-	public override void OnReset()
-	{
-		Drive = 0;
-		Clock = false;
-		last = 0.0;
-	}
+    public override void OnClock(double time)
+    {
+        if (time - last &gt;= 0.00001)
+        {
+            last += 0.00001;
+            Clock = !Clock;
+            Chip.DrivePin(2, false, Clock);
+        }
+    }
 }
-
 </code>
 </plugin>
