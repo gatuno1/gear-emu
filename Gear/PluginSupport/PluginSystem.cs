@@ -50,6 +50,10 @@ namespace Gear.PluginSupport
         /// @param[in] force Flag to indicate the intention to force the repaint.
         public virtual void Repaint(bool force) { }
 
+        //public abstract override bool Equals(object other);
+
+        //public abstract bool Equals(PluginCommon other);
+
     }
 
 
@@ -102,6 +106,16 @@ namespace Gear.PluginSupport
                 RegexOptions.Compiled);
             // Replace "PluginBase" with "PluginBaseV0_0" to compile with correct class.
             return ClassNameToChange.Replace(codeText, "$1${Class}$2PluginBaseV0_0", 1);
+        }
+
+        /// @brief
+        public static string ReplacePropellerClassV0_0(string codeText)
+        {
+            // Search Plugin class declaration for V0.0 plugin system compatibility.
+            Regex ClassNameToChange = new Regex(@"(\bPropeller\b)", RegexOptions.Compiled);
+            // Replace "Propeller" with "PropellerCPU" as needed in V1.0 host.
+            string aux = ClassNameToChange.Replace(codeText,"$1CPU");
+            return aux;
         }
 
     }

@@ -101,24 +101,27 @@ namespace Gear.GUI
         /// @param[in] plugin Instance of a Gear.PluginSupport.PluginCommon class to be attached.
         private void AttachPlugin(PluginCommon plugin)
         {
-            Chip.IncludePlugin(plugin); //include into plugin lists of a PropellerCPU instance
+            if (plugin != null)
+            {
+                Chip.IncludePlugin(plugin); //include into plugin lists of a PropellerCPU instance
 #pragma warning disable 618
-            if (((PluginBaseV0_0.numInstances != 0) && (plugin is PluginBaseV0_0)))
-                ((PluginBaseV0_0)plugin).PresentChip((Propeller)Chip);//invoke plugin old style way
+                if (((PluginBaseV0_0.numInstances != 0) && (plugin is PluginBaseV0_0)))
+                    ((PluginBaseV0_0)plugin).PresentChip(Chip);//invoke plugin old style way
 #pragma warning restore 618
-            else
-                ((PluginBase)plugin).PresentChip();   //invoke plugin in modern way
+                else
+                    ((PluginBase)plugin).PresentChip();   //invoke plugin in modern way
 
-            TabPage t = new TabPage(plugin.Title);
-            t.Parent = documentsTab;
-            plugin.Dock = DockStyle.Fill;
-            plugin.Parent = t;
-            documentsTab.SelectedTab = t;
-            //Maintain the close button availability
-            if (plugin.IsClosable)
-                closeButton.Enabled = true;
-            else
-                closeButton.Enabled = false;
+                TabPage t = new TabPage(plugin.Title);
+                t.Parent = documentsTab;
+                plugin.Dock = DockStyle.Fill;
+                plugin.Parent = t;
+                documentsTab.SelectedTab = t;
+                //Maintain the close button availability
+                if (plugin.IsClosable)
+                    closeButton.Enabled = true;
+                else
+                    closeButton.Enabled = false;
+            }
         }
 
         /// @brief Delete a plugin from a propeller chip instance.
@@ -229,10 +232,12 @@ namespace Gear.GUI
                     case "0.0" :
                         if (PluginPersistence.GetDataFromXML_v0_0(FileName, ref pluginCandidate))
                         {
-                            //Search and replace plugin class declaration for V0.0 plugin 
+                            //Search and replace plugin class declarations for V0.0 plugin 
                             // system compatibility.
                             pluginCandidate.Codes[0] = 
                                 PluginSystem.ReplaceBaseClassV0_0(pluginCandidate.Codes[0]);
+                            pluginCandidate.Codes[0] = 
+                                PluginSystem.ReplacePropellerClassV0_0(pluginCandidate.Codes[0]);
                         }
                         break;
                     case "1.0":

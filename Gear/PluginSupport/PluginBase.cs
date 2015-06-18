@@ -40,7 +40,7 @@ namespace Gear.PluginSupport
     /// Original thread on GEAR with explanation of plugin class</a>
     /// @remarks To see examples of how to use it, see the directory 'plugins' included with 
     /// the source code.
-    public class PluginBase : PluginCommon
+    public class PluginBase : PluginCommon, IEquatable<PluginBase>
     {
         /// @brief Reference to PropellerCPU for the plugin.
         /// @version V15.03.26 - Added reference to keep PropellerCPU internal to class.
@@ -171,6 +171,30 @@ namespace Gear.PluginSupport
         {
             if (Chip != null)
                 Chip.BreakPoint();
+        }
+
+        public override bool Equals(object other)
+        {
+            PluginBase pBase = other as PluginBase;
+            if ( (pBase == null) || (this.GetType() != other.GetType()))
+                return false;
+            else
+                return Equals(pBase);
+        }
+
+        public bool Equals(PluginBase other)
+        {
+            if (other == null)
+                return false;
+            bool aux = (
+                (this.Title == other.Title) &&
+                (this.Chip == other.Chip));
+            return aux;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
 
     }

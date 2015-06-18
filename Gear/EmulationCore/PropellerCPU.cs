@@ -166,7 +166,7 @@ namespace Gear.EmulationCore
         /// @brief Total RAM Hub memory implemented on P1 Chip.
         public const int TOTAL_RAM       = 0x8000;
 
-        /// @brief PropellerCPU Constructor.
+        /// @brief Instance PropellerCPU Constructor.
         /// @param[in] em Reference to the Gear.GUI.Emulator instance controlling this PropellerCPU.
         public PropellerCPU(Emulator em)
         {

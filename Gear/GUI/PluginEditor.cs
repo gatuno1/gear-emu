@@ -381,7 +381,7 @@ namespace Gear.GUI
                         string separateFileName = Path.Combine(Path.GetDirectoryName(FileName),
                             Path.GetFileNameWithoutExtension(FileName) + ".cs");
                         data.ExtFiles = new string[1] { 
-                        ((!embeddedCode.Checked) ? separateFileName : "") };
+                            ((!embeddedCode.Checked) ? separateFileName : "") };
                         data.Codes = new string[1] { codeEditorView.Text };
                         //update modified state for the plugin
                         CodeChanged = !PluginPersistence.SaveDatoToXML_v1_0(FileName, data);
@@ -449,9 +449,10 @@ namespace Gear.GUI
                         refs[i++] = s;
                     if (_systemFormatVersion == "0.0")
                     {
-                        //Search and replace plugin class declaration for V0.0 plugin 
+                        //Search and replace plugin class declarations for V0.0 plugin 
                         // system compatibility.
                         codeToCompile = PluginSystem.ReplaceBaseClassV0_0(codeEditorView.Text);
+                        codeToCompile = PluginSystem.ReplacePropellerClassV0_0(codeToCompile);
                     }
                     else
                     {
@@ -460,17 +461,20 @@ namespace Gear.GUI
                     }
                     try
                     {
-                        if (null != ModuleCompiler.LoadModule(
+                        PluginCommon plugin = ModuleCompiler.LoadModule(
                                 codeToCompile,          //string code
                                 instanceName.Text,      //string module
                                 refs,                   //string[] references
                                 objInst,                //object obj 
-                                _systemFormatVersion)   //string version
-                            )
-                            MessageBox.Show("Plugin compiled without errors.", 
+                                _systemFormatVersion);  //string version
+                        if (plugin != null)
+                        {
+                            MessageBox.Show("Plugin compiled without errors.",
                                 "Plugin Editor - Check source.",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Information);
+                            plugin.Dispose();
+                        }
                         else
                         {
                             ModuleCompiler.EnumerateErrors(EnumErrors);

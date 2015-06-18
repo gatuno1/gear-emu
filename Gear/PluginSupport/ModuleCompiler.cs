@@ -28,6 +28,7 @@
 
 using System;
 using System.CodeDom.Compiler;
+using System.IO;
 using System.Reflection;
 
 namespace Gear.PluginSupport
@@ -76,7 +77,6 @@ namespace Gear.PluginSupport
         /// plugins: 
         /// @li `using System;` @li `using System.Data;` @li `using System.Drawing;`
         /// @li `using System.Windows.Forms;` @li `using System.Xml;`
-        /// 
         /// @version v15.03.26 - added parameter pluginBaseClass.
         static public PluginCommon LoadModule(string code, string module, string[] references, 
             object objInstance, string version)
@@ -84,15 +84,22 @@ namespace Gear.PluginSupport
             CodeDomProvider provider = new Microsoft.CSharp.CSharpCodeProvider();
             CompilerParameters cp = new CompilerParameters();
 
-#if DEBUG
-            cp.IncludeDebugInformation = true;
-#else
-            cp.IncludeDebugInformation = false;
-#endif
-            cp.GenerateExecutable = false;
-            cp.GenerateInMemory = true;
-            cp.CompilerOptions = "/optimize";
+            cp.OutputAssembly = string.Format(".\\Plugin.{0}V{1}.dll", module, version.Replace(".", "_"));
 
+
+//#if DEBUG
+//            cp.OutputAssembly = string.Format(".\\Plugin_{0}V{1}.dll", module.Replace(".", "_"), version);
+//            string codeFileName = cp.OutputAssembly.Replace(".dll", ".cs");
+//            cp.IncludeDebugInformation = true;
+//            File.WriteAllText(codeFileName, code);
+//#else
+            cp.IncludeDebugInformation = false;
+//#endif
+            cp.GenerateExecutable = false;
+            cp.GenerateInMemory = false;
+            cp.CompilerOptions = "/optimize";
+            cp.WarningLevel = 4;    //to do not consider C00618 warning (obsolete PluginBaseV0_0 class)
+            cp.MainClass = "Gear.PluginSupport." + module;
             cp.ReferencedAssemblies.Add(System.Windows.Forms.Application.ExecutablePath);
 
             cp.ReferencedAssemblies.Add("System.Windows.Forms.dll");
@@ -106,6 +113,7 @@ namespace Gear.PluginSupport
                     cp.ReferencedAssemblies.Add(s);
             try
             {
+                Assembly[] all = AppDomain.CurrentDomain.GetAssemblies();
                 //first compile source code
                 CompilerResults results = provider.CompileAssemblyFromSource(cp, code);
 
@@ -114,12 +122,34 @@ namespace Gear.PluginSupport
                     m_Errors = results.Errors;
                     return null;
                 }
-                
+
+                StreamWriter f = File.CreateText(".\\temp.txt");
+                all = AppDomain.CurrentDomain.GetAssemblies();
+                foreach (Assembly a in all)
+                {
+                    
+                    f.WriteLine(a.FullName + " - " + a.IsDynamic); f.Flush();
+                    if ((a.FullName == results.CompiledAssembly.FullName))
+                    { 
+                        if (a.Equals(results.CompiledAssembly))
+                        {
+                            f.WriteLine("found itself");
+                        }
+                        else
+                        {
+                            f.WriteLine("Assembly duplicated!");
+                            f.Close();
+                            return null;
+                        }
+                    }
+                }
+                f.Close();
+
                 //then instantiate plugin class
                 object target = results.CompiledAssembly.CreateInstance(
                     module,                                         //string typeName
                     false,                                          //bool ignoreCase
-                    BindingFlags.Public | BindingFlags.Instance,    //BindingFlags bindingAttr
+                    BindingFlags.Public | BindingFlags.Instance | BindingFlags.CreateInstance,    //BindingFlags bindingAttr
                     null,                                           //Binder binder
                     (objInstance != null) ?                         //object[] args
                         new object[] { objInstance } : 

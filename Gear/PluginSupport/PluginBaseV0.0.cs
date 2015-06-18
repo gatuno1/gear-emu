@@ -43,7 +43,7 @@ namespace Gear.PluginSupport
     /// @since 2015.03.26 - Added.
 #pragma warning disable 612
     [Obsolete("This class should be used only for old plugin compatibility. For another uses use PluginBase class instead.", false)]
-    public class PluginBaseV0_0 : PluginCommon
+    public class PluginBaseV0_0 : PluginCommon, IEquatable<PluginBaseV0_0>
     {
 
         /// @brief Title of the tab window.
@@ -87,9 +87,9 @@ namespace Gear.PluginSupport
         /// propeller chip (so you can drive the pins). 
         /// @note Source: <a href="http://forums.parallax.com/showthread.php/91084-GEAR-Propeller-Debugging-Environment?p=625629&viewfull=1#post625629">
         /// API GEAR described on GEAR original Post</a>
-#pragma warning disable 618
-        public virtual void PresentChip(Propeller host) { }
-#pragma warning restore 618
+//#pragma warning disable 618
+        public virtual void PresentChip(PropellerCPU host) { }
+//#pragma warning restore 618
 
         // @brief Event when the chip is reset.
         // Handy to reset plugin's components or data, to their initial states.
@@ -118,21 +118,49 @@ namespace Gear.PluginSupport
         // @param[in] force Flag to indicate the intention to force the repaint.
         //public virtual void Repaint(bool force) { }
 
+        public override bool Equals(object other)
+        {
+            PluginBaseV0_0 pBase = other as PluginBaseV0_0;
+            if ((pBase == null) || (this.GetType() != other.GetType()))
+                return false;
+            else
+                return Equals(pBase);
+        }
+
+        public bool Equals(PluginBaseV0_0 other)
+        {
+            if (other == null)
+                return false;
+            bool aux = (this.GetType() == other.GetType());
+            return aux;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
     }
 #pragma warning restore 612
 
 }
 
-namespace Gear.EmulationCore
-{
-    /// @brief Synonym for PropellerCPU class, to use it with old plugin system.
-#pragma warning disable 612
-    [Obsolete("This class should be used only for old plugin compatibility. For another uses use PropellerCPU class instead.", false)]
-    public class Propeller : PropellerCPU 
-    {
-        Propeller(GUI.Emulator em) : base(em) { }
-    }
-#pragma warning restore 612
+//namespace Gear.EmulationCore
+//{
+//#pragma warning disable 612
+//    /// @brief Synonym for PropellerCPU class, to use it with old plugin system.
+//    [Obsolete("This class should be used only for old plugin compatibility. For another uses use PropellerCPU class instead.", false)]
+//    public class Propeller : PropellerCPU 
+//    {
+//        /// @brief Default Constructor
+//        public Propeller(GUI.Emulator em) : base(em) { }
 
-}
+//        /// @brief Shallow Copy constructor from another %PropellerCPU instance.
+//        /// @param host Copy constructor from another %PropellerCPU instance.
+//        public Propeller(PropellerCPU host) : base(host) { }
+//    }
+
+//#pragma warning restore 612
+
+//}
 
