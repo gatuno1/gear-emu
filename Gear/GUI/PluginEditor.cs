@@ -153,9 +153,9 @@ namespace Gear.GUI
             //Setup error grid
             errorListView.FullRowSelect = true;
             errorListView.GridLines = true;
-            errorListView.Columns.Add("Name", -2, HorizontalAlignment.Left);
-            errorListView.Columns.Add("Line", -2, HorizontalAlignment.Left);
-            errorListView.Columns.Add("Column", -2, HorizontalAlignment.Left);
+            errorListView.Columns.Add("Name   ", -2, HorizontalAlignment.Left);
+            errorListView.Columns.Add("Line", -2, HorizontalAlignment.Right);
+            errorListView.Columns.Add("Column", -2, HorizontalAlignment.Right);
             errorListView.Columns.Add("Message", -2, HorizontalAlignment.Left);
 
             //retrieve from settings the last state for embedded code
@@ -206,6 +206,16 @@ namespace Gear.GUI
             }
         }
 
+        /// @brief Shows or hide the error grid.
+        /// @param enable Enable (=true) or disable (=False) the error grid.
+        public void ShowErrorGrid(bool enable)
+        {
+            if (enable == true)
+                errorListView.Show();
+            else
+                errorListView.Hide();
+        }
+
         /// @brief Update titles of window and metadata, considering modified state.
         /// @details Considering name of the plugin and showing modified state, to tell the user 
         /// if need to save.
@@ -219,6 +229,7 @@ namespace Gear.GUI
         /// @details This method take care of update change state of the window. 
         /// @param[in] FileName Name of the file to open.
         /// @param[in] displayErrors Flag to show errors in the error grid.
+        /// @returns Success on load the file on the editor (=true) or fail (=false).
         /// @note Actually it supports one plugin code window only.
         /// @version v15.03.26 - modified to validate XML & plugin version and load it
         /// with the appropriate method.
@@ -332,6 +343,7 @@ namespace Gear.GUI
                     _saveFileName = FileName;
                     //clean up
                     errorListView.Items.Clear();
+                    ShowErrorGrid(false);
                     UpdateTitles();
                 }
                 return IsSuccess;
@@ -436,7 +448,8 @@ namespace Gear.GUI
             }
             else
             {
-                string aux = null, codeToCompile;
+                string pluginVersion = null, aux = null;
+                string[] codesToCompile = new string[] { codeEditorView.Text };
                 if (DetectClassName(codeEditorView.Text, out aux))  //class name detected?
                 {
                     int i = 0;
@@ -451,24 +464,28 @@ namespace Gear.GUI
                     {
                         //Search and replace plugin class declarations for V0.0 plugin 
                         // system compatibility.
-                        codeToCompile = PluginSystem.ReplaceBaseClassV0_0(codeEditorView.Text);
-                        codeToCompile = PluginSystem.ReplacePropellerClassV0_0(codeToCompile);
+                        codesToCompile[0] = PluginSystem.ReplacePropellerClassV0_0(
+                            PluginSystem.ReplaceBaseClassV0_0(codesToCompile[0]) );
+                        pluginVersion = "0.0.0.0";
                     }
                     else
                     {
-                        codeToCompile = codeEditorView.Text;
                         objInst = new PropellerCPU(null);
+                        pluginVersion = GetElementsFromMetadata("Version", false)[0];
                     }
                     try
                     {
                         PluginCommon plugin = ModuleCompiler.LoadModule(
-                                codeToCompile,          //string code
+                                codesToCompile,         //string[] codeTexts
+                                new string[] { null },  //string[] 
                                 instanceName.Text,      //string module
                                 refs,                   //string[] references
                                 objInst,                //object obj 
-                                _systemFormatVersion);  //string version
+                                _systemFormatVersion,   //string pluginSystemVersion
+                                pluginVersion);
                         if (plugin != null)
                         {
+                            ShowErrorGrid(false);    //hide the error list
                             MessageBox.Show("Plugin compiled without errors.",
                                 "Plugin Editor - Check source.",
                                 MessageBoxButtons.OK,
@@ -478,6 +495,7 @@ namespace Gear.GUI
                         else
                         {
                             ModuleCompiler.EnumerateErrors(EnumErrors);
+                            ShowErrorGrid(true);    //show the error list
                         }
                     }
                     catch (Exception ex)

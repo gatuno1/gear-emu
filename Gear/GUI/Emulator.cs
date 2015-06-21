@@ -258,11 +258,13 @@ namespace Gear.GUI
                     //Dynamic load and compile the plugin module as a class, giving the chip 
                     // instance as a parameter, and casting to appropriate class
                     PluginCommon plugin = ModuleCompiler.LoadModule(
-                        pluginCandidate.Codes[0],               //string code
+                        pluginCandidate.Codes,                  //string[] codeTexts
+                        pluginCandidate.ExtFiles,               //string[] sourceFiles
                         pluginCandidate.InstanceName,           //string module
                         pluginCandidate.References,             //string[] references
                         objInst,                                //object objInstance
-                        pluginCandidate.PluginSystemVersion);   //string version
+                        pluginCandidate.PluginSystemVersion,    //string pluginSystemVersion,    
+                        pluginCandidate.PluginVersion);         //string pluginVersion
                     if (plugin == null)
                         throw new Exception("Emulator - OpenPlugin: plugin object not generated!" +
                             " (null response from memory loading).");

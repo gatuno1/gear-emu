@@ -55,14 +55,14 @@ namespace Gear.GUI
             if (openFileDialog.ShowDialog(this) == DialogResult.OK)
             {
                 Emulator emul = new Emulator(Path.GetFileName(openFileDialog.FileName));
-                //if succesfully load binary in emulator
+                //if successfully load binary in emulator
                 if (emul.OpenFile(openFileDialog.FileName))   
                 {
                     //show emulator window
                     emul.MdiParent = this;
                     emul.WindowState = FormWindowState.Maximized;
                     emul.Show();
-                    //remember last binary succesfully opened
+                    //remember last binary successfully opened
                     Properties.Settings.Default.LastBinary = emul.GetLastBinary;
                     Properties.Settings.Default.Save();
                 }
@@ -81,7 +81,7 @@ namespace Gear.GUI
             LayoutMdi(MdiLayout.Cascade);
         }
 
-        /// @brief Arrange the emulator windows in Verticle Tiles.
+        /// @brief Arrange the emulator windows in Vertical Tiles.
         private void TileVerticleToolStripMenuItem_Click(object sender, EventArgs e)
         {
             LayoutMdi(MdiLayout.TileVertical);
@@ -137,8 +137,9 @@ namespace Gear.GUI
                 {
                     //show plugin editor loaded with selected one
                     plugin.MdiParent = this;
+                    plugin.ShowErrorGrid(false);    //hide it by default
                     plugin.Show();
-                    //remember plugin succesfully loaded
+                    //remember plugin successfully loaded
                     Properties.Settings.Default.LastPlugin = plugin.GetLastPlugin;
                     Properties.Settings.Default.Save();
                 }

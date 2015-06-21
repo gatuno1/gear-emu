@@ -187,7 +187,7 @@ namespace Gear.EmulationCore
         }
 
         /// @brief Execute a SPIN instruction in this cog.
-        /// @returns TRUE if it is time to trigger a breakpoint, or FALSE if not.
+        /// @returns TRUE if it is the opportunity to trigger a breakpoint, or FALSE if not.
         override public bool DoInstruction()
         {
             switch (State)

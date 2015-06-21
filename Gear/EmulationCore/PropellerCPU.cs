@@ -730,7 +730,8 @@ namespace Gear.EmulationCore
             for (int i = 0; i < Cogs.Length; i++)
                 if (Cogs[i] != null)
                 {
-                    cogResult = Cogs[i].Step();
+                    cogResult = Cogs[i].Step();     // TODO ASB: Parallelism point: cog.step()
+
                     result &= cogResult;
                 }
 
@@ -758,7 +759,7 @@ namespace Gear.EmulationCore
                     ((PluginBaseV0_0)plugin).OnClock(Time);
 #pragma warning restore 618
                 else
-                    ((PluginBase)plugin).OnClock(Time, SystemCounter);
+                    ((PluginBase)plugin).OnClock(Time, SystemCounter);  // TODO ASB: Parallelism point: Plugin.OnClock()
             }
 
             if (pinsPrev != IN || dirPrev != DIR || pinChange)
@@ -797,7 +798,7 @@ namespace Gear.EmulationCore
 
             //traverse across plugins that use OnPinChange()
             foreach (PluginCommon plugin in PinHandlers)
-                plugin.OnPinChange(Time, PinStates);
+                plugin.OnPinChange(Time, PinStates);    // TODO ASB: Parallelism point plugin.OnPinChange()
         }
 
         /// @brief Drive a pin of Propeller.

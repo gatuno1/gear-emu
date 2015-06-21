@@ -172,8 +172,8 @@ namespace Gear.EmulationCore
             Operation = ReadLong(0);
         }
 
-        /// @brief Determine if the Hub is accesable in that moment of time, setting the state 
-        /// accordly.
+        /// @brief Determine if the Hub is accessible in that moment of time, setting the state 
+        /// accordantly.
         /// @version v15.03.26 - corrected zero and carry values for missing HUBOPS.
         public override void HubAccessable()
         {
@@ -220,7 +220,7 @@ namespace Gear.EmulationCore
         }
 
         /// @brief Execute a PASM instruction in this cog.
-        /// @returns TRUE if it is time to trigger a breakpoint, or FALSE if not.
+        /// @returns TRUE if it is the opportunity to trigger a breakpoint, or FALSE if not.
         override public bool DoInstruction()
         {
             switch (State)
@@ -246,7 +246,7 @@ namespace Gear.EmulationCore
                         if (maskedIn != DestinationValue)
                         {
                             DataResult = maskedIn;
-                            Zero = maskedIn == 0;
+                            Zero = (maskedIn == 0);
                             // TODO: DETERMINE CARRY
                             WriteBackResult();
                         }
@@ -274,7 +274,7 @@ namespace Gear.EmulationCore
                             target += SourceValue;
                             DataResult = (uint)target;
                             CarryResult = target > 0xFFFFFFFF;
-                            ZeroResult = DataResult == 0;
+                            ZeroResult = (DataResult == 0);
                             WriteBackResult();
                             return true;
                         }
