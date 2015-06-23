@@ -263,8 +263,7 @@ namespace Gear.GUI
                         pluginCandidate.InstanceName,           //string module
                         pluginCandidate.References,             //string[] references
                         objInst,                                //object objInstance
-                        pluginCandidate.PluginSystemVersion,    //string pluginSystemVersion,    
-                        pluginCandidate.PluginVersion);         //string pluginVersion
+                        pluginCandidate.PluginSystemVersion);   //string pluginSystemVersion,    
                     if (plugin == null)
                         throw new Exception("Emulator - OpenPlugin: plugin object not generated!" +
                             " (null response from memory loading).");

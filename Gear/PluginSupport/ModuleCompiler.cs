@@ -50,24 +50,6 @@ namespace Gear.PluginSupport
             m_Errors = null;
         }
         
-        /// @brief Completes the version.
-        /// @param version Version string to complete as Assembly standards (w/ 4 digits).
-        /// @returns A complete version string.
-        static public string CompleteVersion(string version)
-        {
-            string[] parts = version.Split('.');
-            string aux = "";
-            for(int i = 0; i < 4; i++)
-            {
-                if ((parts.Length <= i) || (string.IsNullOrEmpty(parts[i])))
-                    aux += "0";
-                else
-                    aux += parts[i];
-                aux += ((i < 3) ? "." : "");
-            }
-            return aux;
-        }
-
         /// @brief Enumerate errors from the compiling process.
         /// @param[in] proc Method to invoke for each error.
         static public void EnumerateErrors(ErrorEnumProc proc)
@@ -110,14 +92,12 @@ namespace Gear.PluginSupport
         /// @li `using System.Windows.Forms;` @li `using System.Xml;`
         /// @version v15.03.26 - added parameter pluginBaseClass.
         static public PluginCommon LoadModule(string[] codeTexts, string[] sourceFiles, 
-            string module, string[] references, object objParams, string pluginSystemVersion, 
-            string pluginVersion)
+            string module, string[] references, object objParams, string pluginSystemVersion)
         {
             CodeDomProvider provider = new Microsoft.CSharp.CSharpCodeProvider();
             CompilerParameters cp = new CompilerParameters();
 
             cp.OutputAssembly = ".\\" + CompiledPluginName(module, pluginSystemVersion, "dll");
-            string aux = CompleteVersion(pluginVersion);
 #if DEBUG
             cp.IncludeDebugInformation = true;
             string[] codeFileName = (string[])sourceFiles.Clone();
@@ -218,7 +198,7 @@ namespace Gear.PluginSupport
             foreach (Assembly a in all)
             {
 
-                f.WriteLine(a.FullName + " - " + a.IsDynamic); 
+                f.WriteLine(a.FullName + " - \"" + a.Location + "\""); 
                 f.Flush();
                 if ((a.FullName == Assem.FullName))
                 {

@@ -466,13 +466,20 @@ namespace Gear.GUI
                         // system compatibility.
                         codesToCompile[0] = PluginSystem.ReplacePropellerClassV0_0(
                             PluginSystem.ReplaceBaseClassV0_0(codesToCompile[0]) );
-                        pluginVersion = "0.0.0.0";
+                        pluginVersion = "0.0";
                     }
                     else
                     {
                         objInst = new PropellerCPU(null);
+                        //the expected plugin version is two numbers: "major.minor"
                         pluginVersion = GetElementsFromMetadata("Version", false)[0];
                     }
+                    //add information into Assembly
+                    codesToCompile[0] =
+                        PluginSystem.InsertAssemblyDetails(codesToCompile[0], 
+                        instanceName.Text, 
+                        GetElementsFromMetadata("Description", false)[0], 
+                        pluginVersion);
                     try
                     {
                         PluginCommon plugin = ModuleCompiler.LoadModule(
@@ -481,8 +488,7 @@ namespace Gear.GUI
                                 instanceName.Text,      //string module
                                 refs,                   //string[] references
                                 objInst,                //object obj 
-                                _systemFormatVersion,   //string pluginSystemVersion
-                                pluginVersion);
+                                _systemFormatVersion);  //string pluginSystemVersion
                         if (plugin != null)
                         {
                             ShowErrorGrid(false);    //hide the error list

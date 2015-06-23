@@ -114,9 +114,65 @@ namespace Gear.PluginSupport
             // Search Plugin class declaration for V0.0 plugin system compatibility.
             Regex ClassNameToChange = new Regex(@"(\bPropeller\b)", RegexOptions.Compiled);
             // Replace "Propeller" with "PropellerCPU" as needed in V1.0 host.
-            string aux = ClassNameToChange.Replace(codeText,"$1CPU");
+            return ClassNameToChange.Replace(codeText,"$1CPU");
+        }
+
+        /// @brief Add the version when generate Assembly containing the plugin.
+        /// @param codeText Original text to insert into.
+        /// @param name Name of the plugin.
+        /// @param description Description of the plugin.
+        /// @param version Version of plugin, to insert into the assembly.
+        /// @returns Modified text;
+        public static string InsertAssemblyDetails(string codeText, string name, 
+            string description, string version)
+        {
+            string aux = codeText;
+            string addendum = 
+                "[assembly:AssemblyVersion(\"" + CompleteVersion(version, 2) + ".*\")] " +
+                "[assembly:AssemblyProduct(\"Plugin for GEAR Emulator\")] " +
+                "[assembly:AssemblyTitle(\"" + name + "\")] " +
+                "[assembly:AssemblyDescription(\"" + description + "\")]";
+            Regex Includes = new Regex(@"(\busing\b\s+\w+[.|\w+]*;)(\n)", 
+                RegexOptions.Compiled);
+            if (Includes.IsMatch(aux))
+            {
+                bool found = false;
+                MatchCollection coll = Includes.Matches(codeText);
+                for(int i = 0; i < coll.Count; i++)
+                {
+                    if (coll[i].Value.Contains("System.Reflection;"))
+                        found = true;
+                }
+                aux = Includes.Replace(
+                    codeText, 
+                    string.Concat("${1} ", ((!found)? "using System.Reflection; " : " "), 
+                        addendum, "${2}"), 
+                    1,
+                    coll[coll.Count - 1].Index);
+            }
             return aux;
         }
+
+        /// @brief Completes the version numbers, stripping to the digits given as parameter, 
+        /// completing with zeros if version is smaller than it.
+        /// @param version Version string to complete as Assembly standards.
+        /// @param digits How many digits will use.
+        /// @returns A complete version string.
+        public static string CompleteVersion(string version, uint digits)
+        {
+            string[] parts = version.Split('.');
+            string completed = System.String.Empty;
+            for (int i = 0; i < digits; i++)
+            {
+                if ((parts.Length <= i) || (string.IsNullOrEmpty(parts[i])))
+                    completed += "0";
+                else
+                    completed += parts[i];
+                completed += ((i < (digits - 1)) ? "." : "");
+            }
+            return completed;
+        }
+
 
     }
 }
