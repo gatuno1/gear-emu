@@ -61,9 +61,46 @@ namespace Gear.PluginSupport
                 proc(e);
         }
         
+        /// @brief Get the date/time of the build of the Assembly file.
+        /// @param AssemblyFilePath Path to the file of the assembly to extract date/time.
+        /// @returns DateTime of the Assembly or null if it couldn't be retrieved.
+        /// @since v15.03.26 - Added.
+        static private DateTime RetrieveLinkerTimestamp(string AssemblyFilePath)
+        {
+            //offset for the linker time stamp from the PE header of the assembly
+            // from http://stackoverflow.com/questions/1600962/displaying-the-build-date
+            const int c_PeHeaderOffset = 60;        
+            const int c_LinkerTimestampOffset = 8;
+            byte[] b = new byte[2048];
+            Stream s = null;
+
+            try
+            {
+                s = new System.IO.FileStream(AssemblyFilePath, FileMode.Open, FileAccess.Read);
+                s.Read(b, 0, 2048);
+            }
+            catch
+            {
+                return null;
+            }
+            finally
+            {
+                if (s != null)
+                    s.Close();
+            }
+
+            int i = System.BitConverter.ToInt32(b, c_PeHeaderOffset);
+            int secondsSince1970 = System.BitConverter.ToInt32(b, i + c_LinkerTimestampOffset);
+            DateTime dt = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            dt = dt.AddSeconds(secondsSince1970);
+            dt = dt.ToLocalTime();
+            return dt;
+        }
+        
         /// @brief Generate the name of the compiled plugin.
         /// @param module Name of the plugin module.
         /// @returns Name of the compiled plugin.
+        /// @since v15.03.26 - Added.
         static private string CompiledPluginName(string module, string pluginSystemVersion, string extension)
         {
             return string.Format("PluginSystemV{0}.{1}{2}", 
@@ -90,7 +127,7 @@ namespace Gear.PluginSupport
         /// plugins: 
         /// @li `using System;` @li `using System.Data;` @li `using System.Drawing;`
         /// @li `using System.Windows.Forms;` @li `using System.Xml;`
-        /// @version v15.03.26 - added parameter pluginBaseClass.
+        /// @version v15.03.26 - Modified the logic.
         static public PluginCommon LoadModule(string[] codeTexts, string[] sourceFiles, 
             string module, string[] references, object objParams, string pluginSystemVersion)
         {
@@ -187,6 +224,7 @@ namespace Gear.PluginSupport
             }
         }
     
+        // TODO ASB: delete me when debug of plugin compiled is ended.
         static public void PrintAssembliesLoaded(Assembly Assem, bool overwrite)
         {
             //temporally debug code to find assemblies loaded in the current domain
