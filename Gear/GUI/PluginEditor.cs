@@ -482,9 +482,8 @@ namespace Gear.GUI
                         pluginVersion);
                     try
                     {
-                        PluginCommon plugin = ModuleCompiler.LoadModule(
+                        PluginCommon plugin = ModuleCompiler.CompileModule(
                                 codesToCompile,         //string[] codeTexts
-                                new string[] { null },  //string[] 
                                 instanceName.Text,      //string module
                                 refs,                   //string[] references
                                 objInst,                //object obj 

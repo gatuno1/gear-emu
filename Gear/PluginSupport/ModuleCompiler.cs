@@ -27,9 +27,11 @@
 /// @since v15.03.26 - Changed the file name from ModuleLoader.cs.
 
 using System;
+using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.IO;
 using System.Reflection;
+using Microsoft.CSharp;
 
 namespace Gear.PluginSupport
 {
@@ -81,7 +83,7 @@ namespace Gear.PluginSupport
             }
             catch
             {
-                return null;
+                return new DateTime();
             }
             finally
             {
@@ -99,14 +101,18 @@ namespace Gear.PluginSupport
         
         /// @brief Generate the name of the compiled plugin.
         /// @param module Name of the plugin module.
+        /// @param pluginSystemVersion Version of the plugin system to add to the plugin.
+        /// @param extension Extension to add to the name. If it is null, none will be added.
         /// @returns Name of the compiled plugin.
         /// @since v15.03.26 - Added.
-        static private string CompiledPluginName(string module, string pluginSystemVersion, string extension)
+        static private string CompiledPluginName(string module, string pluginSystemVersion, 
+            string extension)
         {
-            return string.Format("PluginSystemV{0}.{1}{2}", 
+            return string.Format("PluginSystemV{0}-{1}{2}", 
                 pluginSystemVersion.Replace(".", "_"),
                 module,
-                (!extension.Contains(".")) ? ("." + extension) : extension);
+                ((string.IsNullOrEmpty(extension)) ? "" :
+                    (!extension.Contains(".")) ? ("." + extension) : extension));
         }
 
         /// @brief Dynamic compiling & loading for a plugin.
@@ -134,29 +140,20 @@ namespace Gear.PluginSupport
             CodeDomProvider provider = new Microsoft.CSharp.CSharpCodeProvider();
             CompilerParameters cp = new CompilerParameters();
 
-            cp.OutputAssembly = ".\\" + CompiledPluginName(module, pluginSystemVersion, "dll");
+            cp.TempFiles = new TempFileCollection(@".\cache\", false);  //set directory
 #if DEBUG
+            string codefile = cp.TempFiles.AddExtension("cs");  //find the temporary file name
             cp.IncludeDebugInformation = true;
-            string[] codeFileName = (string[])sourceFiles.Clone();
-            for(int i = 0; i < codeFileName.Length; i++)
-            {
-                if (string.IsNullOrEmpty(codeFileName[i]))
-                    codeFileName[i] = cp.OutputAssembly.Replace(".dll",
-                        (codeFileName.Length > 1) ? string.Format("{0}.cs", i) : ".cs");
-                else
-                    codeFileName[i] = ".\\" + Path.GetFileName(codeFileName[i]);
-                File.WriteAllText(codeFileName[i], codeTexts[i]);
-            }
 #else
             cp.IncludeDebugInformation = false;
 #endif
             cp.GenerateExecutable = false;
-            cp.GenerateInMemory = false;
+            cp.GenerateInMemory = true;
             cp.CompilerOptions = "/optimize";
             cp.WarningLevel = 4;    //to do not consider C00618 warning (obsolete PluginBaseV0_0 class)
             cp.MainClass = "Gear.PluginSupport." + module;
-            cp.ReferencedAssemblies.Add(System.Windows.Forms.Application.ExecutablePath);
 
+            cp.ReferencedAssemblies.Add(System.Windows.Forms.Application.ExecutablePath);
             cp.ReferencedAssemblies.Add("System.Windows.Forms.dll");
             cp.ReferencedAssemblies.Add("System.dll");
             cp.ReferencedAssemblies.Add("System.Data.dll");
@@ -168,20 +165,23 @@ namespace Gear.PluginSupport
                     cp.ReferencedAssemblies.Add(s);
             try
             {
+                //CompilerResults results = provider.CompileAssemblyFromFile(cp, codeTexts);
                 //first compile source codes
-#if DEBUG
-                CompilerResults results = provider.CompileAssemblyFromFile(cp, codeFileName);
-#else
                 CompilerResults results = provider.CompileAssemblyFromSource(cp, codeTexts);
-#endif
 
                 if (results.Errors.HasErrors | results.Errors.HasWarnings)
                 {
                     m_Errors = results.Errors;
                     return null;
                 }
-
-                PrintAssembliesLoaded(results.CompiledAssembly, true);
+#if DEBUG
+                //write the code to file to enable debug
+                for (int i = 0; i < codeTexts.Length; i++ )
+                    File.WriteAllText(
+                        codefile.Replace(".cs", string.Format(".{0}.cs",i)), 
+                        codeTexts[i] );
+#endif
+                PrintAssembliesLoaded(AppDomain.CurrentDomain, results.CompiledAssembly, true);
                 //then instantiate plugin class
                 object target = results.CompiledAssembly.CreateInstance(
                     module,                                         //string typeName
@@ -194,7 +194,7 @@ namespace Gear.PluginSupport
                     null,                                           //CultureInfo culture
                     null);                                          //object[] activationAttributes
 
-                PrintAssembliesLoaded(results.CompiledAssembly, false);
+                PrintAssembliesLoaded(AppDomain.CurrentDomain, results.CompiledAssembly, false);
                 if (target == null)
                 {
                     CompilerError c = new CompilerError("", 0, 0, "CS0103",
@@ -223,12 +223,134 @@ namespace Gear.PluginSupport
                 return null;
             }
         }
-    
+
+        /// <summary>
+        /// Compiles the module.
+        /// </summary>
+        /// <param name="codeTexts">The code texts.</param>
+        /// <param name="sourceFiles">The source files.</param>
+        /// <param name="module">The module.</param>
+        /// <param name="references">The references.</param>
+        /// <param name="objParams">The object parameters.</param>
+        /// <param name="pluginSystemVersion">The plugin system version.</param>
+        /// <returns></returns>
+        static public PluginCommon CompileModule(string[] codeTexts, string module, 
+            string[] references, object objParams, string pluginSystemVersion)
+        {
+            string compiledName = CompiledPluginName(module, pluginSystemVersion, 
+                    string.Concat("-", Path.GetRandomFileName().Substring(0, 8), ".dll"));
+            CompilerParameters cp = 
+                new CompilerParameters( new[] { "System.Windows.Forms.dll", "System.dll", 
+                    "System.Data.dll", "System.Drawing.dll", "System.Xml.dll" },
+                    @".\cache\" + compiledName, 
+#if DEBUG
+                true);
+#else
+                false);
+#endif
+            //cp.OutputAssembly = @".\cache\" + CompiledPluginName(module, pluginSystemVersion, ".dll");
+            cp.TempFiles = new TempFileCollection(@".\cache\", false);  //set directory
+            cp.ReferencedAssemblies.Add(System.Windows.Forms.Application.ExecutablePath);
+            cp.GenerateExecutable = false;
+            cp.GenerateInMemory = false;
+            cp.CompilerOptions = "/optimize";
+            cp.WarningLevel = 4;    //to do not consider C00618 warning (obsolete PluginBaseV0_0 class)
+            cp.MainClass = "Gear.PluginSupport." + module;
+            //traverse list adding not null or empty texts
+            foreach (string s in references)    
+                if (!string.IsNullOrEmpty(s))
+                    cp.ReferencedAssemblies.Add(s);
+            CodeDomProvider provider = new Microsoft.CSharp.CSharpCodeProvider();
+            try
+            {
+                //write the codes to compile later
+                string[] sourceFiles = new string[codeTexts.Length];
+                for (int i = 0; i < codeTexts.Length; i++)
+                {
+                    sourceFiles[i] = string.Format(@".\cache\{0}-{1}.cs", 
+                        CompiledPluginName(module, pluginSystemVersion, ""), i);
+                    File.WriteAllText(sourceFiles[i], codeTexts[i]);
+                }
+                CompilerResults results = provider.CompileAssemblyFromFile(cp, sourceFiles);
+                if (results.Errors.HasErrors | results.Errors.HasWarnings)
+                {
+                    m_Errors = results.Errors;
+                    return null;
+                }
+                //PrintAssembliesLoaded(AppDomain.CurrentDomain, results.CompiledAssembly, true);
+
+                AppDomainSetup adSetup = new AppDomainSetup();
+                adSetup.ApplicationBase = System.Environment.CurrentDirectory;
+                adSetup.ApplicationName = "Plugin space App";
+                adSetup.ShadowCopyFiles = "true";
+                adSetup.CachePath = @".\cache";
+                AppDomain pluginDomain = AppDomain.CreateDomain("pluginDomain", null, adSetup);
+
+                //byte[] rawAssembly = loadFile(@".\cache\" + compiledName);
+                //Assembly assemblyPlugin = pluginDomain.Load(rawAssembly, null);
+                //PrintAssembliesLoaded(pluginDomain, assemblyPlugin, true);
+
+                object target = pluginDomain.CreateInstanceAndUnwrap(
+                    @".\cache\" + compiledName,                     //string assemblyName
+                    module,                                         //string typeName
+                    false,                                          //bool ignoreCase
+                    BindingFlags.Public | BindingFlags.Instance,    //BindingFlags bindingAttr
+                    null,                                           //Binder binder
+                    (objParams != null) ?                           //object[] args
+                        new object[] { objParams } :
+                        null,
+                    null,                                           //CultureInfo culture
+                    null);                                          //object[] activationAttributes
+                PrintAssembliesLoaded(pluginDomain, assemblyPlugin, false);
+                if (target == null)
+                {
+                    CompilerError c = new CompilerError("", 0, 0, "CS0103",
+                        "The name '" + module + "' does not exist in the current context." +
+                        " Does the class name is the same that is declared in c# code?");
+                    m_Errors = new CompilerErrorCollection(new CompilerError[] { c });
+                    return null;
+                }
+                else if (!PluginSystem.InstanceOneOfValidClasses(target))
+                {
+                    CompilerError c = new CompilerError("", 0, 0, "CS0029",
+                        "Cannot implicitly convert type '" + target.GetType().FullName +
+                        "' to '" + PluginSystem.GetPluginBaseClass(pluginSystemVersion).FullName + "'");
+                    m_Errors = new CompilerErrorCollection(new CompilerError[] { c });
+                    return null;
+                }
+
+                m_Errors = null;
+                return (PluginCommon)target;
+            }
+            catch (Exception e)
+            {
+                CompilerError c = new CompilerError("", 0, 0, "Runtime",
+                    string.Format("Plugin '{0}' - {1}", module, e.Message));
+                m_Errors = new CompilerErrorCollection(new CompilerError[] { c });
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Loads the file.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <returns></returns>
+        static private byte[] loadFile(string filename)
+        {
+            FileStream fs = new FileStream(filename, FileMode.Open);
+            byte[] buffer = new byte[(int)fs.Length];
+            fs.Read(buffer, 0, buffer.Length);
+            fs.Close();
+            fs = null;
+            return buffer;
+        }
+
         // TODO ASB: delete me when debug of plugin compiled is ended.
-        static public void PrintAssembliesLoaded(Assembly Assem, bool overwrite)
+        static public void PrintAssembliesLoaded(AppDomain ap, Assembly Assem, bool overwrite)
         {
             //temporally debug code to find assemblies loaded in the current domain
-            Assembly[] all = AppDomain.CurrentDomain.GetAssemblies();
+            Assembly[] all = ap.GetAssemblies();
             StreamWriter f = (overwrite == true) ?
                 File.CreateText(".\\temp.txt") :
                 File.AppendText(".\\temp.txt");
@@ -236,7 +358,7 @@ namespace Gear.PluginSupport
             foreach (Assembly a in all)
             {
 
-                f.WriteLine(a.FullName + " - \"" + a.Location + "\""); 
+                f.WriteLine(a.FullName + " : \"" + RetrieveLinkerTimestamp(a.Location) + "\""); 
                 f.Flush();
                 if ((a.FullName == Assem.FullName))
                 {
