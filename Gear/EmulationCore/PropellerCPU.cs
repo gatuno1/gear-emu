@@ -497,10 +497,21 @@ namespace Gear.EmulationCore
         /// @param[in] plugin Compiled plugin reference to include.
         public void IncludePlugin(PluginCommon plugin)
         {
-            if (!(PlugIns.Contains(plugin)))
+            bool found = false;
+            foreach(PluginCommon p in PlugIns)
             {
-                PlugIns.Add(plugin);   //add to the list of plugins
+                if ( p.Equals(plugin) )
+                {
+                    found = true;
+                    break;
+                }
             }
+            if (!found)
+                PlugIns.Add(plugin);
+            //if (!(PlugIns.Contains(plugin)))
+            //{
+            //    PlugIns.Add(plugin);   //add to the list of plugins
+            //}
         }
 
         /// @brief Remove a plugin from the active plugin list of propeller instance

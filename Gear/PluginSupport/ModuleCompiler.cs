@@ -239,17 +239,18 @@ namespace Gear.PluginSupport
         {
             string compiledName = CompiledPluginName(module, pluginSystemVersion, 
                     string.Concat("-", Path.GetRandomFileName().Substring(0, 8), ".dll"));
+            const string chachePath = @".\cache\";
             CompilerParameters cp = 
                 new CompilerParameters( new[] { "System.Windows.Forms.dll", "System.dll", 
                     "System.Data.dll", "System.Drawing.dll", "System.Xml.dll" },
-                    @".\cache\" + compiledName, 
+                     chachePath + compiledName, 
 #if DEBUG
                 true);
 #else
                 false);
 #endif
             //cp.OutputAssembly = @".\cache\" + CompiledPluginName(module, pluginSystemVersion, ".dll");
-            cp.TempFiles = new TempFileCollection(@".\cache\", false);  //set directory
+            cp.TempFiles = new TempFileCollection(chachePath, false);  //set directory
             cp.ReferencedAssemblies.Add(System.Windows.Forms.Application.ExecutablePath);
             cp.GenerateExecutable = false;
             cp.GenerateInMemory = false;
@@ -263,35 +264,53 @@ namespace Gear.PluginSupport
             CodeDomProvider provider = new Microsoft.CSharp.CSharpCodeProvider();
             try
             {
+                if (!Directory.Exists(chachePath))
+                    Directory.CreateDirectory(chachePath);
+                else
+                {
+                    try
+                    {
+                        Directory.Delete(chachePath, true);
+                        Directory.CreateDirectory(chachePath);
+                    }
+                    catch {}
+                }
                 //write the codes to compile later
                 string[] sourceFiles = new string[codeTexts.Length];
                 for (int i = 0; i < codeTexts.Length; i++)
                 {
-                    sourceFiles[i] = string.Format(@".\cache\{0}-{1}.cs", 
+                    sourceFiles[i] = string.Format(chachePath + "{0}-{1}.cs", 
                         CompiledPluginName(module, pluginSystemVersion, ""), i);
                     File.WriteAllText(sourceFiles[i], codeTexts[i]);
                 }
+                AppDomainSetup adSetup = new AppDomainSetup();
+                adSetup.ApplicationBase = System.Environment.CurrentDirectory;
+                adSetup.ApplicationName = "Plugin space App";
+                adSetup.ShadowCopyFiles = "true";
+                adSetup.CachePath = chachePath;
+                AppDomain pluginDomain = AppDomain.CreateDomain("pluginDomain", null, adSetup);
+
+                //compile the assembly
                 CompilerResults results = provider.CompileAssemblyFromFile(cp, sourceFiles);
                 if (results.Errors.HasErrors | results.Errors.HasWarnings)
                 {
                     m_Errors = results.Errors;
                     return null;
                 }
+                string compiledAssembly = results.CompiledAssembly.FullName;
                 //PrintAssembliesLoaded(AppDomain.CurrentDomain, results.CompiledAssembly, true);
-
-                AppDomainSetup adSetup = new AppDomainSetup();
-                adSetup.ApplicationBase = System.Environment.CurrentDirectory;
-                adSetup.ApplicationName = "Plugin space App";
-                adSetup.ShadowCopyFiles = "true";
-                adSetup.CachePath = @".\cache";
-                AppDomain pluginDomain = AppDomain.CreateDomain("pluginDomain", null, adSetup);
 
                 //byte[] rawAssembly = loadFile(@".\cache\" + compiledName);
                 //Assembly assemblyPlugin = pluginDomain.Load(rawAssembly, null);
                 //PrintAssembliesLoaded(pluginDomain, assemblyPlugin, true);
 
+                // TODO ASB: see links to help about running in a different AppDomain
+                //http://stackoverflow.com/questions/5380246/loading-services-from-other-dll-and-run-them-isolated/5380317#5380317
+                //http://stackoverflow.com/questions/599731/use-the-serializable-attribute-or-subclassing-from-marshalbyrefobject
+                //explore how to use MarshalByRefObject: http://www.softwareinteractions.com/blog/2010/2/7/loading-and-unloading-net-assemblies.html
+                //http://stackoverflow.com/questions/1687245/use-appdomain-to-load-unload-external-assemblies
                 object target = pluginDomain.CreateInstanceAndUnwrap(
-                    @".\cache\" + compiledName,                     //string assemblyName
+                    compiledAssembly,                               //string assemblyName
                     module,                                         //string typeName
                     false,                                          //bool ignoreCase
                     BindingFlags.Public | BindingFlags.Instance,    //BindingFlags bindingAttr
@@ -301,7 +320,7 @@ namespace Gear.PluginSupport
                         null,
                     null,                                           //CultureInfo culture
                     null);                                          //object[] activationAttributes
-                PrintAssembliesLoaded(pluginDomain, assemblyPlugin, false);
+                PrintAssembliesLoaded(pluginDomain, results.CompiledAssembly, false);
                 if (target == null)
                 {
                     CompilerError c = new CompilerError("", 0, 0, "CS0103",
