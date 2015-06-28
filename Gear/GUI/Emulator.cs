@@ -202,31 +202,45 @@ namespace Gear.GUI
         /// compilation fails, then it opens the plugin editor to show errors and source code.
         /// @param[in] FileName Name and path to the XML plugin file to open
         /// @returns Reference to the new plugin instance (on success) or NULL (on fail).
-        /// @todo Modify the method to enable to work with old and new plugin system formats.
+        // TODO Modify the method to receive a PluginData, and delete the validation
         public void LoadPlugin(string FileName)
         {
-            object objInst;
-            //create the structure to fill data from file
-            PluginData pluginCandidate = new PluginData();
-            //Determine if the XML is valid, and for which DTD version
-            if (!pluginCandidate.ValidatePluginFile(FileName))
-            {
-                string allMessages = "";
-                //case not valid file, so show the errors.
-                foreach (string strText in pluginCandidate.ValidationErrors)
-                    allMessages += (strText.Trim() + "\r\n");
-                /// @todo Add a custom dialog to show every error message in a grid.
-                //show messages
-                MessageBox.Show(allMessages,
-                    "Emulator - OpenPlugin.",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
-            else  //...XML plugin file is valid & system version is determined
-            {
-                objInst = null;
-                //as is valid, we have the version to look for the correct method to 
-                // load it
+            object objInst = null;
+            ////create the structure to fill data from file
+            //PluginData pluginCandidate = new PluginData();
+            ////Determine if the XML is valid, and for which DTD version
+            //if (!pluginCandidate.ValidatePluginFile(FileName))
+            //{
+            //    string allMessages = string.Empty;
+            //    //case not valid file, so show the errors.
+            //    foreach (string strText in pluginCandidate.ValidationErrors)
+            //        allMessages += (strText.Trim() + "\r\n");
+            //    /// @todo Add a custom dialog to show every error message in a grid.
+            //    //show messages
+            //    MessageBox.Show(allMessages,
+            //        "Emulator - OpenPlugin.",
+            //        MessageBoxButtons.OK,
+            //        MessageBoxIcon.Error);
+            //}
+            //else  //...XML plugin file is valid & system version is determined
+            //{
+                //determine time to use to build the plugin
+                DateTime TimeOfBuild = AssemblyUtils.GetFileDateTime(FileName);
+                for (int i = 0; i < pluginCandidate.UseExtFiles.Length; i++ )
+                {
+                    if (pluginCandidate.UseExtFiles[i] == true)
+                        TimeOfBuild = DateTime.FromBinary( Math.Max(
+                                TimeOfBuild.ToBinary(),
+                                AssemblyUtils.GetFileDateTime(pluginCandidate.ExtFiles[i]).ToBinary()) );
+                }
+                //generate the full name of the assembly corresponding to the plugin candidate
+                string candidateAssemblyFullName = AssemblyUtils.CompiledPluginFullName(
+                    TimeOfBuild,
+                    pluginCandidate.InstanceName,
+                    pluginCandidate.PluginVersion,
+                    pluginCandidate.PluginSystemVersion);
+
+                //determine the version to look for the correct method to load it
                 switch (pluginCandidate.PluginSystemVersion)
                 {
                     case "0.0" :
@@ -235,9 +249,8 @@ namespace Gear.GUI
                             //Search and replace plugin class declarations for V0.0 plugin 
                             // system compatibility.
                             pluginCandidate.Codes[0] = 
-                                PluginSystem.ReplaceBaseClassV0_0(pluginCandidate.Codes[0]);
-                            pluginCandidate.Codes[0] = 
-                                PluginSystem.ReplacePropellerClassV0_0(pluginCandidate.Codes[0]);
+                                PluginSystem.ReplacePropellerClassV0_0(
+                                    PluginSystem.ReplaceBaseClassV0_0(pluginCandidate.Codes[0]) );
                         }
                         break;
                     case "1.0":
@@ -252,7 +265,13 @@ namespace Gear.GUI
                             MessageBoxIcon.Error);
                         return;
                 }
-                //data is read successfully from XML into pluginCandidate
+                //add information into plugin's code to generate with assembly attributes
+                pluginCandidate.Codes[0] = PluginSystem.InsertAssemblyDetails(
+                    pluginCandidate.Codes[0],
+                    TimeOfBuild,
+                    pluginCandidate.InstanceName,
+                    pluginCandidate.Description,
+                    pluginCandidate.PluginVersion);
                 try
                 {
                     //Dynamic load and compile the plugin module as a class, giving the chip 
@@ -280,14 +299,16 @@ namespace Gear.GUI
                 catch (Exception)
                 {
                     //open plugin editor in other window
-                    PluginEditor pe = new PluginEditor(false);   
+                    PluginEditor pe = new PluginEditor(false);
                     pe.OpenFile(FileName, true);
                     pe.MdiParent = this.MdiParent;
                     pe.Show();
                     //the compilation errors are displayed in the error grid
                     ModuleCompiler.EnumerateErrors(pe.EnumErrors);
+                    //show the error list
+                    pe.ShowErrorGrid(true);
                 }
-            }
+            //}
         
         }
 
@@ -509,8 +530,56 @@ namespace Gear.GUI
                     Properties.Settings.Default.LastPlugin);
 
             if (dialog.ShowDialog(this) == DialogResult.OK)
-                LoadPlugin(dialog.FileName);
+            {
+                PluginData pluginCandidate = ValidatePluginCandidate(dialog.FileName);
+                if (pluginCandidate != null)
+                {
+                    
+                    // TODO ASB [HIGH PRIORITY] - determine how to obtain the attribute SingleInstanceAllowed from the plugin code: reflection on a separate AppDomain?
+                    //pseudo code:
+                    //if (pluginCandidate.OnlySingleInstance() && 
+                    //    AssemblyUtils.IsAlreadyLoaded(pluginCandidate.AssemblyFullName))
+                    //{
+                    //    CreateFromAssembly(pluginCandidate.InstanceName, candidateAssembName);
+                    //}     
+                    //else 
+                    //{
+                    //    //this method contains the remaining code from Emulator.LoadPlugin(.)
+                    //    CreateFromFile(pluginCandidate); 
+                    //}
+                }
+            }
         }
+
+        /// @brief Validates the plugin candidate.
+        /// @details Try to open the XML definition for the plugin from the file name given as 
+        /// parameter. Then extract information from the XML (class name, auxiliary references 
+        /// and source code to compile) and returns it.
+        /// @param FileName  Name of the plugin file.
+        /// @returns If successful, a valid PluginData object, on error returns NULL.
+        public PluginData ValidatePluginCandidate(string FileName)
+        {
+            //class to hold plugin data
+            PluginData pluginCandidate = new PluginData();
+            //Determine if the XML is valid, and for which DTD version
+            if (!pluginCandidate.ValidatePluginFile(FileName))
+            {
+                string allMessages = string.Empty;
+                //case not valid file, so show the errors.
+                foreach (string strText in pluginCandidate.ValidationErrors)
+                    allMessages += (strText.Trim() + "\r\n");
+                /// @todo Add a custom dialog to show every error message in a grid.
+                //show messages
+                MessageBox.Show(allMessages,
+                    "Emulator - OpenPlugin.",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                return null;
+            }
+            else  //...XML plugin file is valid & system version is determined
+                return pluginCandidate;
+        }
+
 
         /// @brief Event when the Emulator windows begin to close.
         /// @param[in] sender Reference to the object where this event was called.

@@ -44,28 +44,30 @@ namespace Gear.GUI
         private bool displayAsHexadecimal;
         private bool useShortOpcodes;
 
+        /// @brief Title of the tab window.
         public override string Title
         {
-            get
-            {
-                return "Cog " + HostID.ToString();
-            }
+            get { return "Cog " + HostID.ToString(); }
         }
 
+        /// @brief Attribute to allow the window to be closed (default) or not (like cog windows).
         public override Boolean IsClosable
         {
-            get
-            {
-                return false;
-            }
+            get { return false; }
         }
 
+        /// @brief Identify a plugin as user (=true) or system (=false).
+        /// @since V15.03.26 - Added.
         public override bool IsUserPlugin
         {
-            get
-            {
-                return false;
-            }
+            get { return false; }
+        }
+
+        /// @brief Attribute to allow a single instance (=true) or multiple (=false).
+        /// @since V15.03.26 - Added.
+        public override bool SingleInstanceAllowed
+        {
+            get { return true; }
         }
 
         public CogView(int hostId, PropellerCPU chip) : base (chip)
@@ -170,8 +172,8 @@ namespace Gear.GUI
             topLine = 5;
             bottomLine = (uint)((ClientRectangle.Height / MonoFont.Height) - 5);
 
-            zeroFlagLabel.Text = "";
-            carryFlagLabel.Text = "";
+            zeroFlagLabel.Text = string.Empty;
+            carryFlagLabel.Text = string.Empty;
             OpcodeSize.Visible = true;
             DisplayUnits.Visible = true;
 
@@ -287,9 +289,9 @@ namespace Gear.GUI
             if (Host == null)
             {
                 processorStateLabel.Text = "CPU State: Cog is stopped.";
-                programCounterLabel.Text = "";
-                zeroFlagLabel.Text = "";
-                carryFlagLabel.Text = "";
+                programCounterLabel.Text = string.Empty;
+                zeroFlagLabel.Text = string.Empty;
+                carryFlagLabel.Text = string.Empty;
                 return;
             }
 

@@ -87,7 +87,11 @@ namespace Gear.PluginSupport
         // @brief Identify a plugin as user (=true) or system (=false).
         // @remarks Not to be used in Plugin Editor by user plugins.
         // @since V15.03.26 - Added.
-        //public virtual Boolean IsUserPlugin { get { return true; } }
+        //public virtual Boolean IsUserPlugin { get { return true; } }        
+
+        /// @brief Attribute to allow a single instance (=true) or multiple (=false).
+        /// @since V15.03.26 - Added.
+        public override Boolean SingleInstanceAllowed { get { return false; } }
 
         /// @brief Points to propeller instance.
         /// @note Asterisk's: Occurs once the plugin is loaded. It gives you a reference to the 
@@ -176,8 +180,12 @@ namespace Gear.PluginSupport
         public override bool Equals(object other)
         {
             PluginBase pBase = other as PluginBase;
-            if ( (pBase == null) || (this.GetType() != other.GetType()))
+            if ((pBase == null) ||
+                ((!pBase.IsUserPlugin) && (this.GetType() != other.GetType())) ||
+                ((pBase.IsUserPlugin)))  // TODO ASB : Complete the logic for is user plugin case.
+            {
                 return false;
+            }
             else
                 return Equals(pBase);
         }

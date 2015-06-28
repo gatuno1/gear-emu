@@ -197,5 +197,5 @@ Doc/[Mm]csgen-files/*.ismap
 #Test Directory for GEAR will not be included
 TestThings/**
 
-#performance diagnostics on GEAR executable
+#Performance diagnostics on GEAR executable
 Diagnostics/**

@@ -59,6 +59,10 @@ namespace Gear.PluginSupport
         // @remarks Not to be used in Plugin Editor by user plugins.
         //public override Boolean IsClosable { get { return true; } }
 
+        /// @brief Attribute to allow a single instance (=true) or multiple (=false).
+        /// @since V15.03.26 - Added.
+        public override Boolean SingleInstanceAllowed { get { return false; } }
+
         /// @brief Counter of number of instances.
         private static int countInstances = 0;
 

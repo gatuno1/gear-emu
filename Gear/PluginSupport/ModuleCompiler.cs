@@ -62,7 +62,7 @@ namespace Gear.PluginSupport
             foreach (CompilerError e in m_Errors)
                 proc(e);
         }
-        
+
         /// @brief Get the date/time of the build of the Assembly file.
         /// @param AssemblyFilePath Path to the file of the assembly to extract date/time.
         /// @returns DateTime of the Assembly or null if it couldn't be retrieved.
@@ -71,9 +71,10 @@ namespace Gear.PluginSupport
         {
             //offset for the linker time stamp from the PE header of the assembly
             // from http://stackoverflow.com/questions/1600962/displaying-the-build-date
-            const int c_PeHeaderOffset = 60;        
-            const int c_LinkerTimestampOffset = 8;
-            byte[] b = new byte[2048];
+            // also see https://upload.wikimedia.org/wikipedia/commons/7/70/Portable_Executable_32_bit_Structure_in_SVG.svg
+            const int c_PeHeaderOffset = 60;        //beginning of PEHeader
+            const int c_LinkerTimestampOffset = 8;  //offset from PEHeader
+            byte[] b = new byte[2048];              //buffer for the beggini
             Stream s = null;
 
             try
@@ -91,7 +92,9 @@ namespace Gear.PluginSupport
                     s.Close();
             }
 
+            //Get the pointer to PE Header
             int i = System.BitConverter.ToInt32(b, c_PeHeaderOffset);
+            //Get the TimeDateStamp
             int secondsSince1970 = System.BitConverter.ToInt32(b, i + c_LinkerTimestampOffset);
             DateTime dt = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             dt = dt.AddSeconds(secondsSince1970);
@@ -99,27 +102,12 @@ namespace Gear.PluginSupport
             return dt;
         }
         
-        /// @brief Generate the name of the compiled plugin.
-        /// @param module Name of the plugin module.
-        /// @param pluginSystemVersion Version of the plugin system to add to the plugin.
-        /// @param extension Extension to add to the name. If it is null, none will be added.
-        /// @returns Name of the compiled plugin.
-        /// @since v15.03.26 - Added.
-        static private string CompiledPluginName(string module, string pluginSystemVersion, 
-            string extension)
-        {
-            return string.Format("PluginSystemV{0}-{1}{2}", 
-                pluginSystemVersion.Replace(".", "_"),
-                module,
-                ((string.IsNullOrEmpty(extension)) ? "" :
-                    (!extension.Contains(".")) ? ("." + extension) : extension));
-        }
-
         /// @brief Dynamic compiling & loading for a plugin.
         /// @details Try to dynamically compile a module for the plugin, based on supplied 
         /// C# code and other C# modules referenced, using Reflexion. If the compiling fails,  
         /// it gives a list of errors, intended to be showed in the plugin view.
-        /// @param[in] code C# Source code based on PluginBase class, to implement your plugin.
+        /// @param[in] codeTexts C# Source code based on PluginBase class, to implement the plugin.
+        /// @param[in] sourceFiles Source file (with path).
         /// @param[in] module Class name of the plugin.
         /// @param[in] references String array with auxiliary references used by your plugin. 
         /// See notes for defaults used.
@@ -127,8 +115,6 @@ namespace Gear.PluginSupport
         /// as a parameter to the constructor of the new plugin class instance.
         /// @param[in] pluginSystemVersion Witch plugin system version to compile.
         /// @returns New Plugin class instance compiled (on success), or NULL (on fail).
-        /// @throws Any compiling exception is detected and thrown again to the caller of 
-        /// this method.
         /// @note There are some references already added, so you don't need to include on your 
         /// plugins: 
         /// @li `using System;` @li `using System.Data;` @li `using System.Drawing;`
@@ -137,36 +123,34 @@ namespace Gear.PluginSupport
         static public PluginCommon LoadModule(string[] codeTexts, string[] sourceFiles, 
             string module, string[] references, object objParams, string pluginSystemVersion)
         {
-            CodeDomProvider provider = new Microsoft.CSharp.CSharpCodeProvider();
-            CompilerParameters cp = new CompilerParameters();
+            const string chachePath = @".\plugincache\";
+            string compiledName = 
+                AssemblyUtils.CompiledPluginName(module, pluginSystemVersion, ".dll");
+            CompilerParameters cp = new CompilerParameters( 
+                new[] { "System.Windows.Forms.dll", "System.dll", "System.Data.dll", 
+                        "System.Drawing.dll", "System.Xml.dll" },
+                chachePath + compiledName, 
+                false);
 
-            cp.TempFiles = new TempFileCollection(@".\cache\", false);  //set directory
-#if DEBUG
-            string codefile = cp.TempFiles.AddExtension("cs");  //find the temporary file name
-            cp.IncludeDebugInformation = true;
-#else
+            if (!Directory.Exists(chachePath))
+                Directory.CreateDirectory(chachePath);
+            cp.TempFiles = new TempFileCollection(chachePath, false);  //set directory
+            cp.ReferencedAssemblies.Add(System.Windows.Forms.Application.ExecutablePath);
             cp.IncludeDebugInformation = false;
-#endif
             cp.GenerateExecutable = false;
             cp.GenerateInMemory = true;
             cp.CompilerOptions = "/optimize";
             cp.WarningLevel = 4;    //to do not consider C00618 warning (obsolete PluginBaseV0_0 class)
             cp.MainClass = "Gear.PluginSupport." + module;
-
-            cp.ReferencedAssemblies.Add(System.Windows.Forms.Application.ExecutablePath);
-            cp.ReferencedAssemblies.Add("System.Windows.Forms.dll");
-            cp.ReferencedAssemblies.Add("System.dll");
-            cp.ReferencedAssemblies.Add("System.Data.dll");
-            cp.ReferencedAssemblies.Add("System.Drawing.dll");
-            cp.ReferencedAssemblies.Add("System.Xml.dll");
-
+            //traverse list adding not null nor empty texts
             foreach (string s in references)    //traverse list adding not null or empty texts
                 if (!string.IsNullOrEmpty(s))
                     cp.ReferencedAssemblies.Add(s);
+
+            CodeDomProvider provider = new Microsoft.CSharp.CSharpCodeProvider();
             try
             {
-                //CompilerResults results = provider.CompileAssemblyFromFile(cp, codeTexts);
-                //first compile source codes
+                //compile source codes into a memory assembly
                 CompilerResults results = provider.CompileAssemblyFromSource(cp, codeTexts);
 
                 if (results.Errors.HasErrors | results.Errors.HasWarnings)
@@ -174,13 +158,13 @@ namespace Gear.PluginSupport
                     m_Errors = results.Errors;
                     return null;
                 }
-#if DEBUG
-                //write the code to file to enable debug
-                for (int i = 0; i < codeTexts.Length; i++ )
-                    File.WriteAllText(
-                        codefile.Replace(".cs", string.Format(".{0}.cs",i)), 
-                        codeTexts[i] );
-#endif
+//#if DEBUG
+//                //write the code to file to enable debug
+//                for (int i = 0; i < codeTexts.Length; i++ )
+//                    File.WriteAllText(
+//                        codefile.Replace(".cs", string.Format(".{0}.cs",i)), 
+//                        codeTexts[i] );
+//#endif
                 PrintAssembliesLoaded(AppDomain.CurrentDomain, results.CompiledAssembly, true);
                 //then instantiate plugin class
                 object target = results.CompiledAssembly.CreateInstance(
@@ -197,7 +181,7 @@ namespace Gear.PluginSupport
                 PrintAssembliesLoaded(AppDomain.CurrentDomain, results.CompiledAssembly, false);
                 if (target == null)
                 {
-                    CompilerError c = new CompilerError("", 0, 0, "CS0103",
+                    CompilerError c = new CompilerError(string.Empty, 0, 0, "CS0103",
                         "The name '" + module + "' does not exist in the current context." +
                         " Does the class name is the same that is declared in c# code?");
                     m_Errors = new CompilerErrorCollection(new CompilerError[] { c });
@@ -205,9 +189,9 @@ namespace Gear.PluginSupport
                 }
                 else if (!PluginSystem.InstanceOneOfValidClasses(target))
                 {
-                    CompilerError c = new CompilerError("", 0, 0, "CS0029",
+                    CompilerError c = new CompilerError(string.Empty, 0, 0, "CS0029",
                         "Cannot implicitly convert type '" + target.GetType().FullName +
-                        "' to '" + PluginSystem.GetPluginBaseClass(pluginSystemVersion).FullName + "'");
+                        "' to '" + PluginSystem.GetPluginBaseType(pluginSystemVersion).FullName + "'");
                     m_Errors = new CompilerErrorCollection(new CompilerError[] { c });
                     return null;
                 }
@@ -217,7 +201,7 @@ namespace Gear.PluginSupport
             }
             catch (Exception e)
             {
-                CompilerError c = new CompilerError("", 0, 0, "Runtime",
+                CompilerError c = new CompilerError(string.Empty, 0, 0, "Runtime",
                     string.Format("Plugin '{0}' - {1}", module, e.Message));
                 m_Errors = new CompilerErrorCollection(new CompilerError[] { c });
                 return null;
@@ -228,7 +212,6 @@ namespace Gear.PluginSupport
         /// Compiles the module.
         /// </summary>
         /// <param name="codeTexts">The code texts.</param>
-        /// <param name="sourceFiles">The source files.</param>
         /// <param name="module">The module.</param>
         /// <param name="references">The references.</param>
         /// <param name="objParams">The object parameters.</param>
@@ -237,9 +220,11 @@ namespace Gear.PluginSupport
         static public PluginCommon CompileModule(string[] codeTexts, string module, 
             string[] references, object objParams, string pluginSystemVersion)
         {
-            string compiledName = CompiledPluginName(module, pluginSystemVersion, 
-                    string.Concat("-", Path.GetRandomFileName().Substring(0, 8), ".dll"));
-            const string chachePath = @".\cache\";
+            const string chachePath = @".\plugincache\";
+            string compiledName = AssemblyUtils.CompiledPluginName(module, pluginSystemVersion, 
+                 string.Concat("-", AssemblyUtils.TimeStampForFile(DateTime.Now), ".dll"));
+            //string compiledName = CompiledPluginName(module, pluginSystemVersion, 
+            //        string.Concat("-", Path.GetRandomFileName().Substring(0, 8), ".dll"));
             CompilerParameters cp = 
                 new CompilerParameters( new[] { "System.Windows.Forms.dll", "System.dll", 
                     "System.Data.dll", "System.Drawing.dll", "System.Xml.dll" },
@@ -249,7 +234,6 @@ namespace Gear.PluginSupport
 #else
                 false);
 #endif
-            //cp.OutputAssembly = @".\cache\" + CompiledPluginName(module, pluginSystemVersion, ".dll");
             cp.TempFiles = new TempFileCollection(chachePath, false);  //set directory
             cp.ReferencedAssemblies.Add(System.Windows.Forms.Application.ExecutablePath);
             cp.GenerateExecutable = false;
@@ -257,7 +241,7 @@ namespace Gear.PluginSupport
             cp.CompilerOptions = "/optimize";
             cp.WarningLevel = 4;    //to do not consider C00618 warning (obsolete PluginBaseV0_0 class)
             cp.MainClass = "Gear.PluginSupport." + module;
-            //traverse list adding not null or empty texts
+            //traverse list adding not null nor empty texts
             foreach (string s in references)    
                 if (!string.IsNullOrEmpty(s))
                     cp.ReferencedAssemblies.Add(s);
@@ -273,14 +257,21 @@ namespace Gear.PluginSupport
                         Directory.Delete(chachePath, true);
                         Directory.CreateDirectory(chachePath);
                     }
-                    catch {}
+                    catch(Exception e) 
+                    {
+                        CompilerError c = 
+                            new CompilerError(string.Empty, 0, 0, "Pre-build", e.Message);
+                        m_Errors = new CompilerErrorCollection(new CompilerError[] { c });
+                        return null;
+                    }
                 }
                 //write the codes to compile later
                 string[] sourceFiles = new string[codeTexts.Length];
                 for (int i = 0; i < codeTexts.Length; i++)
                 {
                     sourceFiles[i] = string.Format(chachePath + "{0}-{1}.cs", 
-                        CompiledPluginName(module, pluginSystemVersion, ""), i);
+                        AssemblyUtils.CompiledPluginName(module, pluginSystemVersion, 
+                        string.Empty), i);
                     File.WriteAllText(sourceFiles[i], codeTexts[i]);
                 }
                 AppDomainSetup adSetup = new AppDomainSetup();
@@ -323,7 +314,7 @@ namespace Gear.PluginSupport
                 PrintAssembliesLoaded(pluginDomain, results.CompiledAssembly, false);
                 if (target == null)
                 {
-                    CompilerError c = new CompilerError("", 0, 0, "CS0103",
+                    CompilerError c = new CompilerError(string.Empty, 0, 0, "CS0103",
                         "The name '" + module + "' does not exist in the current context." +
                         " Does the class name is the same that is declared in c# code?");
                     m_Errors = new CompilerErrorCollection(new CompilerError[] { c });
@@ -331,9 +322,9 @@ namespace Gear.PluginSupport
                 }
                 else if (!PluginSystem.InstanceOneOfValidClasses(target))
                 {
-                    CompilerError c = new CompilerError("", 0, 0, "CS0029",
+                    CompilerError c = new CompilerError(string.Empty, 0, 0, "CS0029",
                         "Cannot implicitly convert type '" + target.GetType().FullName +
-                        "' to '" + PluginSystem.GetPluginBaseClass(pluginSystemVersion).FullName + "'");
+                        "' to '" + PluginSystem.GetPluginBaseType(pluginSystemVersion).FullName + "'");
                     m_Errors = new CompilerErrorCollection(new CompilerError[] { c });
                     return null;
                 }
@@ -343,7 +334,7 @@ namespace Gear.PluginSupport
             }
             catch (Exception e)
             {
-                CompilerError c = new CompilerError("", 0, 0, "Runtime",
+                CompilerError c = new CompilerError(string.Empty, 0, 0, "Runtime",
                     string.Format("Plugin '{0}' - {1}", module, e.Message));
                 m_Errors = new CompilerErrorCollection(new CompilerError[] { c });
                 return null;

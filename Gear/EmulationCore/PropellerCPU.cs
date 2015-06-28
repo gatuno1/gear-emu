@@ -395,7 +395,7 @@ namespace Gear.EmulationCore
         {
             get
             {
-                string mode = "";
+                string mode = string.Empty;
 
                 if ((ClockMode & 0x80) != 0)
                     mode += "RESET+";

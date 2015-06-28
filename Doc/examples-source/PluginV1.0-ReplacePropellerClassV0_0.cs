@@ -1,0 +1,19 @@
+...
+private Propeller Chip;
+...
+public override void PresentChip(Propeller host)
+{
+	last = 0;
+	Chip = host;
+	...
+}
+
+...
+private PropellerCPU Chip;
+...
+public override void PresentChip(PropellerCPU host)
+{
+	last = 0;
+	Chip = host;
+	...
+}

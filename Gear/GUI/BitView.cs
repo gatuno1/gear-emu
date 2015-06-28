@@ -194,7 +194,7 @@ namespace Gear.GUI
             else
             {
                 last_box = nil;
-                toolTip1.SetToolTip(this, "");
+                toolTip1.SetToolTip(this, string.Empty);
             };
         }
     }

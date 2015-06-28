@@ -40,21 +40,21 @@ namespace Gear.EmulationCore
             {
                 Assembly.SubInstruction ActualInstruction = instr.GetSubInstruction();
 
-                string SrcString = "";
-                string DestString = "";
+                string SrcString = string.Empty;
+                string DestString = string.Empty;
 
                 if (ActualInstruction.Source)
                 {
                     if (instr.SRC >= Assembly.RegisterBaseAddress)
                     {
                         SrcString = String.Format("{0}{1}",
-                                instr.ImmediateValue() ? "#" : "",
+                                instr.ImmediateValue() ? "#" : string.Empty,
                                 Assembly.Registers[instr.SRC - Assembly.RegisterBaseAddress].Name);
                     }
                     else
                     {
                         SrcString = String.Format("{0}${1:X3}",
-                                instr.ImmediateValue() ? "#" : "",
+                                instr.ImmediateValue() ? "#" : string.Empty,
                                 instr.SRC);
                     }
                 }
@@ -75,7 +75,7 @@ namespace Gear.EmulationCore
                     Assembly.Conditions[instr.CON][0],
                     ActualInstruction.Name,
                     DestString,
-                    (ActualInstruction.Source && ActualInstruction.Destination) ? ", " : "",
+                    (ActualInstruction.Source && ActualInstruction.Destination) ? ", " : string.Empty,
                     SrcString }
                 );
 
@@ -153,7 +153,7 @@ namespace Gear.EmulationCore
         {
             Spin.ParsedAssignment ParsedAssignment = new Spin.ParsedAssignment(chip.ReadByte(address++));
 
-            string effect = ParsedAssignment.Push ? "" : "POP ";
+            string effect = ParsedAssignment.Push ? string.Empty : "POP ";
 
             if (useShortOpcodes)
             {

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Reflection;
 
 using Gear.EmulationCore;
 
@@ -26,6 +28,21 @@ namespace Gear.PluginSupport
         /// @remarks Not to be used in Plugin Editor by user plugins.
         /// @since V15.03.26 - Added.
         public virtual Boolean IsUserPlugin { get { return true; } }
+
+        /// @brief Attribute to allow a single instance (=true) or multiple (=false).
+        /// @since V15.03.26 - Added.
+        public abstract Boolean SingleInstanceAllowed { get; }
+
+        /// @brief Gets the full name of the assembly where the plugin is instantiated.
+        /// @since V15.03.26 - Added.
+        public string assemblyFullName { get; private set; }
+
+        /// @brief Default constructor.
+        /// @since V15.03.26 - Added.
+        public PluginCommon()
+        {
+            assemblyFullName = typeof(PluginCommon).AssemblyQualifiedName;
+        }
 
         /// @brief Event when the chip is reset.
         /// Handy to reset plugin's components or data, to their initial states.
@@ -56,13 +73,15 @@ namespace Gear.PluginSupport
 
     }
 
-
     /// @brief Provides information about the plugin system.
     /// @since v15.03.26 - Added.
     public static class PluginSystem
     {
-        /// @brief Type of plugin base class for current 
-        public static Type GetPluginBaseClass(string pluginSystemVersion)
+        /// @brief Determine Type of plugin base class corresponding to the given plugin system version.
+        /// @param pluginSystemVersion Version of the plugin system to use.
+        /// @returns Type of the plugin base class.
+        /// @since v15.03.26 - Added.
+        public static Type GetPluginBaseType(string pluginSystemVersion)
         {
             if (!string.IsNullOrEmpty(pluginSystemVersion))
                 switch (pluginSystemVersion)
@@ -81,8 +100,11 @@ namespace Gear.PluginSupport
                 "calling of 'PluginData.pluginBaseClass(string pluginSystemVersion)'!");
         }
 
-        /// @brief Determine if the object passed as parameter is on of the valid Plugin 
-        /// base classes
+        /// @brief Determine if the object passed as parameter is one of the allowed Plugin 
+        /// base classes.
+        /// @param obj Instance of the class to examine its validity.
+        /// @returns If a valid class (=true), or invalid (=false).
+        /// @since v15.03.26 - Added.
         public static bool InstanceOneOfValidClasses(object obj)
         {
             if (obj == null)
@@ -96,6 +118,8 @@ namespace Gear.PluginSupport
 
         /// @brief Replace base class for proper inheritance, for to use with v0.0 plugin 
         /// system plugins.
+        /// @param codeText Original text to insert into.
+        /// @returns Modified text code.
         /// @since v15.03.26 - Added.
         public static string ReplaceBaseClassV0_0(string codeText)
         {
@@ -108,7 +132,20 @@ namespace Gear.PluginSupport
             return ClassNameToChange.Replace(codeText, "$1${Class}$2PluginBaseV0_0", 1);
         }
 
-        /// @brief
+        /// @brief Complete the declaration of PropellerCPU class, to enable the compilation
+        /// of v0.0 plugin system plugins.
+        /// @details In a V0.0 plugin, the class PropellerCPU was named only 'Propeller'. 
+        /// To successfully compile the plugin, is necessary to complete the proper name.
+        /// @dontinclude PluginV1.0-ReplacePropellerClassV0_0.cs
+        /// As example, a plugin v0.0 like:
+        /// @skip ...
+        /// @until }
+        /// After the replacement it will be as:
+        /// @skip ...
+        /// @until }
+        /// @param codeText Original text to insert into.
+        /// @returns Modified text code.
+        /// @since v15.03.26 - Added.
         public static string ReplacePropellerClassV0_0(string codeText)
         {
             // Search Plugin class declaration for V0.0 plugin system compatibility.
@@ -117,61 +154,78 @@ namespace Gear.PluginSupport
             return ClassNameToChange.Replace(codeText,"$1CPU");
         }
 
-        /// @brief Add the version when generate Assembly containing the plugin.
+        /// @brief Generate the code to add to include version information to generate an 
+        /// Assembly for the plugin.
+        /// @details Transforms the plugin code, adding attributes to be inserted into the 
+        /// compiled assembly.
+        /// @dontinclude PluginV1.0-InsertAssemblyDetails.cs
+        /// As example, a plugin v0.0 like:
+        /// @skip using
+        /// @until }
+        /// After the replacement it will be as:
+        /// @skip using
+        /// @until }
         /// @param codeText Original text to insert into.
-        /// @param name Name of the plugin.
+        /// @param buildDate Date Time to be used like timestamp into the compiled plugin.
+        /// @param module Name of the plugin module.
         /// @param description Description of the plugin.
         /// @param version Version of plugin, to insert into the assembly.
-        /// @returns Modified text;
-        public static string InsertAssemblyDetails(string codeText, string name, 
-            string description, string version)
+        /// @returns Modified text code.
+        /// @note Adds information into the assembly for attributes: 
+        /// @li `AssemblyCompany` @li `AssemblyVersion` @li `AssemblyProduct` @li `AssemblyTitle`
+        /// @li `AssemblyDescription`
+        /// @since v15.03.26 - Added.
+        public static string InsertAssemblyDetails(string codeText, DateTime buildDate,
+            string module, string description, string version)
         {
             string aux = codeText;
-            string addendum = 
-                "[assembly:AssemblyVersion(\"" + CompleteVersion(version, 2) + ".*\")] " +
-                "[assembly:AssemblyProduct(\"Plugin for GEAR Emulator\")] " +
-                "[assembly:AssemblyTitle(\"" + name + "\")] " +
-                "[assembly:AssemblyDescription(\"" + description + "\")]";
-            Regex Includes = new Regex(@"(\busing\b\s+\w+[.|\w+]*;)(\n)", 
+            //
+            Regex Includes = new Regex(@"(\busing\b\s+\w+[.|\w+]*;)(\n)",
                 RegexOptions.Compiled);
             if (Includes.IsMatch(aux))
             {
-                bool found = false;
+                bool srFound = false;
                 MatchCollection coll = Includes.Matches(codeText);
-                for(int i = 0; i < coll.Count; i++)
+                //traverse all the includes to check if Reflection is included already
+                for (int i = 0; i < coll.Count; i++)
                 {
                     if (coll[i].Value.Contains("System.Reflection;"))
-                        found = true;
+                        srFound = true;
                 }
+                //text of attributes to add information into Assembly
+                //names from link: "Setting Assembly Attributes"
+                //https://msdn.microsoft.com/en-us/library/4w8c1y2s%28v=vs.110%29.aspx
+                string infoAttributes = string.Concat(
+                    //AssemblyCompany
+                    string.Concat("[assembly:AssemblyCompany(\"",
+                        AssemblyUtils.GetGEARAssemblyAttribute(typeof(AssemblyCompanyAttribute))[0],
+                        "\")] "),
+                    //AssemblyVersion
+                    string.Concat("[assembly:AssemblyVersion(\"",
+                        AssemblyUtils.CompleteVersion(version, 2), ".",
+                        AssemblyUtils.TimeStampDotnetEpoch(buildDate), "\")] "),
+                    //AssemblyProduct
+                    string.Concat("[assembly:AssemblyProduct(\"",
+                        AssemblyUtils.GetGEARAssemblyAttribute(typeof(AssemblyProductAttribute))[0],
+                        "\")] "),
+                    //AssemblyTitle
+                    string.Concat("[assembly:AssemblyTitle(\"",
+                        ((module.Contains("plugin")) ? module : module + " plugin"), "\")] "),
+                    //AssemblyDescription
+                    string.Concat("[assembly:AssemblyDescription(\"", description, "\")]"));
+                
+                //insert the using statement (if not already exist), and the attributes
                 aux = Includes.Replace(
-                    codeText, 
-                    string.Concat("${1} ", ((!found)? "using System.Reflection; " : " "), 
-                        addendum, "${2}"), 
-                    1,
-                    coll[coll.Count - 1].Index);
+                    codeText,                       //original text
+                    string.Concat("${1} ",          //replace pattern
+                        ((!srFound) ? "using System.Reflection; " : string.Empty),
+                        infoAttributes, "${2}"),
+                    1,                              //only the last match
+                    coll[coll.Count - 1].Index);    //start of the last match
             }
             return aux;
         }
 
-        /// @brief Completes the version numbers, stripping to the digits given as parameter, 
-        /// completing with zeros if version is smaller than it.
-        /// @param version Version string to complete as Assembly standards.
-        /// @param digits How many digits will use.
-        /// @returns A complete version string.
-        public static string CompleteVersion(string version, uint digits)
-        {
-            string[] parts = version.Split('.');
-            string completed = System.String.Empty;
-            for (int i = 0; i < digits; i++)
-            {
-                if ((parts.Length <= i) || (string.IsNullOrEmpty(parts[i])))
-                    completed += "0";
-                else
-                    completed += parts[i];
-                completed += ((i < (digits - 1)) ? "." : "");
-            }
-            return completed;
-        }
 
 
     }

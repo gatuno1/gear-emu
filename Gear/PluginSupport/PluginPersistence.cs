@@ -82,6 +82,18 @@ namespace Gear.PluginSupport
         public string[] ExtFiles;
         /// @brief Text of the C# code of the plugin.
         public string[] Codes;
+        /// @brief Name of the main XML plugin file.
+        public string MainFile;
+        /// @brief Assembly full name for the plugin file.
+        public string AssemblyFullName
+        {
+            get
+            {
+                return AssemblyUtils.CompiledPluginFullName(
+                      AssemblyUtils.GetFileDateTime(this.MainFile), this.InstanceName, 
+                      this.PluginVersion, this.PluginSystemVersion);
+            }
+        }
         /// @brief Hold the result for a validity test of related XML file, based on DTD.
         /// @note If the plugin is valid, the version number for the plugin system will exist 
         /// (attribute PluginData::PluginSystemVersion), nevertheless it would be 0.0 (the 

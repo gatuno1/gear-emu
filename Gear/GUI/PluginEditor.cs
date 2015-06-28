@@ -221,7 +221,7 @@ namespace Gear.GUI
         /// if need to save.
         private void UpdateTitles()
         {
-            this.Text = ("Plugin Editor: " + SaveFileName +  (CodeChanged ? " *" : ""));
+            this.Text = ("Plugin Editor: " + SaveFileName +  (CodeChanged ? " *" : string.Empty));
             pluginMetadataList.Columns[0].Text = metadataText;
         }
 
@@ -240,7 +240,7 @@ namespace Gear.GUI
             //Determine if the XML is valid, and for which DTD version
             if (!pluginCandidate.ValidatePluginFile(FileName))
             {
-                string allMessages = "";
+                string allMessages = string.Empty;
                 //case not valid file, so show the errors.
                 foreach (string strText in pluginCandidate.ValidationErrors)
                     allMessages += (strText.Trim() + "\r\n");
@@ -393,7 +393,7 @@ namespace Gear.GUI
                         string separateFileName = Path.Combine(Path.GetDirectoryName(FileName),
                             Path.GetFileNameWithoutExtension(FileName) + ".cs");
                         data.ExtFiles = new string[1] { 
-                            ((!embeddedCode.Checked) ? separateFileName : "") };
+                            ((!embeddedCode.Checked) ? separateFileName : string.Empty) };
                         data.Codes = new string[1] { codeEditorView.Text };
                         //update modified state for the plugin
                         CodeChanged = !PluginPersistence.SaveDatoToXML_v1_0(FileName, data);
@@ -406,7 +406,7 @@ namespace Gear.GUI
                     case "0.0":
                         //manage only one file on user interface
                         data.UseExtFiles = new bool[1] { false };
-                        data.ExtFiles = new string[1] { "" };
+                        data.ExtFiles = new string[1] { string.Empty };
                         data.Codes = new string[1] { codeEditorView.Text };
                         //update modified state for the plugin
                         CodeChanged = !PluginPersistence.SaveDatoToXML_v0_0(FileName, data);
@@ -464,8 +464,9 @@ namespace Gear.GUI
                     {
                         //Search and replace plugin class declarations for V0.0 plugin 
                         // system compatibility.
-                        codesToCompile[0] = PluginSystem.ReplacePropellerClassV0_0(
-                            PluginSystem.ReplaceBaseClassV0_0(codesToCompile[0]) );
+                        codesToCompile[0] = 
+                            PluginSystem.ReplacePropellerClassV0_0(
+                                PluginSystem.ReplaceBaseClassV0_0(codesToCompile[0]) );
                         pluginVersion = "0.0";
                     }
                     else
@@ -474,9 +475,29 @@ namespace Gear.GUI
                         //the expected plugin version is two numbers: "major.minor"
                         pluginVersion = GetElementsFromMetadata("Version", false)[0];
                     }
-                    //add information into Assembly
-                    codesToCompile[0] =
-                        PluginSystem.InsertAssemblyDetails(codesToCompile[0], 
+                    //determine time to use to build the plugin
+                    DateTime TimeOfBuild;
+                    try
+                    {
+                        TimeOfBuild = ((CodeChanged | string.IsNullOrEmpty(_saveFileName)) ?
+                            //on modified content, use present time
+                            DateTime.Now :
+                            //use the file date time
+                            AssemblyUtils.GetFileDateTime(_saveFileName));
+                    }
+                    catch (Exception ex)
+                    {
+                        if (ex is UnauthorizedAccessException | ex is PathTooLongException |
+                            ex is NotSupportedException)
+                        { 
+                            TimeOfBuild = DateTime.Now;
+                        }
+                        else throw;
+                    }
+                    //add information into code to generate the plugin
+                    codesToCompile[0] = PluginSystem.InsertAssemblyDetails(
+                        codesToCompile[0],
+                        TimeOfBuild,
                         instanceName.Text, 
                         GetElementsFromMetadata("Description", false)[0], 
                         pluginVersion);
@@ -634,7 +655,7 @@ namespace Gear.GUI
             if (!string.IsNullOrEmpty(referenceName.Text))
             {
                 referencesList.Items.Add(referenceName.Text);
-                referenceName.Text = "";
+                referenceName.Text = string.Empty;
                 CodeChanged = true;
             }
         }
@@ -982,7 +1003,7 @@ namespace Gear.GUI
                 }
                 //clear the text box as we had inserted that text in the corresponding 
                 // metadata element
-                textPluginMetadataBox.Text = "";
+                textPluginMetadataBox.Text = string.Empty;
                 //mark as changed
                 CodeChanged = true;
             }
@@ -1305,7 +1326,7 @@ namespace Gear.GUI
                             //check for default text for the group
                             if (result[i] == GetDefaultTextMetadataElement(group) && resetEmpty)
                             {
-                                result[i] = ""; //clear it
+                                result[i] = string.Empty; //clear it
                             }
                         }
                         break;  //stop searching

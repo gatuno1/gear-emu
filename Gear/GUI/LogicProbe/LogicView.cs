@@ -365,7 +365,7 @@ namespace Gear.GUI.LogicProbe
                         Pins.Add(DigitalPins[Convert.ToUInt16(s)]);
                     }
                 }
-                pinsTextBox.Text = "";
+                pinsTextBox.Text = string.Empty;
             }
             catch (FormatException)
             {
@@ -449,7 +449,7 @@ namespace Gear.GUI.LogicProbe
                 }
             }
 
-            pinsTextBox.Text = "";
+            pinsTextBox.Text = string.Empty;
             Pins.Add(new LogicAnalog(pins.ToArray()));
             Repaint(true);
         }
