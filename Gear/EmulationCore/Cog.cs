@@ -66,10 +66,10 @@ namespace Gear.EmulationCore
     /// @remark Source: Table 15 - %Cog RAM Special Purpose Registers, %Propeller 
     /// P8X32A Datasheet V1.4.0.
     /// @version v15.03.26 - added NONE to enum, to follow best practices and do not
-    /// have an illegal value when is instatiated.
+    /// have an illegal value when is instantiated.
     public enum CogSpecialAddress : uint
     {
-        COGID     = 0x1E9,    //!< Identificator number of this cog.
+        COGID     = 0x1E9,    //!< Identification number of this cog.
         INITCOGID = 0x1EF,    //!< @todo Document enum value CogSpecialAddress.INITCOGID.
         PAR       = 0x1F0,    //!< Boot Parameter
         CNT       = 0x1F1,    //!< System Counter
@@ -516,7 +516,7 @@ namespace Gear.EmulationCore
             switch ((CogSpecialAddress)(address & 0x1FF))
             {
                 // Read only registers
-                // case CogSpecialAddress.PAR: // PAR register changed to writeable
+                // case CogSpecialAddress.PAR: // PAR register changed to writable
                 case CogSpecialAddress.CNT:
                 case CogSpecialAddress.INA:
                 case CogSpecialAddress.INB:

@@ -86,7 +86,7 @@ namespace Gear.GUI
             this.syntaxButton = new System.Windows.Forms.ToolStripButton();
             this.progressHighlight = new System.Windows.Forms.ToolStripProgressBar();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.embeddedCode = new System.Windows.Forms.ToolStripButton();
+            this.EmbeddedCode = new System.Windows.Forms.ToolStripButton();
             this.referencePanel = new System.Windows.Forms.Panel();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.referencesList = new System.Windows.Forms.ListBox();
@@ -145,7 +145,7 @@ namespace Gear.GUI
             this.syntaxButton,
             this.progressHighlight,
             this.toolStripSeparator3,
-            this.embeddedCode});
+            this.EmbeddedCode});
             this.toolStripMain.Location = new System.Drawing.Point(0, 0);
             this.toolStripMain.Name = "toolStripMain";
             this.toolStripMain.Size = new System.Drawing.Size(654, 25);
@@ -231,17 +231,17 @@ namespace Gear.GUI
             this.toolStripSeparator3.Name = "toolStripSeparator3";
             this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
             // 
-            // embeddedCode
+            // EmbeddedCode
             // 
-            this.embeddedCode.Checked = true;
-            this.embeddedCode.CheckOnClick = true;
-            this.embeddedCode.CheckState = System.Windows.Forms.CheckState.Indeterminate;
-            this.embeddedCode.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.embeddedCode.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.embeddedCode.Name = "embeddedCode";
-            this.embeddedCode.Size = new System.Drawing.Size(68, 22);
-            this.embeddedCode.Text = "Embedded";
-            this.embeddedCode.Click += new System.EventHandler(this.embeddedCode_Click);
+            this.EmbeddedCode.Checked = true;
+            this.EmbeddedCode.CheckOnClick = true;
+            this.EmbeddedCode.CheckState = System.Windows.Forms.CheckState.Indeterminate;
+            this.EmbeddedCode.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.EmbeddedCode.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.EmbeddedCode.Name = "EmbeddedCode";
+            this.EmbeddedCode.Size = new System.Drawing.Size(68, 22);
+            this.EmbeddedCode.Text = "Embedded";
+            this.EmbeddedCode.Click += new System.EventHandler(this.embeddedCode_Click);
             // 
             // referencePanel
             // 
@@ -592,7 +592,7 @@ namespace Gear.GUI
         private System.Windows.Forms.ToolStripButton addPluginMetadataButton;
         private System.Windows.Forms.ToolStripButton removePluginMetadataButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.ToolStripButton embeddedCode;
+        private System.Windows.Forms.ToolStripButton EmbeddedCode;
         private System.Windows.Forms.ColumnHeader keyColumn;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.ToolStripProgressBar progressHighlight;

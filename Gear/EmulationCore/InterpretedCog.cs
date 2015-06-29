@@ -37,14 +37,16 @@ namespace Gear.EmulationCore
         private uint ObjectFrame;
         private uint VariableFrame;
         private uint LocalFrame;
-        private bool InterpreterFlag; //!< Flag for determining if a COGINIT statement is to load an interpreter
+		/// @brief Flag for determining if a COGINIT statement is loading an interpreter.
+        private bool InterpreterFlag; 
 
         private uint TargetValue;
         private uint MaskValue;
         private uint PixelsValue;
         private uint ColorsValue;
 
-        private Stack<uint> CallStack;  //!< Internal stack, used for storing return call stuff
+		/// @brief Internal stack, used for storing return call stuff
+        private Stack<uint> CallStack;  
 
         private bool Port;
 

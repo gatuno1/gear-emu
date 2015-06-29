@@ -297,7 +297,7 @@ namespace Gear.GUI
                             string externalFile = Path.Combine(Path.GetDirectoryName(FileName),
                                 pluginCandidate.ExtFiles[i]);
                             codeEditorView.LoadFile(externalFile, RichTextBoxStreamType.PlainText);
-                            SetEmbeddedCodeButton(embeddedCode.Checked = false);
+                            SetEmbeddedCodeButton(EmbeddedCode.Checked = false);
                         }
                         else
                         {
@@ -308,7 +308,7 @@ namespace Gear.GUI
                             ///@todo : Add support to show in screen more than one file.
                             ///now it overwrites the code text.
                             codeEditorView.Text = pluginCandidate.Codes[i];
-                            SetEmbeddedCodeButton(embeddedCode.Checked = true);
+                            SetEmbeddedCodeButton(EmbeddedCode.Checked = true);
                         }
                         CodeChanged = false;
                     }
@@ -389,11 +389,11 @@ namespace Gear.GUI
                 {
                     case "1.0":
                         //TODO ASB: manage multiple files from user interface
-                        data.UseExtFiles = new bool[1] { (!embeddedCode.Checked) };
+                        data.UseExtFiles = new bool[1] { (!EmbeddedCode.Checked) };
                         string separateFileName = Path.Combine(Path.GetDirectoryName(FileName),
                             Path.GetFileNameWithoutExtension(FileName) + ".cs");
                         data.ExtFiles = new string[1] { 
-                            ((!embeddedCode.Checked) ? separateFileName : string.Empty) };
+                            ((!EmbeddedCode.Checked) ? separateFileName : string.Empty) };
                         data.Codes = new string[1] { codeEditorView.Text };
                         //update modified state for the plugin
                         CodeChanged = !PluginPersistence.SaveDatoToXML_v1_0(FileName, data);
@@ -933,9 +933,9 @@ namespace Gear.GUI
         /// @since v15.03.26 - Added.
         private void embeddedCode_Click(object sender, EventArgs e)
         {
-            SetEmbeddedCodeButton(embeddedCode.Checked);
+            SetEmbeddedCodeButton(EmbeddedCode.Checked);
             //remember setting
-            Properties.Settings.Default.EmbeddedCode = embeddedCode.Checked;
+            Properties.Settings.Default.EmbeddedCode = EmbeddedCode.Checked;
         }
 
         /// @brief Update the name & tooltip text depending on each state.
@@ -943,16 +943,16 @@ namespace Gear.GUI
         /// @since v15.03.26 - Added.
         private void SetEmbeddedCodeButton(bool newValue)
         {
-            embeddedCode.Checked = newValue;
-            if (embeddedCode.Checked)
+            EmbeddedCode.Checked = newValue;
+            if (EmbeddedCode.Checked)
             {
-                embeddedCode.Text = "Embedded";
-                embeddedCode.ToolTipText = "Embedded code in XML plugin file.";
+                EmbeddedCode.Text = "Embedded";
+                EmbeddedCode.ToolTipText = "Embedded code in XML plugin file.";
             }
             else
             {
-                embeddedCode.Text = "Separated";
-                embeddedCode.ToolTipText = "Code in separated file from XML plugin file.";
+                EmbeddedCode.Text = "Separated";
+                EmbeddedCode.ToolTipText = "Code in separated file from XML plugin file.";
             }
         }
 

@@ -258,7 +258,7 @@ namespace Gear.EmulationCore
                         if (maskedIn == DestinationValue)
                         {
                             DataResult = maskedIn;
-                            Zero = maskedIn == 0;
+                            Zero = (maskedIn == 0);
                             // TODO: DETERMINE CARRY
                             WriteBackResult();
                             return true;

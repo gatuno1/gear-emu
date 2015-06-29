@@ -21,7 +21,6 @@
  * --------------------------------------------------------------------------------
  */
 
-
 namespace Gear.EmulationCore
 {
     public class SystemXtal : ClockSource

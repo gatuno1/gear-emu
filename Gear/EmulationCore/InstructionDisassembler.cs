@@ -300,7 +300,7 @@ namespace Gear.EmulationCore
                 case Spin.ArgumentMode.MemoryOpCode:
                     return String.Format("{0} {1}", Name, GetMemoryOp(chip, ref address, useShortOpcodes));
                 default:
-                    throw new Exception("Uknown Spin Argument Mode: " + Instr.ArgumentMode.ToString());
+                    throw new Exception("Unknown Spin Argument Mode: " + Instr.ArgumentMode.ToString());
             }
         }
     }
