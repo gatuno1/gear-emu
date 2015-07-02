@@ -54,6 +54,7 @@ namespace Gear.GUI
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.windowsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.cascadeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -67,6 +68,8 @@ namespace Gear.GUI
             this.openBinaryButton = new System.Windows.Forms.ToolStripButton();
             this.newPluginButton = new System.Windows.Forms.ToolStripButton();
             this.openPluginButton = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.OptionsButton = new System.Windows.Forms.ToolStripButton();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
@@ -95,7 +98,7 @@ namespace Gear.GUI
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.MdiWindowListItem = this.windowsMenu;
             this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Size = new System.Drawing.Size(921, 24);
+            this.menuStrip.Size = new System.Drawing.Size(703, 24);
             this.menuStrip.TabIndex = 0;
             this.menuStrip.Text = "MenuStrip";
             // 
@@ -103,6 +106,7 @@ namespace Gear.GUI
             // 
             this.fileMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.openToolStripMenuItem,
+            this.optionsToolStripMenuItem,
             toolStripSeparator3,
             this.exitToolStripMenuItem});
             this.fileMenu.ImageTransparentColor = System.Drawing.SystemColors.ActiveBorder;
@@ -119,6 +123,12 @@ namespace Gear.GUI
             this.openToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
             this.openToolStripMenuItem.Text = "&Open Binary";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.OpenBinaryButton_Click);
+            // 
+            // optionsToolStripMenuItem
+            // 
+            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
+            this.optionsToolStripMenuItem.Text = "Gear Options";
             // 
             // exitToolStripMenuItem
             // 
@@ -195,10 +205,12 @@ namespace Gear.GUI
             this.openBinaryButton,
             toolStripSeparator1,
             this.newPluginButton,
-            this.openPluginButton});
+            this.openPluginButton,
+            this.toolStripSeparator2,
+            this.OptionsButton});
             this.toolStrip.Location = new System.Drawing.Point(0, 24);
             this.toolStrip.Name = "toolStrip";
-            this.toolStrip.Size = new System.Drawing.Size(921, 25);
+            this.toolStrip.Size = new System.Drawing.Size(703, 25);
             this.toolStrip.TabIndex = 1;
             this.toolStrip.Text = "ToolStrip";
             // 
@@ -234,13 +246,26 @@ namespace Gear.GUI
             this.openPluginButton.ToolTipText = "Edit Plugin in editor window";
             this.openPluginButton.Click += new System.EventHandler(this.OpenPluginButton_Click);
             // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            // 
+            // OptionsButton
+            // 
+            this.OptionsButton.Image = ((System.Drawing.Image)(resources.GetObject("OptionsButton.Image")));
+            this.OptionsButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.OptionsButton.Name = "OptionsButton";
+            this.OptionsButton.Size = new System.Drawing.Size(96, 22);
+            this.OptionsButton.Text = "Gear Options";
+            // 
             // statusStrip
             // 
             this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel});
             this.statusStrip.Location = new System.Drawing.Point(0, 659);
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(921, 22);
+            this.statusStrip.Size = new System.Drawing.Size(703, 22);
             this.statusStrip.TabIndex = 2;
             this.statusStrip.Text = "StatusStrip";
             // 
@@ -254,7 +279,7 @@ namespace Gear.GUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(921, 681);
+            this.ClientSize = new System.Drawing.Size(703, 681);
             this.Controls.Add(this.statusStrip);
             this.Controls.Add(this.toolStrip);
             this.Controls.Add(this.menuStrip);
@@ -293,5 +318,8 @@ namespace Gear.GUI
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripButton openPluginButton;
         private System.Windows.Forms.ToolStripButton newPluginButton;
+        private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripButton OptionsButton;
     }
 }

@@ -154,7 +154,7 @@ namespace Gear.PluginSupport
                 //culture
                 "Culture=neutral, ",
                 //key
-                "PublicKeyToken = null" );
+                "PublicKeyToken=null" );
             return fullName;
         }
 
