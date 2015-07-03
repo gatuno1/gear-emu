@@ -31,7 +31,7 @@
             this.GearPropertyGrid = new System.Windows.Forms.PropertyGrid();
             this.AplyButton = new System.Windows.Forms.Button();
             this.OKButton = new System.Windows.Forms.Button();
-            this.CancelButton = new System.Windows.Forms.Button();
+            this.CanceledButton = new System.Windows.Forms.Button();
             this.ButtonsPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.ButtonsPanel.SuspendLayout();
             this.SuspendLayout();
@@ -64,21 +64,21 @@
             this.OKButton.Text = "OK";
             this.OKButton.UseVisualStyleBackColor = true;
             // 
-            // CancelButton
+            // CanceledButton
             // 
-            this.CancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.CancelButton.Location = new System.Drawing.Point(165, 3);
-            this.CancelButton.Name = "CancelButton";
-            this.CancelButton.Size = new System.Drawing.Size(75, 23);
-            this.CancelButton.TabIndex = 4;
-            this.CancelButton.Text = "Cancel";
-            this.CancelButton.UseVisualStyleBackColor = true;
+            this.CanceledButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.CanceledButton.Location = new System.Drawing.Point(165, 3);
+            this.CanceledButton.Name = "CanceledButton";
+            this.CanceledButton.Size = new System.Drawing.Size(75, 23);
+            this.CanceledButton.TabIndex = 4;
+            this.CanceledButton.Text = "Cancel";
+            this.CanceledButton.UseVisualStyleBackColor = true;
             // 
             // ButtonsPanel
             // 
             this.ButtonsPanel.Controls.Add(this.AplyButton);
             this.ButtonsPanel.Controls.Add(this.OKButton);
-            this.ButtonsPanel.Controls.Add(this.CancelButton);
+            this.ButtonsPanel.Controls.Add(this.CanceledButton);
             this.ButtonsPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.ButtonsPanel.Location = new System.Drawing.Point(0, 279);
             this.ButtonsPanel.MaximumSize = new System.Drawing.Size(800, 29);
@@ -94,7 +94,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.AutoSize = true;
-            this.CancelButton = this.CancelButton;
             this.ClientSize = new System.Drawing.Size(375, 308);
             this.Controls.Add(this.GearPropertyGrid);
             this.Controls.Add(this.ButtonsPanel);
@@ -111,7 +110,7 @@
         private System.Windows.Forms.PropertyGrid GearPropertyGrid;
         private System.Windows.Forms.Button AplyButton;
         private System.Windows.Forms.Button OKButton;
-        private System.Windows.Forms.Button CancelButton;
+        private System.Windows.Forms.Button CanceledButton;
         private System.Windows.Forms.FlowLayoutPanel ButtonsPanel;
     }
 }

@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
+using Gear.Properties;
+
 namespace Gear.GUI
 {
     /// @brief Form to edit program properties
@@ -17,6 +19,7 @@ namespace Gear.GUI
         public AppPropertiesEditor()
         {
             InitializeComponent();
+            GearPropertyGrid.SelectedObject = Settings.Default;
         }
     }
 }

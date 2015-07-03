@@ -129,6 +129,7 @@ namespace Gear.GUI
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
             this.optionsToolStripMenuItem.Text = "Gear Options";
+            this.optionsToolStripMenuItem.Click += new System.EventHandler(this.optionsToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
@@ -256,8 +257,9 @@ namespace Gear.GUI
             this.OptionsButton.Image = ((System.Drawing.Image)(resources.GetObject("OptionsButton.Image")));
             this.OptionsButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.OptionsButton.Name = "OptionsButton";
-            this.OptionsButton.Size = new System.Drawing.Size(96, 22);
-            this.OptionsButton.Text = "Gear Options";
+            this.OptionsButton.Size = new System.Drawing.Size(69, 22);
+            this.OptionsButton.Text = "Options";
+            this.OptionsButton.Click += new System.EventHandler(this.OptionsButton_Click);
             // 
             // statusStrip
             // 

@@ -158,6 +158,18 @@ namespace Gear.GUI
             plugin.Show();
         }
 
+        private void OptionsButton_Click(object sender, EventArgs e)
+        {
+            var options = new AppPropertiesEditor();
+            options.MdiParent = this;
+            options.Show();
+        }
+
+        private void optionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OptionsButton_Click(sender, e);
+        }
+
     }
 }
 
