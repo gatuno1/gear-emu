@@ -24,6 +24,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using System.Xml;
 using System.Xml.Schema;
@@ -55,6 +56,41 @@ namespace Gear.PluginSupport
         other = 100         //!< @brief Other cause.
     }
 
+    /// @brief exception class to 
+    public class NotValidPluginData : Exception
+    {
+        private PluginDataErrorType ErrorType;
+        private string Operation;
+
+        public NotValidPluginData(PluginDataErrorType errType, string operationDesc)
+        {
+            ErrorType = errType;
+            Operation = operationDesc;
+        }
+
+        public override string Message()
+        {
+            string prolog = null;
+            switch (ErrorType)
+            {
+                case PluginDataErrorType.none:
+                    break;
+                case PluginDataErrorType.notFoundDTD:
+                case PluginDataErrorType.openFile:
+                case PluginDataErrorType.nonDTDComplaint:
+                    prolog = "Error '";
+                    break;
+                case PluginDataErrorType.other:
+                    prolog = "Exception catch:'";
+                    break;
+            }
+            if (ErrorType != PluginDataErrorType.none)
+                return string.Concat(prolog, ErrorType.ToString(), "' ", Operation, ".");
+            else
+                return "No error detected, but NotValidPluginData Exception called on " + Operation;
+        }
+    }
+
     /// @brief Class to hold metadata of the plugin.
     /// @since v15.03.26 - Added.
     public class PluginData
@@ -84,14 +120,18 @@ namespace Gear.PluginSupport
         public string[] Codes;
         /// @brief Name of the main XML plugin file.
         public string MainFile;
+        /// @brief Name of the assembly file in case of had been compiled to file
+        public string AssemblyFile;
         /// @brief Assembly full name for the plugin file.
         public string AssemblyFullName
         {
             get
             {
                 return AssemblyUtils.CompiledPluginFullName(
-                      AssemblyUtils.GetFileDateTime(this.MainFile), this.InstanceName, 
-                      this.PluginVersion, this.PluginSystemVersion);
+                    AssemblyUtils.GetFileDateTime(this.MainFile), 
+                    this.InstanceName, 
+                    this.PluginVersion, 
+                    this.PluginSystemVersion);
             }
         }
         /// @brief Hold the result for a validity test of related XML file, based on DTD.
@@ -111,6 +151,7 @@ namespace Gear.PluginSupport
             this.isValid = true;
             this.errorType = PluginDataErrorType.none;
             ValidationErrors = new List<string>();
+            AssemblyFile = null;
         }
 
         /// @brief Add an error to the list.
@@ -122,6 +163,60 @@ namespace Gear.PluginSupport
                 ValidationErrors.Add(errorText);
         }
 
+        /// @brief Determine if the plugin allow only one instance o not.
+        /// @details Use reflection to load and evaluate the member PluginCommon.SingleInstanceAllowed
+        /// @throws NotValidPluginData 
+        /// @returns True if plugin allow only one instance, of False if more than one is allowed.
+        public bool OnlySingleInstance()
+        {
+            bool value;
+            if (isValid) 
+            {
+                if (!string.IsNullOrEmpty(MainFile))
+                {
+                    //determine the file name to compile the plugin
+                    string nameToCompile = AssemblyUtils.CompiledPluginName(
+                        InstanceName, 
+                        PluginSystemVersion, 
+                        ".dll");
+                    //create a temporally app domain
+                    AppDomain testDomain = AppDomain.CreateDomain(InstanceName + "TestDomain");
+                    if (AssemblyFile == null)
+                    {
+                        if (!CompileToFile(nameToCompile))
+                            throw new NotValidPluginData(
+                                PluginDataErrorType.openFile,
+                                string.Concat(" trying to compile file '", nameToCompile, "'"));
+                    }
+                    //try to load the plugin from the assembly file
+                    ObjectHandle pluginHandle = 
+                        testDomain.CreateInstanceFrom(MainFile, InstanceName);
+                    if (pluginTest != null)
+                        value = pluginTest.SingleInstanceAllowed;
+                    else throw new NotValidPluginData(
+                            PluginDataErrorType.openFile,
+                            string.Concat("coudn't invoke '", InstanceName,
+                                ".SingleInstanceAllowed' member with Reflection ",
+                                "on PluginData.OnlySingleInstance()"));
+                    //unload the test domain
+                    AppDomain.Unload(testDomain);
+                }
+                else throw new NotValidPluginData(PluginDataErrorType.openFile,
+                    "because file name is empty on PluginData.OnlySingleInstance()");
+            }
+            else throw new NotValidPluginData(
+                PluginDataErrorType.openFile,
+                string.Concat("because Plugin data for '", InstanceName, 
+                    "' is not valid, on PluginData.OnlySingleInstance()"));
+        }
+
+        /// @brief Compile the plugin to a file.
+        /// @returns True if the compile was successfull, false otherwise.
+        /// @since v15.03.26 - Added.
+        private bool CompileToFile(string)
+        {
+            ModuleCompiler.chachePath
+        }
         /// @brief Handle the error in the validation, saving the messages and setting 
         /// the validation state.
         /// @param[in] sender Reference to the object where the exception was raised.
@@ -153,7 +248,7 @@ namespace Gear.PluginSupport
         /// XML element, so both conditions are failed together. In V1.0 XML plugin format, 
         /// both conditions must be fulfilled together for a valid plugin.
         /// @since v15.03.26 - Added.
-        bool ValidatePluginXML(XmlReader XR)
+        private bool ValidatePluginXML(XmlReader XR)
         {
             //read the XML, if it is possible
             while (XR.Read())
@@ -199,6 +294,8 @@ namespace Gear.PluginSupport
         /// @since v15.03.26 - Added.
         public bool ValidatePluginFile(string filenameXml)
         {
+            //set the main file containing the plugin definition
+            this.MainFile = filenameXml;
             //Settings to be used to validate the XML
             // reference from https://msdn.microsoft.com/en-us/library/vstudio/z2adhb2f%28v=vs.100%29.aspx
             XmlReaderSettings settings = new XmlReaderSettings();
@@ -216,12 +313,11 @@ namespace Gear.PluginSupport
             try
             {
                 //Open a XML reader with the file name and settings given
-                XmlReader XR = XmlReader.Create(filenameXml, settings);
+                XmlReader XR = XmlReader.Create(MainFile, settings);
                 //validate the file as it is, expecting it have embedded DTD definition
                 if (ValidatePluginXML(XR)) 
                     return true;
-                else 
-                    switch (this.PluginSystemVersion)
+                else switch (this.PluginSystemVersion)
                 {   //case of not valid XML, so let's see the plugin system version detected
                     case null:
                         //we have to try adding default DTD definition to the XML source, because
@@ -237,7 +333,7 @@ namespace Gear.PluginSupport
                         settingsNoDTD.DtdProcessing = DtdProcessing.Ignore;
                         settingsNoDTD.ValidationType = ValidationType.None;
                         //reopen the XmlReader with no DTD validation
-                        XR = XmlReader.Create(filenameXml, settingsNoDTD);
+                        XR = XmlReader.Create(MainFile, settingsNoDTD);
                         doc.Load(XR);
                         doc.XmlResolver = myResolver;
                         doc.InsertBefore(
@@ -377,16 +473,16 @@ namespace Gear.PluginSupport
                 //level 2 elements - author
                 if (Data.Authors != null)
                 {
-                    bool isValidT, isFirst = true;
+                    bool isValidAuth, isFirst = true;
                     foreach (string Author in Data.Authors)
                     {
-                        isValidT = !string.IsNullOrEmpty(Author);
-                        if (isFirst | isValidT)
+                        isValidAuth = !string.IsNullOrEmpty(Author);
+                        if (isFirst | isValidAuth)
                         {
                             childElement = xmlDoc.CreateElement("author");
                             instance.AppendChild(childElement);
                             isFirst = false;
-                            if (isValidT)
+                            if (isValidAuth)
                             {
                                 textElement = xmlDoc.CreateTextNode(Author);
                                 childElement.AppendChild(textElement);
@@ -450,16 +546,16 @@ namespace Gear.PluginSupport
                 //level 2 elements - link
                 if (Data.Links != null)
                 {
-                    bool isValidT, isFirst = true; 
+                    bool isValidLink, isFirst = true; 
                     foreach (string link in Data.Links)
                     {
-                        isValidT = !string.IsNullOrEmpty(link);
-                        if (isFirst | isValidT)
+                        isValidLink = !string.IsNullOrEmpty(link);
+                        if (isFirst | isValidLink)
                         {
                             childElement = xmlDoc.CreateElement("link");
                             instance.AppendChild(childElement);
                             isFirst = false;
-                            if (isValidT)
+                            if (isValidLink)
                             {
                                 cdata = xmlDoc.CreateCDataSection(link);
                                 childElement.AppendChild(cdata);

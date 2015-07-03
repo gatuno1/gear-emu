@@ -42,6 +42,9 @@ namespace Gear.PluginSupport
     /// @brief Compile a PluginBase Module to memory, returning eventual errors.
     static class ModuleCompiler
     {
+        /// @brief path to compliling cache
+        static public const string chachePath = @".\plugincache\";
+        
         /// @brief Collection for error list on compile a dynamic plugin.
         static private CompilerErrorCollection m_Errors;    
 
@@ -220,7 +223,6 @@ namespace Gear.PluginSupport
         static public PluginCommon CompileModule(string[] codeTexts, string module, 
             string[] references, object objParams, string pluginSystemVersion)
         {
-            const string chachePath = @".\plugincache\";
             string compiledName = AssemblyUtils.CompiledPluginName(module, pluginSystemVersion, 
                  string.Concat("-", AssemblyUtils.TimeStampForFile(DateTime.Now), ".dll"));
             //string compiledName = CompiledPluginName(module, pluginSystemVersion, 

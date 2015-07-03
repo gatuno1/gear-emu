@@ -537,16 +537,16 @@ namespace Gear.GUI
                     
                     // TODO ASB [HIGH PRIORITY] - determine how to obtain the attribute SingleInstanceAllowed from the plugin code: reflection on a separate AppDomain?
                     //pseudo code:
-                    //if (pluginCandidate.OnlySingleInstance() && 
-                    //    AssemblyUtils.IsAlreadyLoaded(pluginCandidate.AssemblyFullName))
-                    //{
-                    //    CreateFromAssembly(pluginCandidate.InstanceName, candidateAssembName);
-                    //}     
-                    //else 
-                    //{
-                    //    //this method contains the remaining code from Emulator.LoadPlugin(.)
-                    //    CreateFromFile(pluginCandidate); 
-                    //}
+                    if (!pluginCandidate.OnlySingleInstance() &&
+                        AssemblyUtils.IsAlreadyLoaded(pluginCandidate.AssemblyFullName))
+                    {
+                        CreateFromAssembly(pluginCandidate.InstanceName, candidateAssembName);
+                    }
+                    else
+                    {
+                        //this method contains the remaining code from Emulator.LoadPlugin(.)
+                        CreateFromFile(pluginCandidate);
+                    }
                 }
             }
         }
