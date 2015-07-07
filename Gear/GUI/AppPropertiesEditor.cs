@@ -16,6 +16,8 @@ namespace Gear.GUI
     public partial class AppPropertiesEditor : Form
     {
         // TODO [ASB] : see PropertyGrid Control tutorial - https://msdn.microsoft.com/en-us/library/aa302326.aspx
+        // also in https://msdn.microsoft.com/en-us/library/aa302334.aspx
+        // and http://www.codeproject.com/Articles/22717/Using-PropertyGrid
         public AppPropertiesEditor()
         {
             InitializeComponent();

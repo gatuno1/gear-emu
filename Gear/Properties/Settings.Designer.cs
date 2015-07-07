@@ -8,6 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.ComponentModel;
+
 namespace Gear.Properties {
     
     
@@ -26,6 +28,7 @@ namespace Gear.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [CategoryAttribute("Plugin Editor")]
         public string LastPlugin {
             get {
                 return ((string)(this["LastPlugin"]));
@@ -38,6 +41,7 @@ namespace Gear.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [CategoryAttribute("Emulator")]
         public string LastBinary {
             get {
                 return ((string)(this["LastBinary"]));
@@ -50,6 +54,7 @@ namespace Gear.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [CategoryAttribute("Plugin Editor")]
         public bool UseNoTemplate {
             get {
                 return ((bool)(this["UseNoTemplate"]));
@@ -62,6 +67,7 @@ namespace Gear.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("1024")]
+        [CategoryAttribute("Emulator")]
         public uint UpdateEachSteps {
             get {
                 return ((uint)(this["UpdateEachSteps"]));
@@ -74,6 +80,7 @@ namespace Gear.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0.0001")]
+        [CategoryAttribute("Logic Probe")]
         public double LastTimeFrame {
             get {
                 return ((double)(this["LastTimeFrame"]));
@@ -86,6 +93,7 @@ namespace Gear.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("5E-05")]
+        [CategoryAttribute("Logic Probe")]
         public double LastTickMarkGrid {
             get {
                 return ((double)(this["LastTickMarkGrid"]));
@@ -98,6 +106,7 @@ namespace Gear.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [CategoryAttribute("Plugin Editor")]
         public bool EmbeddedCode {
             get {
                 return ((bool)(this["EmbeddedCode"]));

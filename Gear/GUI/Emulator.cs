@@ -206,24 +206,24 @@ namespace Gear.GUI
         public void LoadPlugin(string FileName)
         {
             object objInst = null;
-            ////create the structure to fill data from file
-            //PluginData pluginCandidate = new PluginData();
-            ////Determine if the XML is valid, and for which DTD version
-            //if (!pluginCandidate.ValidatePluginFile(FileName))
-            //{
-            //    string allMessages = string.Empty;
-            //    //case not valid file, so show the errors.
-            //    foreach (string strText in pluginCandidate.ValidationErrors)
-            //        allMessages += (strText.Trim() + "\r\n");
-            //    /// @todo Add a custom dialog to show every error message in a grid.
-            //    //show messages
-            //    MessageBox.Show(allMessages,
-            //        "Emulator - OpenPlugin.",
-            //        MessageBoxButtons.OK,
-            //        MessageBoxIcon.Error);
-            //}
-            //else  //...XML plugin file is valid & system version is determined
-            //{
+            //create the structure to fill data from file
+            PluginData pluginCandidate = new PluginData();
+            //Determine if the XML is valid, and for which DTD version
+            if (!pluginCandidate.ValidatePluginFile(FileName))
+            {
+                string allMessages = string.Empty;
+                //case not valid file, so show the errors.
+                foreach (string strText in pluginCandidate.ValidationErrors)
+                    allMessages += (strText.Trim() + "\r\n");
+                /// @todo Add a custom dialog to show every error message in a grid.
+                //show messages
+                MessageBox.Show(allMessages,
+                    "Emulator - OpenPlugin.",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            else  //...XML plugin file is valid & system version is determined
+            {
                 //determine time to use to build the plugin
                 DateTime TimeOfBuild = AssemblyUtils.GetFileDateTime(FileName);
                 for (int i = 0; i < pluginCandidate.UseExtFiles.Length; i++ )
@@ -308,7 +308,7 @@ namespace Gear.GUI
                     //show the error list
                     pe.ShowErrorGrid(true);
                 }
-            //}
+            }
         
         }
 
@@ -537,16 +537,16 @@ namespace Gear.GUI
                     
                     // TODO ASB [HIGH PRIORITY] - determine how to obtain the attribute SingleInstanceAllowed from the plugin code: reflection on a separate AppDomain?
                     //pseudo code:
-                    if (!pluginCandidate.OnlySingleInstance() &&
-                        AssemblyUtils.IsAlreadyLoaded(pluginCandidate.AssemblyFullName))
-                    {
-                        CreateFromAssembly(pluginCandidate.InstanceName, candidateAssembName);
-                    }
-                    else
-                    {
-                        //this method contains the remaining code from Emulator.LoadPlugin(.)
-                        CreateFromFile(pluginCandidate);
-                    }
+                    //if (!pluginCandidate.OnlySingleInstance() &&
+                    //    AssemblyUtils.IsAlreadyLoaded(pluginCandidate.AssemblyFullName))
+                    //{
+                    //    CreateFromAssembly(pluginCandidate.InstanceName, candidateAssembName);
+                    //}
+                    //else
+                    //{
+                    //    //this method contains the remaining code from Emulator.LoadPlugin(.)
+                    //    CreateFromFile(pluginCandidate);
+                    //}
                 }
             }
         }

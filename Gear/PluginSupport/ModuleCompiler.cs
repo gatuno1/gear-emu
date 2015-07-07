@@ -43,7 +43,7 @@ namespace Gear.PluginSupport
     static class ModuleCompiler
     {
         /// @brief path to compliling cache
-        static public const string chachePath = @".\plugincache\";
+        static public readonly string chachePath = @".\plugincache\";
         
         /// @brief Collection for error list on compile a dynamic plugin.
         static private CompilerErrorCollection m_Errors;    

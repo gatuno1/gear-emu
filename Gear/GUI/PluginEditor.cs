@@ -43,6 +43,9 @@ namespace Gear.GUI
         private string _saveFileName;
         /// @brief Plugin System Version of the file for a plugin. 
         private string _systemFormatVersion;
+        /// @brief Metadata object for this plugin
+        /// @since v15.03.26 - Added.
+        public PluginMetadata metaData;
         /// @brief Text for plugin Metadata
         /// @details Indicates the version of plugin system for the current plugin.
         /// @since v15.03.26 - Added.
@@ -144,6 +147,8 @@ namespace Gear.GUI
             changeDetectEnabled = true;
             CodeChanged = false;
 
+            metaData = new PluginMetadata();
+            propertyGrid1.SelectedObject = this.metaData;
             // setting default font
             defaultFont = new Font(FontFamily.GenericMonospace, 10, FontStyle.Regular);
             codeEditorView.Font = defaultFont;
@@ -325,15 +330,17 @@ namespace Gear.GUI
                     switch (pluginCandidate.PluginSystemVersion)
                     {
                         case "1.0":
+                            metaData = pluginCandidate.metaData;
+                            propertyGrid1.SelectedObject = metaData;
                             ClearMetadata(true);    //reset metadata in screen, enabling it
-                            SetElementOfMetadata("Version", pluginCandidate.PluginVersion);
-                            SetElementOfMetadata("Authors", pluginCandidate.Authors);
-                            SetElementOfMetadata("ModifiedBy", pluginCandidate.Modifier);
-                            SetElementOfMetadata("DateModified", pluginCandidate.DateModified);
-                            SetElementOfMetadata("ReleaseNotes", pluginCandidate.ReleaseNotes);
-                            SetElementOfMetadata("Description", pluginCandidate.Description);
-                            SetElementOfMetadata("Usage", pluginCandidate.Usage);
-                            SetElementOfMetadata("Links", pluginCandidate.Links);
+                            SetElementOfMetadata("Version", metaData.PluginVersion);
+                            SetElementOfMetadata("Authors", metaData.Authors);
+                            SetElementOfMetadata("ModifiedBy", metaData.Modifier);
+                            SetElementOfMetadata("DateModified", metaData.DateModified);
+                            SetElementOfMetadata("ReleaseNotes", metaData.ReleaseNotes);
+                            SetElementOfMetadata("Description", metaData.Description);
+                            SetElementOfMetadata("Usage", metaData.Usage);
+                            SetElementOfMetadata("Links", metaData.Links);
                             break;
                         case "0.0":
                             ClearMetadata(false);    //reset metadata in screen, disabling it
@@ -359,22 +366,29 @@ namespace Gear.GUI
         public void SaveFile(string FileName, string systemVersion)
         {
             PluginData data = new PluginData();
+            PluginMetadata meta = new PluginMetadata();
             //fill struct with data from screen controls
             data.PluginSystemVersion = systemVersion; //version of plugin system
             try
             {
-                data.PluginVersion =
+                //TODO ASB - delete this block when changed the control to show metadata
+                // from here >>>>
+                meta.PluginVersion =
                     GetElementsFromMetadata("Version", false)[0];    //always expect 1 element
-                data.Authors = GetElementsFromMetadata("Authors");
-                data.Modifier = GetElementsFromMetadata("ModifiedBy")[0];   //always expect 1 element
-                data.DateModified =
+                meta.Authors = GetElementsFromMetadata("Authors");
+                meta.Modifier = GetElementsFromMetadata("ModifiedBy")[0];   //always expect 1 element
+                meta.DateModified =
                     GetElementsFromMetadata("DateModified", false)[0];//always expect 1 element
                 //cultural reference should be the one actually used in run time
-                data.CulturalReference = CultureInfo.CurrentCulture.Name;
-                data.ReleaseNotes = GetElementsFromMetadata("ReleaseNotes")[0]; //always expect 1 element
-                data.Description = GetElementsFromMetadata("Description")[0]; //always expect 1 element
-                data.Usage = GetElementsFromMetadata("Usage")[0];             //always expect 1 element
-                data.Links = GetElementsFromMetadata("Links");
+                meta.CulturalReference = CultureInfo.CurrentCulture.Name;
+                meta.ReleaseNotes = GetElementsFromMetadata("ReleaseNotes")[0]; //always expect 1 element
+                meta.Description = GetElementsFromMetadata("Description")[0]; //always expect 1 element
+                meta.Usage = GetElementsFromMetadata("Usage")[0];             //always expect 1 element
+                meta.Links = GetElementsFromMetadata("Links");
+                // <<< up to here 
+                // change with the following line:
+                //data.metaData = this.metaData;
+
                 data.InstanceName = instanceName.Text;
 
                 string[] references;
@@ -390,7 +404,8 @@ namespace Gear.GUI
                     case "1.0":
                         //TODO ASB: manage multiple files from user interface
                         data.UseExtFiles = new bool[1] { (!EmbeddedCode.Checked) };
-                        string separateFileName = Path.Combine(Path.GetDirectoryName(FileName),
+                        string separateFileName = Path.Combine(
+                            Path.GetDirectoryName(FileName),
                             Path.GetFileNameWithoutExtension(FileName) + ".cs");
                         data.ExtFiles = new string[1] { 
                             ((!EmbeddedCode.Checked) ? separateFileName : string.Empty) };
@@ -1142,13 +1157,13 @@ namespace Gear.GUI
                     tex = "Description of changes of this version of the plugin.";
                     break;
                 case "Description":
-                    tex = "What does the plugin.";
+                    tex = "What the plugin does.";
                     break;
                 case "Usage":
                     tex = "How this plugin is supposed to be used.";
                     break;
                 case "Links":
-                    tex = "Web links for the plugin.";
+                    tex = "Web links for more information.";
                     break;
                 default:
                     tex = "Not recognized metadata element";

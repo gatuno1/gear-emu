@@ -24,12 +24,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
+using System.ComponentModel;
+using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Schema;
-using System.IO;
-using System.Globalization;
 
 namespace Gear.PluginSupport
 {
@@ -68,46 +68,109 @@ namespace Gear.PluginSupport
             Operation = operationDesc;
         }
 
-        public override string Message()
+        public override string  Message
         {
-            string prolog = null;
-            switch (ErrorType)
+            get
             {
-                case PluginDataErrorType.none:
-                    break;
-                case PluginDataErrorType.notFoundDTD:
-                case PluginDataErrorType.openFile:
-                case PluginDataErrorType.nonDTDComplaint:
-                    prolog = "Error '";
-                    break;
-                case PluginDataErrorType.other:
-                    prolog = "Exception catch:'";
-                    break;
+                string prolog = null;
+                switch (ErrorType)
+                {
+                    case PluginDataErrorType.none:
+                        break;
+                    case PluginDataErrorType.notFoundDTD:
+                    case PluginDataErrorType.openFile:
+                    case PluginDataErrorType.nonDTDComplaint:
+                        prolog = "Error '";
+                        break;
+                    case PluginDataErrorType.other:
+                        prolog = "Exception catch:'";
+                        break;
+                }
+                if (ErrorType != PluginDataErrorType.none)
+                    return string.Concat(prolog, ErrorType.ToString(), "' ", Operation, ".");
+                else
+                    return "No error detected, but NotValidPluginData Exception called on " + Operation;
             }
-            if (ErrorType != PluginDataErrorType.none)
-                return string.Concat(prolog, ErrorType.ToString(), "' ", Operation, ".");
-            else
-                return "No error detected, but NotValidPluginData Exception called on " + Operation;
         }
     }
 
-    /// @brief Class to hold metadata of the plugin.
+    /// @brief Class to hold metadata of the plugin
+    /// @since v15.03.26 - Added.
+    [DefaultPropertyAttribute("Description")]
+    public class PluginMetadata
+    {
+         /// @brief Version of the plugin itself.
+        [DescriptionAttribute("Version number of the plugin."), DefaultValueAttribute("1.0")]
+        public string PluginVersion;
+
+        /// @brief List of authors.
+        [DescriptionAttribute("The name of original author of the plugin.")]
+        public string[] Authors;
+
+        /// @brief Last author of modifications.
+        [DescriptionAttribute("The name of the last modifier.")]
+        public string Modifier;             
+
+        /// @brief Date of modifications,
+        [DescriptionAttribute("When the last modification was made.")]
+        public string DateModified;         
+        
+        /// @brief To store the cultural reference of dates.
+        [BrowsableAttribute(false)]
+        public string CulturalReference;
+        
+        /// @brief Release notes (version modifications).
+        [DescriptionAttribute("Description of changes of this version of the plugin.")]
+        public string ReleaseNotes;
+
+        /// @brief Description of the plugin.
+        [DescriptionAttribute("What the plugin does.")]
+        public string Description;
+
+        /// @brief Guides to use the plugin.
+        [DescriptionAttribute("How this plugin is supposed to be used.")]
+        public string Usage;
+
+        /// @brief Links supporting the plugin.
+        [DescriptionAttribute("Web links for more information.")]
+        public string[] Links;
+
+        /// @brief Default constructor.
+        public PluginMetadata() 
+        { 
+            //use current value
+            CulturalReference = CultureInfo.CurrentCulture.Name;
+        }
+    }
+
+    /// @brief Class to hold data of the plugin.
     /// @since v15.03.26 - Added.
     public class PluginData
     {
         /// @brief Version of plugin system.
         /// @note Will be a version, if only is a valid plugin (attribute PluginData::isValid = true).
         public string PluginSystemVersion;
-        public string PluginVersion;        //!< @brief Version of the plugin itself.
-
-        public string[] Authors;            //!< @brief List of authors.
-        public string Modifier;             //!< @brief Last author of modifications.
-        public string DateModified;         //!< @brief Date of modifications,
-        public string CulturalReference;    //!< @brief To store the cultural reference of dates.
-        public string ReleaseNotes;         //!< @brief Release notes (version modifications).
-        public string Description;          //!< @brief Description of the plugin.
-        public string Usage;                //!< @brief Guides to use the plugin.
-        public string[] Links;              //!< @brief Links supporting the plugin.
+        /// @brief Metadata properties for the plugin.
+        public PluginMetadata metaData;
+        //public string PluginVersion;
+        /// @brief Version of the plugin itself.
+        public string PluginVersion
+        {
+            get { return metaData.PluginVersion; }
+        }
+        /// @brief Description of the plugin.
+        public string Description
+        {
+            get { return metaData.Description; } 
+        }
+        //public string[] Authors;            //!< @brief List of authors.
+        //public string Modifier;             //!< @brief Last author of modifications.
+        //public string DateModified;         //!< @brief Date of modifications,
+        //public string CulturalReference;    //!< @brief To store the cultural reference of dates.
+        //public string ReleaseNotes;         //!< @brief Release notes (version modifications).
+        //public string Description;          //!< @brief Description of the plugin.
+        //public string Usage;                //!< @brief Guides to use the plugin.
+        //public string[] Links;              //!< @brief Links supporting the plugin.
 
         public string InstanceName;         //!< @brief Class name of the plugin definition.
         public string[] References;         //!< @brief Auxiliary references to compile the plugin.
@@ -130,7 +193,7 @@ namespace Gear.PluginSupport
                 return AssemblyUtils.CompiledPluginFullName(
                     AssemblyUtils.GetFileDateTime(this.MainFile), 
                     this.InstanceName, 
-                    this.PluginVersion, 
+                    this.metaData.PluginVersion, 
                     this.PluginSystemVersion);
             }
         }
@@ -152,6 +215,7 @@ namespace Gear.PluginSupport
             this.errorType = PluginDataErrorType.none;
             ValidationErrors = new List<string>();
             AssemblyFile = null;
+            metaData = new PluginMetadata();
         }
 
         /// @brief Add an error to the list.
@@ -189,17 +253,18 @@ namespace Gear.PluginSupport
                                 string.Concat(" trying to compile file '", nameToCompile, "'"));
                     }
                     //try to load the plugin from the assembly file
-                    ObjectHandle pluginHandle = 
-                        testDomain.CreateInstanceFrom(MainFile, InstanceName);
-                    if (pluginTest != null)
-                        value = pluginTest.SingleInstanceAllowed;
-                    else throw new NotValidPluginData(
-                            PluginDataErrorType.openFile,
-                            string.Concat("coudn't invoke '", InstanceName,
-                                ".SingleInstanceAllowed' member with Reflection ",
-                                "on PluginData.OnlySingleInstance()"));
+                    //ObjectHandle pluginHandle = 
+                    //    testDomain.CreateInstanceFrom(MainFile, InstanceName);
+                    //if (pluginTest != null)
+                    //    value = pluginTest.SingleInstanceAllowed;
+                    //else throw new NotValidPluginData(
+                    //        PluginDataErrorType.openFile,
+                    //        string.Concat("coudn't invoke '", InstanceName,
+                    //            ".SingleInstanceAllowed' member with Reflection ",
+                    //            "on PluginData.OnlySingleInstance()"));
                     //unload the test domain
                     AppDomain.Unload(testDomain);
+                    return true;    //temp statement
                 }
                 else throw new NotValidPluginData(PluginDataErrorType.openFile,
                     "because file name is empty on PluginData.OnlySingleInstance()");
@@ -213,9 +278,11 @@ namespace Gear.PluginSupport
         /// @brief Compile the plugin to a file.
         /// @returns True if the compile was successfull, false otherwise.
         /// @since v15.03.26 - Added.
-        private bool CompileToFile(string)
+        private bool CompileToFile(string fileName)
         {
-            ModuleCompiler.chachePath
+            //ModuleCompiler.chachePath
+            //delete the following:
+            return true;    //temp statement
         }
         /// @brief Handle the error in the validation, saving the messages and setting 
         /// the validation state.
@@ -464,17 +531,17 @@ namespace Gear.PluginSupport
             //Main element - plugin
             XmlElement root = xmlDoc.CreateElement("plugin");
             root.SetAttribute("plugin_system_version", Data.PluginSystemVersion);
-            root.SetAttribute("version", Data.PluginVersion);
+            root.SetAttribute("version", Data.metaData.PluginVersion);
             xmlDoc.AppendChild(root);
             //level 1 element - metadata
             instance = xmlDoc.CreateElement("metadata");
             root.AppendChild(instance);
             {
                 //level 2 elements - author
-                if (Data.Authors != null)
+                if (Data.metaData.Authors != null)
                 {
                     bool isValidAuth, isFirst = true;
-                    foreach (string Author in Data.Authors)
+                    foreach (string Author in Data.metaData.Authors)
                     {
                         isValidAuth = !string.IsNullOrEmpty(Author);
                         if (isFirst | isValidAuth)
@@ -498,56 +565,56 @@ namespace Gear.PluginSupport
                 //level 2 element - modified_by
                 childElement = xmlDoc.CreateElement("modified_by");
                 instance.AppendChild(childElement);
-                if (Data.Modifier.Length > 0)
+                if (Data.metaData.Modifier.Length > 0)
                 {
-                    textElement = xmlDoc.CreateTextNode(Data.Modifier);
+                    textElement = xmlDoc.CreateTextNode(Data.metaData.Modifier);
                     childElement.AppendChild(textElement);
                 }
                 //level 2 element - date_modified
                 childElement = xmlDoc.CreateElement("date_modified");
                 instance.AppendChild(childElement);
-                if (Data.DateModified.Length > 0)
+                if (Data.metaData.DateModified.Length > 0)
                 {
-                    textElement = xmlDoc.CreateTextNode(Data.DateModified);
+                    textElement = xmlDoc.CreateTextNode(Data.metaData.DateModified);
                     childElement.AppendChild(textElement);
                 }
                 //level 2 element - cultural_reference
                 childElement = xmlDoc.CreateElement("cultural_reference");
                 instance.AppendChild(childElement);
-                if (Data.CulturalReference.Length > 0)
+                if (Data.metaData.CulturalReference.Length > 0)
                 {
-                    textElement = xmlDoc.CreateTextNode(Data.CulturalReference);
+                    textElement = xmlDoc.CreateTextNode(Data.metaData.CulturalReference);
                     childElement.AppendChild(textElement);
                 }
                 //level 2 element - release_notes
                 childElement = xmlDoc.CreateElement("release_notes");
                 instance.AppendChild(childElement);
-                if (Data.ReleaseNotes.Length > 0)
+                if (Data.metaData.ReleaseNotes.Length > 0)
                 {
-                    cdata = xmlDoc.CreateCDataSection(Data.ReleaseNotes);
+                    cdata = xmlDoc.CreateCDataSection(Data.metaData.ReleaseNotes);
                     childElement.AppendChild(cdata);
                 }
                 //level 2 element - description
                 childElement = xmlDoc.CreateElement("description");
                 instance.AppendChild(childElement);
-                if (Data.Description.Length > 0)
+                if (Data.metaData.Description.Length > 0)
                 {
-                    cdata = xmlDoc.CreateCDataSection(Data.Description);
+                    cdata = xmlDoc.CreateCDataSection(Data.metaData.Description);
                     childElement.AppendChild(cdata);
                 }
                 //level 2 element - usage
                 childElement = xmlDoc.CreateElement("usage");
                 instance.AppendChild(childElement);
-                if (Data.Usage.Length > 0)
+                if (Data.metaData.Usage.Length > 0)
                 {
-                    cdata = xmlDoc.CreateCDataSection(Data.Usage);
+                    cdata = xmlDoc.CreateCDataSection(Data.metaData.Usage);
                     childElement.AppendChild(cdata);
                 }
                 //level 2 elements - link
-                if (Data.Links != null)
+                if (Data.metaData.Links != null)
                 {
                     bool isValidLink, isFirst = true; 
-                    foreach (string link in Data.Links)
+                    foreach (string link in Data.metaData.Links)
                     {
                         isValidLink = !string.IsNullOrEmpty(link);
                         if (isFirst | isValidLink)
@@ -804,7 +871,7 @@ namespace Gear.PluginSupport
                                         switch (XR.Name)
                                         {
                                             case "version":
-                                                Data.PluginVersion = XR.Value;
+                                                Data.metaData.PluginVersion = XR.Value;
                                                 break;
                                             case "ref":
                                                 extFilesTmp.Add(codeQty, XR.Value);
@@ -833,22 +900,22 @@ namespace Gear.PluginSupport
                                     authorsTmp.Add(XR.Value);
                                     break;
                                 case "modified_by":
-                                    Data.Modifier = XR.Value;
+                                    Data.metaData.Modifier = XR.Value;
                                     break;
                                 case "date_modified":
-                                    Data.DateModified = XR.Value;
+                                    Data.metaData.DateModified = XR.Value;
                                     break;
                                 case "cultural_reference":
-                                    Data.CulturalReference = XR.Value;
+                                    Data.metaData.CulturalReference = XR.Value;
                                     break;
                                 case "release_notes":
-                                    Data.ReleaseNotes = XR.Value;
+                                    Data.metaData.ReleaseNotes = XR.Value;
                                     break;
                                 case "description":
-                                    Data.Description = XR.Value;
+                                    Data.metaData.Description = XR.Value;
                                     break;
                                 case "usage":
-                                    Data.Usage = XR.Value;
+                                    Data.metaData.Usage = XR.Value;
                                     break;
                                 case "link":
                                     linksTmp.Add(XR.Value); //add to the list of links
@@ -872,13 +939,13 @@ namespace Gear.PluginSupport
                             switch (lastElement.Peek())
                             {
                                 case "release_notes":
-                                    Data.ReleaseNotes = XR.Value;
+                                    Data.metaData.ReleaseNotes = XR.Value;
                                     break;
                                 case "description":
-                                    Data.Description = XR.Value;
+                                    Data.metaData.Description = XR.Value;
                                     break;
                                 case "usage":
-                                    Data.Usage = XR.Value;
+                                    Data.metaData.Usage = XR.Value;
                                     break;
                                 case "link":
                                     linksTmp.Add(XR.Value); //add to the list of links
@@ -899,21 +966,21 @@ namespace Gear.PluginSupport
                 XR.Close();
                 //construct the array of authors
                 if (authorsTmp.Count > 0)
-                    Data.Authors = authorsTmp.ToArray();
+                    Data.metaData.Authors = authorsTmp.ToArray();
                 else
-                    Data.Authors = new string[1];
+                    Data.metaData.Authors = new string[1];
                 //convert date to current culture
                 DateTimeFormatInfo readInfo = 
-                    new CultureInfo(Data.CulturalReference, false).DateTimeFormat;
+                    new CultureInfo(Data.metaData.CulturalReference, false).DateTimeFormat;
                 DateTimeFormatInfo currInfo = 
                     System.Threading.Thread.CurrentThread.CurrentCulture.DateTimeFormat;
-                Data.DateModified =
-                    Convert.ToDateTime(Data.DateModified, readInfo).ToString(currInfo.ShortDatePattern);
+                Data.metaData.DateModified = 
+                    Convert.ToDateTime(Data.metaData.DateModified, readInfo).ToString(currInfo.ShortDatePattern);
                 //construct the array of links
                 if (linksTmp.Count > 0)
-                    Data.Links = linksTmp.ToArray();
+                    Data.metaData.Links = linksTmp.ToArray();
                 else
-                    Data.Links = new string[1];
+                    Data.metaData.Links = new string[1];
                 //construct the array of references
                 if (referencesTmp.Count > 0)
                     Data.References = referencesTmp.ToArray();
