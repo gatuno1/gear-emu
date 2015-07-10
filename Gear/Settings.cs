@@ -22,9 +22,8 @@
  */
 
 /// @brief Transversal %Properties for the program.
-namespace Gear.Properties {
-
-
+namespace Gear.Properties
+{
     /// @brief Controls events for configuration class.
     // Esta clase le permite controlar eventos específicos en la clase de configuración:
     //  El evento SettingChanging se desencadena antes de cambiar un valor de configuración.

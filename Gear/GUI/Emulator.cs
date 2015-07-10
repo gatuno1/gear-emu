@@ -477,7 +477,7 @@ namespace Gear.GUI
             }
         }
 
-        /// @brief Event to run freely the emulator.
+        /// @brief Event to run the emulator freely.
         /// @param[in] sender Reference to the object where this event was called.
         /// @param[in] e Class with the details event.
         private void runEmulator_Click(object sender, EventArgs e)

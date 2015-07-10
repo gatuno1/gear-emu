@@ -104,10 +104,10 @@ namespace Gear.GUI
             this.addPluginMetadataButton = new System.Windows.Forms.ToolStripButton();
             this.removePluginMetadataButton = new System.Windows.Forms.ToolStripButton();
             this.detailsPanel = new System.Windows.Forms.Panel();
+            this.metadataSplitter = new Gear.GUI.CollapsibleSplitter();
             this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
             this.errorSplitter = new Gear.GUI.CollapsibleSplitter();
             this.referencesSplitter = new Gear.GUI.CollapsibleSplitter();
-            this.metadataSplitter = new Gear.GUI.CollapsibleSplitter();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             classNameLabel = new System.Windows.Forms.ToolStripLabel();
             this.toolStripMain.SuspendLayout();
@@ -487,6 +487,22 @@ namespace Gear.GUI
             this.detailsPanel.Size = new System.Drawing.Size(200, 417);
             this.detailsPanel.TabIndex = 2;
             // 
+            // metadataSplitter
+            // 
+            this.metadataSplitter.AnimationDelay = 20;
+            this.metadataSplitter.AnimationStep = 20;
+            this.metadataSplitter.BorderStyle3D = System.Windows.Forms.Border3DStyle.RaisedOuter;
+            this.metadataSplitter.ControlToHide = this.referencePanel;
+            this.metadataSplitter.Cursor = System.Windows.Forms.Cursors.HSplit;
+            this.metadataSplitter.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.metadataSplitter.ExpandParentForm = false;
+            this.metadataSplitter.Location = new System.Drawing.Point(0, 279);
+            this.metadataSplitter.Name = "metadataSplitter";
+            this.metadataSplitter.TabIndex = 2;
+            this.metadataSplitter.TabStop = false;
+            this.metadataSplitter.UseAnimations = true;
+            this.metadataSplitter.VisualStyle = Gear.GUI.VisualStyles.Mozilla;
+            // 
             // propertyGrid1
             // 
             this.propertyGrid1.Location = new System.Drawing.Point(115, 187);
@@ -523,22 +539,6 @@ namespace Gear.GUI
             this.referencesSplitter.TabStop = false;
             this.referencesSplitter.UseAnimations = true;
             this.referencesSplitter.VisualStyle = Gear.GUI.VisualStyles.Mozilla;
-            // 
-            // metadataSplitter
-            // 
-            this.metadataSplitter.AnimationDelay = 20;
-            this.metadataSplitter.AnimationStep = 20;
-            this.metadataSplitter.BorderStyle3D = System.Windows.Forms.Border3DStyle.RaisedOuter;
-            this.metadataSplitter.ControlToHide = this.referencePanel;
-            this.metadataSplitter.Cursor = System.Windows.Forms.Cursors.HSplit;
-            this.metadataSplitter.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.metadataSplitter.ExpandParentForm = false;
-            this.metadataSplitter.Location = new System.Drawing.Point(0, 279);
-            this.metadataSplitter.Name = "metadataSplitter";
-            this.metadataSplitter.TabIndex = 2;
-            this.metadataSplitter.TabStop = false;
-            this.metadataSplitter.UseAnimations = true;
-            this.metadataSplitter.VisualStyle = Gear.GUI.VisualStyles.Mozilla;
             // 
             // PluginEditor
             // 

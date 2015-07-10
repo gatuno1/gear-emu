@@ -29,10 +29,9 @@
         private void InitializeComponent()
         {
             this.GearPropertyGrid = new System.Windows.Forms.PropertyGrid();
-            this.AplyButton = new System.Windows.Forms.Button();
             this.OKButton = new System.Windows.Forms.Button();
-            this.CanceledButton = new System.Windows.Forms.Button();
             this.ButtonsPanel = new System.Windows.Forms.FlowLayoutPanel();
+            this.ResetButton = new System.Windows.Forms.Button();
             this.ButtonsPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -45,47 +44,40 @@
             this.GearPropertyGrid.Size = new System.Drawing.Size(375, 279);
             this.GearPropertyGrid.TabIndex = 0;
             // 
-            // AplyButton
-            // 
-            this.AplyButton.Location = new System.Drawing.Point(3, 3);
-            this.AplyButton.Name = "AplyButton";
-            this.AplyButton.Size = new System.Drawing.Size(75, 23);
-            this.AplyButton.TabIndex = 2;
-            this.AplyButton.Text = "Apply";
-            this.AplyButton.UseVisualStyleBackColor = true;
-            // 
             // OKButton
             // 
             this.OKButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.OKButton.Location = new System.Drawing.Point(84, 3);
+            this.OKButton.Location = new System.Drawing.Point(297, 3);
             this.OKButton.Name = "OKButton";
             this.OKButton.Size = new System.Drawing.Size(75, 23);
             this.OKButton.TabIndex = 3;
             this.OKButton.Text = "OK";
             this.OKButton.UseVisualStyleBackColor = true;
-            // 
-            // CanceledButton
-            // 
-            this.CanceledButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.CanceledButton.Location = new System.Drawing.Point(165, 3);
-            this.CanceledButton.Name = "CanceledButton";
-            this.CanceledButton.Size = new System.Drawing.Size(75, 23);
-            this.CanceledButton.TabIndex = 4;
-            this.CanceledButton.Text = "Cancel";
-            this.CanceledButton.UseVisualStyleBackColor = true;
+            this.OKButton.Click += new System.EventHandler(this.OKButton_Click);
             // 
             // ButtonsPanel
             // 
-            this.ButtonsPanel.Controls.Add(this.AplyButton);
             this.ButtonsPanel.Controls.Add(this.OKButton);
-            this.ButtonsPanel.Controls.Add(this.CanceledButton);
+            this.ButtonsPanel.Controls.Add(this.ResetButton);
             this.ButtonsPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.ButtonsPanel.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
             this.ButtonsPanel.Location = new System.Drawing.Point(0, 279);
             this.ButtonsPanel.MaximumSize = new System.Drawing.Size(800, 29);
             this.ButtonsPanel.MinimumSize = new System.Drawing.Size(250, 29);
             this.ButtonsPanel.Name = "ButtonsPanel";
             this.ButtonsPanel.Size = new System.Drawing.Size(375, 29);
             this.ButtonsPanel.TabIndex = 5;
+            // 
+            // ResetButton
+            // 
+            this.ResetButton.AutoSize = true;
+            this.ResetButton.Location = new System.Drawing.Point(167, 3);
+            this.ResetButton.Name = "ResetButton";
+            this.ResetButton.Size = new System.Drawing.Size(124, 23);
+            this.ResetButton.TabIndex = 4;
+            this.ResetButton.Text = "Reset to Default Value";
+            this.ResetButton.UseVisualStyleBackColor = true;
+            this.ResetButton.Click += new System.EventHandler(this.ResetButton_Click);
             // 
             // AppPropertiesEditor
             // 
@@ -101,6 +93,7 @@
             this.Name = "AppPropertiesEditor";
             this.Text = "Gear Properties";
             this.ButtonsPanel.ResumeLayout(false);
+            this.ButtonsPanel.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -108,9 +101,8 @@
         #endregion
 
         private System.Windows.Forms.PropertyGrid GearPropertyGrid;
-        private System.Windows.Forms.Button AplyButton;
         private System.Windows.Forms.Button OKButton;
-        private System.Windows.Forms.Button CanceledButton;
         private System.Windows.Forms.FlowLayoutPanel ButtonsPanel;
+        private System.Windows.Forms.Button ResetButton;
     }
 }
