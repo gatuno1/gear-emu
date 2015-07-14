@@ -32,8 +32,8 @@ namespace Gear.GUI
         }
 
         /// @brief Reset the property to its default value.
-        /// @param sender
-        /// @param e 
+        /// @param sender Sender object to this event.
+        /// @param e Arguments to this event.
         private void ResetButton_Click(object sender, EventArgs e)
         {
             PropertyDescriptor prop;    //to get the underlying property
@@ -47,15 +47,52 @@ namespace Gear.GUI
                     as DefaultSettingValueAttribute;
                 if (attr != null)  //if exist
                 {
+                    //remember old value
+                    object oldValue = prop.GetValue(Settings.Default);
+                    //set the new value
                     if (prop.CanResetValue(Settings.Default[prop.Name]))
                         prop.ResetValue(Settings.Default[prop.Name]);
                     else
                         prop.SetValue(
                             Settings.Default, 
                             Convert.ChangeType(attr.Value, prop.PropertyType) );
+                    //call the notification event
+                    GearPropertyGrid_PropertyValueChanged(sender, new PropertyValueChangedEventArgs(
+                        GearPropertyGrid.SelectedGridItem, oldValue));
                 }
                 GearPropertyGrid.Refresh();
             }
         }
+
+        /// @brief Event when a property had changed its value, used to update copies of the 
+        /// property values used in other forms.
+        /// @param s Sender object to this event.
+        /// @param e Arguments to this event, including the old value.
+        private void GearPropertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
+        {
+            PropertyDescriptor prop;    //to get the underlying property
+            if (e.ChangedItem.GridItemType == GridItemType.Property &&
+                !(prop = e.ChangedItem.PropertyDescriptor).IsReadOnly)
+            {
+                switch (prop.Name)
+                {
+                    case "UpdateEachSteps":
+                        if (this.ParentForm.IsMdiContainer & this.ParentForm.HasChildren)
+                            foreach(Form f in this.ParentForm.MdiChildren)
+                            {
+                                var emu = f as Emulator;
+                                if (emu != null)
+                                {
+                                    emu.stepInterval = (uint)prop.GetValue(Settings.Default);
+                                }
+                            }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+
     }
 }

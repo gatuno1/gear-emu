@@ -30,7 +30,7 @@ namespace Gear.GUI
 {
     /// @brief Implements the graphical Desktop to the emulator, plugin editor and 
     /// related windows.
-    public partial class GearDesktop : Form
+    public partial class GearDesktop : System.Windows.Forms.Form
     {
         /// @brief Gear.GUI.GearDesktop Constructor.
         public GearDesktop()

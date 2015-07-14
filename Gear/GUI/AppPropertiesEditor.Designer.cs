@@ -43,6 +43,7 @@
             this.GearPropertyGrid.Name = "GearPropertyGrid";
             this.GearPropertyGrid.Size = new System.Drawing.Size(375, 279);
             this.GearPropertyGrid.TabIndex = 0;
+            this.GearPropertyGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.GearPropertyGrid_PropertyValueChanged);
             // 
             // OKButton
             // 
