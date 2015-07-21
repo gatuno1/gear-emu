@@ -105,7 +105,6 @@ namespace Gear.GUI
             this.removePluginMetadataButton = new System.Windows.Forms.ToolStripButton();
             this.detailsPanel = new System.Windows.Forms.Panel();
             this.metadataSplitter = new Gear.GUI.CollapsibleSplitter();
-            this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
             this.errorSplitter = new Gear.GUI.CollapsibleSplitter();
             this.referencesSplitter = new Gear.GUI.CollapsibleSplitter();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -503,13 +502,6 @@ namespace Gear.GUI
             this.metadataSplitter.UseAnimations = true;
             this.metadataSplitter.VisualStyle = Gear.GUI.VisualStyles.Mozilla;
             // 
-            // propertyGrid1
-            // 
-            this.propertyGrid1.Location = new System.Drawing.Point(115, 187);
-            this.propertyGrid1.Name = "propertyGrid1";
-            this.propertyGrid1.Size = new System.Drawing.Size(241, 186);
-            this.propertyGrid1.TabIndex = 8;
-            // 
             // errorSplitter
             // 
             this.errorSplitter.AnimationDelay = 20;
@@ -545,7 +537,6 @@ namespace Gear.GUI
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(654, 442);
-            this.Controls.Add(this.propertyGrid1);
             this.Controls.Add(this.codeEditorView);
             this.Controls.Add(this.errorSplitter);
             this.Controls.Add(this.errorListView);
@@ -605,6 +596,5 @@ namespace Gear.GUI
         private System.Windows.Forms.ColumnHeader keyColumn;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.ToolStripProgressBar progressHighlight;
-        private System.Windows.Forms.PropertyGrid propertyGrid1;
     }
 }

@@ -56,7 +56,7 @@ namespace Gear.PluginSupport
         other = 100         //!< @brief Other cause.
     }
 
-    /// @brief exception class to 
+    /// @brief exception class when not valid plugin data detected.
     public class NotValidPluginData : Exception
     {
         private PluginDataErrorType ErrorType;
@@ -96,50 +96,85 @@ namespace Gear.PluginSupport
 
     /// @brief Class to hold metadata of the plugin
     /// @since v15.03.26 - Added.
-    [DefaultPropertyAttribute("Description")]
+    [DefaultPropertyAttribute("PluginVersion")]
     public class PluginMetadata
     {
          /// @brief Version of the plugin itself.
-        [DescriptionAttribute("Version number of the plugin."), DefaultValueAttribute("1.0")]
-        public string PluginVersion;
+        [CategoryAttribute("About")]
+        [DescriptionAttribute("Version number of the plugin.")]
+        [DisplayName("Plugin Version")]
+        [DefaultValueAttribute("1.0")]
+        public string PluginVersion { get; set; }
 
         /// @brief List of authors.
+        [CategoryAttribute("About")]
         [DescriptionAttribute("The name of original author of the plugin.")]
-        public string[] Authors;
+        public string[] Authors { get; set; }
 
         /// @brief Last author of modifications.
+        [CategoryAttribute("Modify")]
         [DescriptionAttribute("The name of the last modifier.")]
-        public string Modifier;             
+        public string Modifier { get; set; }
 
         /// @brief Date of modifications,
+        [CategoryAttribute("Modify")]
         [DescriptionAttribute("When the last modification was made.")]
-        public string DateModified;         
+        [DisplayName("Date Modified")]
+        public string DateModified { get; set; }
         
         /// @brief To store the cultural reference of dates.
         [BrowsableAttribute(false)]
-        public string CulturalReference;
+        public string CulturalReference { get; set; }
         
         /// @brief Release notes (version modifications).
+        [CategoryAttribute("Modify")] 
         [DescriptionAttribute("Description of changes of this version of the plugin.")]
-        public string ReleaseNotes;
+        [DisplayName("Release Notes")]
+        public string ReleaseNotes { get; set; }
 
         /// @brief Description of the plugin.
+        [CategoryAttribute("About")] 
         [DescriptionAttribute("What the plugin does.")]
-        public string Description;
+        public string Description { get; set; }
 
         /// @brief Guides to use the plugin.
+        [CategoryAttribute("About")] 
         [DescriptionAttribute("How this plugin is supposed to be used.")]
-        public string Usage;
+        public string Usage { get; set; }
 
         /// @brief Links supporting the plugin.
+        [CategoryAttribute("About")] 
         [DescriptionAttribute("Web links for more information.")]
-        public string[] Links;
+        [DisplayName("Web Links")]
+        public string[] Links { get; set; }
 
         /// @brief Default constructor.
         public PluginMetadata() 
         { 
             //use current value
             CulturalReference = CultureInfo.CurrentCulture.Name;
+        }
+
+        /// @brief Copy constructor
+        /// @param original The original source of metadata data.
+        public PluginMetadata(PluginMetadata original)
+        {
+            this.Clone(original);
+        }
+
+        /// @brief Copy the data of the parameter metadata.
+        /// @param other The source of metadata data.
+        public void Clone(PluginMetadata other)
+        {
+            this.PluginVersion = other.PluginVersion;
+            this.Authors = (string[])other.Authors.Clone();
+            this.Modifier = other.Modifier;
+            this.DateModified = other.DateModified;
+            this.CulturalReference = other.CulturalReference;
+            this.ReleaseNotes = other.ReleaseNotes;
+            this.Description = other.Description;
+            this.Usage = other.Usage;
+            this.Links = (string[])other.Links.Clone();
         }
     }
 

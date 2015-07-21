@@ -98,7 +98,7 @@ namespace Gear.GUI
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.MdiWindowListItem = this.windowsMenu;
             this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Size = new System.Drawing.Size(703, 24);
+            this.menuStrip.Size = new System.Drawing.Size(912, 24);
             this.menuStrip.TabIndex = 0;
             this.menuStrip.Text = "MenuStrip";
             // 
@@ -211,7 +211,7 @@ namespace Gear.GUI
             this.OptionsButton});
             this.toolStrip.Location = new System.Drawing.Point(0, 24);
             this.toolStrip.Name = "toolStrip";
-            this.toolStrip.Size = new System.Drawing.Size(703, 25);
+            this.toolStrip.Size = new System.Drawing.Size(912, 25);
             this.toolStrip.TabIndex = 1;
             this.toolStrip.Text = "ToolStrip";
             // 
@@ -265,7 +265,7 @@ namespace Gear.GUI
             this.toolStripStatusLabel});
             this.statusStrip.Location = new System.Drawing.Point(0, 659);
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(703, 22);
+            this.statusStrip.Size = new System.Drawing.Size(912, 22);
             this.statusStrip.TabIndex = 2;
             this.statusStrip.Text = "StatusStrip";
             // 
@@ -279,7 +279,7 @@ namespace Gear.GUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(703, 681);
+            this.ClientSize = new System.Drawing.Size(912, 681);
             this.Controls.Add(this.statusStrip);
             this.Controls.Add(this.toolStrip);
             this.Controls.Add(this.menuStrip);

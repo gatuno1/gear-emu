@@ -127,6 +127,7 @@ namespace Gear.GUI
         /// @since v15.03.26 - Added parameter for loading default template for plugin.
         public PluginEditor(bool loadDefaultTemplate)
         {
+            metaData = new PluginMetadata();
             InitializeComponent();
 
             changeDetectEnabled = false;
@@ -147,8 +148,6 @@ namespace Gear.GUI
             changeDetectEnabled = true;
             CodeChanged = false;
 
-            metaData = new PluginMetadata();
-            propertyGrid1.SelectedObject = this.metaData;
             // setting default font
             defaultFont = new Font(FontFamily.GenericMonospace, 10, FontStyle.Regular);
             codeEditorView.Font = defaultFont;
@@ -330,8 +329,7 @@ namespace Gear.GUI
                     switch (pluginCandidate.PluginSystemVersion)
                     {
                         case "1.0":
-                            metaData = pluginCandidate.metaData;
-                            propertyGrid1.SelectedObject = metaData;
+                            metaData.Clone(pluginCandidate.metaData);
                             ClearMetadata(true);    //reset metadata in screen, enabling it
                             SetElementOfMetadata("Version", metaData.PluginVersion);
                             SetElementOfMetadata("Authors", metaData.Authors);
