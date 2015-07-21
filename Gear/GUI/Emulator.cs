@@ -299,14 +299,19 @@ namespace Gear.GUI
                 catch (Exception)
                 {
                     //open plugin editor in other window
-                    PluginEditor pe = new PluginEditor(false);
-                    pe.OpenFile(FileName, true);
-                    pe.MdiParent = this.MdiParent;
-                    pe.Show();
-                    //the compilation errors are displayed in the error grid
-                    ModuleCompiler.EnumerateErrors(pe.EnumErrors);
-                    //show the error list
-                    pe.ShowErrorGrid(true);
+                    PluginEditor errorPlugin = new PluginEditor(false);
+                    if (errorPlugin.OpenFile(FileName, true))
+                    {
+                        //remember plugin successfully loaded
+                        errorPlugin.UpdateLastPluginOpened();
+                        //show plugin editor loaded with the faultly one
+                        errorPlugin.MdiParent = this.MdiParent;
+                        //the compilation errors are displayed in the error grid
+                        ModuleCompiler.EnumerateErrors(errorPlugin.EnumErrors);
+                        //show the error list
+                        errorPlugin.ShowErrorGrid(true);
+                        errorPlugin.Show();
+                    }
                 }
             }
         

@@ -13,12 +13,12 @@ Read more in forum threads:
 
 * Improvements on LogicView, to show more helpful messages on errors, labels on buttons and text boxes.
 
-* In Plugin Editor now you can start with a default plugin template (new default) or empty window (old default style). The program recovers it from "Resource\PluginTemplate.cs.
+* In Plugin Editor now you can start with a default plugin template (new default) or empty window (old default style). The program recovers it from "Resource\PluginTemplate.cs", so it is changeable at your pleasure.
 
 * Updated PluginBase class structure, so all the old plugins have to be updated:
     -Constructor invocation must call Base constructor.
 	-Extra parameter on OnClock() method for current clock number in tick clocks.
-	-Method PresentChip() with no param, beacuse Chip reference now is included in plugin base class definition.
+	-Method PresentChip() with no parameter, because Chip reference now is included in plugin base class definition.
 	-New method OnClose() is called for every plugin before closing the emulator (to perform cleanup).
 
 * Added program settings to remember them between sessions (stored in "Gear.exe.config" file in this version): 

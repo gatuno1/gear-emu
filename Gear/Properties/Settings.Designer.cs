@@ -30,6 +30,7 @@ namespace Gear.Properties {
         [global::System.Configuration.DefaultSettingValueAttribute("")]
         [CategoryAttribute("Plugin Editor")]
         [DescriptionAttribute("Last plugin loaded or edited (with full path).")]
+        [DisplayNameAttribute("last Plugin loaded")]
         public string LastPlugin {
             get {
                 return ((string)(this["LastPlugin"]));
@@ -42,8 +43,9 @@ namespace Gear.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        [CategoryAttribute("Emulator")]
+        [CategoryAttribute("Propeller Emulator")]
         [DescriptionAttribute("Last Propeller binary loaded (with full path).")]
+        [DisplayNameAttribute("Last Binary loaded")]
         public string LastBinary
         {
             get {
@@ -58,7 +60,9 @@ namespace Gear.Properties {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
         [CategoryAttribute("Plugin Editor")]
-        [DescriptionAttribute("Flag to use or not the default template on Plugin Editor opening.")]
+        [DescriptionAttribute("Flag to use or not the default template on Plugin " + 
+            "Editor on new plugin.")]
+        [DisplayNameAttribute("Use no template?")]
         public bool UseNoTemplate
         {
             get {
@@ -72,8 +76,10 @@ namespace Gear.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("1024")]
-        [CategoryAttribute("Emulator")]
+        [CategoryAttribute("Propeller Emulator")]
         [DescriptionAttribute("How many clock steps will pass between screen repaint of emulator and plugins.")]
+        [DisplayNameAttribute("Update screen each steps")]
+        [DefaultValueAttribute(typeof(uint), "1024")]
         public uint UpdateEachSteps
         {
             get {
@@ -86,9 +92,11 @@ namespace Gear.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0.0001")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1E-04")]
         [CategoryAttribute("Logic Probe")]
         [DescriptionAttribute("Width of time frame for the logic probe window.")]
+        [DisplayNameAttribute("Last Time Frame")]
+        [DefaultValueAttribute((double)1E-04)]
         public double LastTimeFrame {
             get {
                 return ((double)(this["LastTimeFrame"]));
@@ -103,6 +111,8 @@ namespace Gear.Properties {
         [global::System.Configuration.DefaultSettingValueAttribute("5E-05")]
         [CategoryAttribute("Logic Probe")]
         [DescriptionAttribute("Time interval for the logic probe grid.")]
+        [DisplayNameAttribute("Last Tick mark Grid")]
+        [DefaultValueAttribute((double)5E-05)]
         public double LastTickMarkGrid {
             get {
                 return ((double)(this["LastTickMarkGrid"]));
@@ -118,6 +128,7 @@ namespace Gear.Properties {
         [CategoryAttribute("Plugin Editor")]
         [DescriptionAttribute("Flag to embed the C# code of the plugin into XML file, or to " + 
             "create in a separated .CS file.")]
+        [DisplayNameAttribute("Embedded code?")]
         public bool EmbeddedCode {
             get {
                 return ((bool)(this["EmbeddedCode"]));

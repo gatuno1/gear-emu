@@ -1,18 +1,19 @@
 Gear: Parallax Inc. Propeller emulator
 
-Copyright 2007 - Robert Vandiver
+Copyright 2014-2015 - Antonio Sanhueza /  Dāvis Puh 
 Copyright 2009 - mirror
-Copyright 2014 - Antonio Sanhueza
+Copyright 2007 - Robert Vandiver
 
 Released under the Lesser GNU Public Licence (LGPL)
 See Licence.txt for details
 
 Developers:
 
-Robert Bryon Vandiver (asterick@buxx.com)
-mirror
 Antonio Sanhueza (gatuno)
+Dāvis Puh (Dāvis)
 Ben Levitt (benjie)
+mirror
+Robert Bryon Vandiver (asterick@buxx.com)
 
 Last Changes:
 

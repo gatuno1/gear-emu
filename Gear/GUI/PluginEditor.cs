@@ -43,9 +43,9 @@ namespace Gear.GUI
         private string _saveFileName;
         /// @brief Plugin System Version of the file for a plugin. 
         private string _systemFormatVersion;
-        /// @brief Metadata object for this plugin
+        /// @brief Metadata for this plugin
         /// @since v15.03.26 - Added.
-        public PluginMetadata metaData;
+        private PluginMetadata metaData;
         /// @brief Text for plugin Metadata
         /// @details Indicates the version of plugin system for the current plugin.
         /// @since v15.03.26 - Added.
@@ -135,7 +135,7 @@ namespace Gear.GUI
             {
                 try
                 {
-                    codeEditorView.LoadFile("Resources\\PluginTemplate.cs",
+                    codeEditorView.LoadFile(@"Resources\PluginTemplate.cs",
                         RichTextBoxStreamType.PlainText);
                 }
                 catch (IOException) { }         //do nothing, maintaining empty the code text box
@@ -598,9 +598,19 @@ namespace Gear.GUI
 
                 if (dialog.ShowDialog(this) == DialogResult.OK)
                 {
-                    OpenFile(dialog.FileName, false);   //try to open the file and load to screen
+                    //try to open the file and load to screen
+                    if (OpenFile(dialog.FileName, false))
+                        UpdateLastPluginOpened();
                 }
             }
+        }
+
+        /// @brief Update the last plugin opened.
+        /// @since v15.03.26 - Added.
+        public void UpdateLastPluginOpened()
+        {
+            Properties.Settings.Default.LastPlugin = GetLastPlugin;
+            Properties.Settings.Default.Save();
         }
 
         /// @brief Show dialog to save a plugin information into file, using GEAR plugin format.
@@ -608,8 +618,11 @@ namespace Gear.GUI
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         private void SaveButton_Click(object sender, EventArgs e)
         {
-            if (!String.IsNullOrEmpty(_saveFileName) & (_systemFormatVersion != null))
+            if (!string.IsNullOrEmpty(_saveFileName) &
+                (!string.IsNullOrEmpty(_systemFormatVersion)))
+            {
                 SaveFile(_saveFileName, _systemFormatVersion);
+            }
             else
                 SaveAsButton_Click(sender, e);
 
@@ -912,11 +925,9 @@ namespace Gear.GUI
         {
             if (CodeChanged)
             {
-                if (!CloseAnyway(SaveFileName)) //ask the user to not loose changes
+                if (!CloseAnyway(SaveFileName)) //ask the user to not lose changes
                     e.Cancel = true;    //cancel the closing event
             }
-            Properties.Settings.Default.LastPlugin = GetLastPlugin;
-            Properties.Settings.Default.Save();
         }
 
         /// @brief Ask the user to not loose changes.
@@ -1371,7 +1382,7 @@ namespace Gear.GUI
             return this.GetElementsFromMetadata(groupName, true);
         }
 
-        /// @brief Manage text appearance when the user edit on Metadata text.
+        /// @brief Manage text appearance when the user edit a Metadata text.
         /// @param[in] sender Object who called this on event.
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         /// @version v15.03.26 -Added.

@@ -50,8 +50,8 @@ namespace Gear.GUI
                     //remember old value
                     object oldValue = prop.GetValue(Settings.Default);
                     //set the new value
-                    if (prop.CanResetValue(Settings.Default[prop.Name]))
-                        prop.ResetValue(Settings.Default[prop.Name]);
+                    if (prop.CanResetValue(Settings.Default))
+                        prop.ResetValue(Settings.Default);
                     else
                         prop.SetValue(
                             Settings.Default, 
