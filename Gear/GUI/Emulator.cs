@@ -194,7 +194,7 @@ namespace Gear.GUI
             }
         }
 
-        /// @brief Load a plugin from XML file.
+        /// @brief Load a plugin from file.
         /// @details Try to open the XML definition for the plugin from the file name given as 
         /// parameter. Then extract information from the XML (class name, auxiliary references 
         /// and source code to compile), trying to compile the C# source code (based on 
@@ -202,6 +202,7 @@ namespace Gear.GUI
         /// compilation fails, then it opens the plugin editor to show errors and source code.
         /// @param[in] FileName Name and path to the XML plugin file to open
         /// @returns Reference to the new plugin instance (on success) or NULL (on fail).
+        /// @throws Exception
         // TODO Modify the method to receive a PluginData, and delete the validation
         public void LoadPlugin(string FileName)
         {
@@ -530,16 +531,16 @@ namespace Gear.GUI
             OpenFileDialog dialog = new OpenFileDialog();
             dialog.Filter = "Gear Plug-in (*.xml)|*.xml|All Files (*.*)|*.*";
             dialog.Title = "Open Gear Plug-in...";
+            //get the path of last plugin like a hint to open a new one
             if (!String.IsNullOrEmpty(Properties.Settings.Default.LastPlugin))
-                dialog.InitialDirectory = Path.GetDirectoryName(
-                    Properties.Settings.Default.LastPlugin);
-
+                dialog.InitialDirectory =
+                    Path.GetDirectoryName(Properties.Settings.Default.LastPlugin);
+            //ask the user what plugin file to open
             if (dialog.ShowDialog(this) == DialogResult.OK)
             {
                 PluginData pluginCandidate = ValidatePluginCandidate(dialog.FileName);
                 if (pluginCandidate != null)
-                {
-                    
+                {    
                     // TODO ASB [HIGH PRIORITY] - determine how to obtain the attribute SingleInstanceAllowed from the plugin code: reflection on a separate AppDomain?
                     //pseudo code:
                     //if (!pluginCandidate.OnlySingleInstance() &&

@@ -18,20 +18,20 @@ namespace Gear.PluginSupport
         /// @note Mirror's: allows hot keys to be disabled for a plugin.
         /// @note Source: <a href="http://forums.parallax.com/showthread.php/100380-More-GEAR-Improved-Emulation-of-the-Propeller">
         /// Mirror Post for Version V08_10_16 in propeller forums</a>
-        public virtual Boolean AllowHotKeys { get { return true; } }
+        public virtual bool AllowHotKeys { get { return true; } }
 
         /// @brief Attribute to allow the window to be closed (default) or not (like cog windows).
         /// @remarks Not to be used in Plugin Editor by user plugins.
-        public virtual Boolean IsClosable { get { return true; } }
+        public virtual bool IsClosable { get { return true; } }
 
         /// @brief Identify a plugin as user (=true) or system (=false).
         /// @remarks Not to be used in Plugin Editor by user plugins.
         /// @since V15.03.26 - Added.
-        public virtual Boolean IsUserPlugin { get { return true; } }
+        public virtual bool IsUserPlugin { get { return true; } }
 
         /// @brief Attribute to allow a single instance (=true) or multiple (=false).
         /// @since V15.03.26 - Added.
-        public abstract Boolean SingleInstanceAllowed { get; }
+        public abstract bool SingleInstanceAllowed { get; }
 
         /// @brief Gets the full name of the assembly where the plugin is instantiated.
         /// @since V15.03.26 - Added.

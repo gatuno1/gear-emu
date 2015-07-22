@@ -57,12 +57,12 @@ namespace Gear.PluginSupport
     }
 
     /// @brief exception class when not valid plugin data detected.
-    public class NotValidPluginData : Exception
+    public class NotValidPluginDataException : Exception
     {
         private PluginDataErrorType ErrorType;
         private string Operation;
 
-        public NotValidPluginData(PluginDataErrorType errType, string operationDesc)
+        public NotValidPluginDataException(PluginDataErrorType errType, string operationDesc)
         {
             ErrorType = errType;
             Operation = operationDesc;
@@ -264,11 +264,11 @@ namespace Gear.PluginSupport
 
         /// @brief Determine if the plugin allow only one instance o not.
         /// @details Use reflection to load and evaluate the member PluginCommon.SingleInstanceAllowed
-        /// @throws NotValidPluginData 
+        /// @throws NotValidPluginDataException 
         /// @returns True if plugin allow only one instance, of False if more than one is allowed.
         public bool OnlySingleInstance()
         {
-            bool value;
+            //bool value;
             if (isValid) 
             {
                 if (!string.IsNullOrEmpty(MainFile))
@@ -283,7 +283,7 @@ namespace Gear.PluginSupport
                     if (AssemblyFile == null)
                     {
                         if (!CompileToFile(nameToCompile))
-                            throw new NotValidPluginData(
+                            throw new NotValidPluginDataException(
                                 PluginDataErrorType.openFile,
                                 string.Concat(" trying to compile file '", nameToCompile, "'"));
                     }
@@ -294,31 +294,33 @@ namespace Gear.PluginSupport
                     //    value = pluginTest.SingleInstanceAllowed;
                     //else throw new NotValidPluginData(
                     //        PluginDataErrorType.openFile,
-                    //        string.Concat("coudn't invoke '", InstanceName,
+                    //        string.Concat("couldn't invoke '", InstanceName,
                     //            ".SingleInstanceAllowed' member with Reflection ",
                     //            "on PluginData.OnlySingleInstance()"));
                     //unload the test domain
                     AppDomain.Unload(testDomain);
                     return true;    //temp statement
                 }
-                else throw new NotValidPluginData(PluginDataErrorType.openFile,
+                else throw new NotValidPluginDataException(PluginDataErrorType.openFile,
                     "because file name is empty on PluginData.OnlySingleInstance()");
             }
-            else throw new NotValidPluginData(
+            else throw new NotValidPluginDataException(
                 PluginDataErrorType.openFile,
                 string.Concat("because Plugin data for '", InstanceName, 
                     "' is not valid, on PluginData.OnlySingleInstance()"));
         }
 
         /// @brief Compile the plugin to a file.
-        /// @returns True if the compile was successfull, false otherwise.
+        /// @returns True if the compile was successful, false otherwise.
         /// @since v15.03.26 - Added.
         private bool CompileToFile(string fileName)
         {
+            //TODO ASB - complete the PluginData.CompileToFile() method
             //ModuleCompiler.chachePath
             //delete the following:
             return true;    //temp statement
         }
+
         /// @brief Handle the error in the validation, saving the messages and setting 
         /// the validation state.
         /// @param[in] sender Reference to the object where the exception was raised.
@@ -479,7 +481,7 @@ namespace Gear.PluginSupport
                 this.isValid = false;
                 this.errorType = PluginDataErrorType.openFile;
                 ValidationErrors.Add(
-                    "No filename  was given, when validating original XML file.");
+                    "No filename was given, when validating original XML file.");
                 return false;
             }
             catch (Exception e)

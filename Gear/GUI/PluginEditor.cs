@@ -40,7 +40,7 @@ namespace Gear.GUI
     {
         /// @brief File name of current plugin on editor window.
         /// @note Include full path and name to the file.
-        private string _saveFileName;
+        private string _lastPluginNameFile;
         /// @brief Plugin System Version of the file for a plugin. 
         private string _systemFormatVersion;
         /// @brief Metadata for this plugin
@@ -118,7 +118,40 @@ namespace Gear.GUI
             "unsafe", "ushort", "using", "value", "var", "virtual", "void",
             "volatile", "where", "while", "yield"
         };
-        
+
+        /// @brief Return last plugin successfully loaded o saved.
+        /// @details Useful to remember last plugin directory.
+        /// @since v15.03.26 - Added.
+        private string LastPlugin
+        {
+            get { return _lastPluginNameFile; }
+            set { _lastPluginNameFile = value; }
+        }
+
+        /// @brief Attribute for changed plugin detection.
+        /// @since v15.03.26 - Added.
+        private bool CodeChanged
+        {
+            get { return codeChanged; }
+            set
+            {
+                codeChanged = value;
+                UpdateTitles();
+            }
+        }
+
+        /// @brief Complete Name for plugin, including path, for presentation porpouses.
+        /// @since v15.03.26 - Added.
+        private string PluginFileName
+        {
+            get
+            {
+                if (!String.IsNullOrEmpty(_lastPluginNameFile))
+                    return new FileInfo(_lastPluginNameFile).Name;
+                else return "<New plugin>";
+            }
+        }
+
         /// @brief Default constructor.
         /// Initialize the class, defines columns for error grid, setting on changes detection  
         /// initially, and try to load the default template for plugin.
@@ -143,7 +176,7 @@ namespace Gear.GUI
                 finally { }                     //
             }
 
-            _saveFileName = null;
+            LastPlugin = null;
             _systemFormatVersion = null;
             changeDetectEnabled = true;
             CodeChanged = false;
@@ -173,43 +206,6 @@ namespace Gear.GUI
             }
         }
 
-        /// @brief Return last plugin successfully loaded o saved.
-        /// @details Useful to remember last plugin directory.
-        /// @since v15.03.26 - Added.
-        public string GetLastPlugin
-        {
-            get { return _saveFileName; }
-        }
-
-        /// @brief Attribute for changed plugin detection.
-        /// @since v15.03.26 - Added.
-        private bool CodeChanged
-        {
-            get { return codeChanged; }
-            set  
-            {
-                codeChanged = value;
-                UpdateTitles();
-            }
-        }
-
-        /// @brief Complete Name for plugin, including path.
-        /// @since v15.03.26 - Added.
-        private string SaveFileName
-        {
-            get
-            {
-                if (!String.IsNullOrEmpty(_saveFileName))
-                    return new FileInfo(_saveFileName).Name;
-                else return "<New plugin>";
-            }
-            set
-            {
-                _saveFileName = value;
-                UpdateTitles();
-            }
-        }
-
         /// @brief Shows or hide the error grid.
         /// @param enable Enable (=true) or disable (=False) the error grid.
         public void ShowErrorGrid(bool enable)
@@ -225,7 +221,7 @@ namespace Gear.GUI
         /// if need to save.
         private void UpdateTitles()
         {
-            this.Text = ("Plugin Editor: " + SaveFileName +  (CodeChanged ? " *" : string.Empty));
+            this.Text = ("Plugin Editor: " + PluginFileName +  (CodeChanged ? " *" : string.Empty));
             pluginMetadataList.Columns[0].Text = metadataText;
         }
 
@@ -344,8 +340,9 @@ namespace Gear.GUI
                             ClearMetadata(false);    //reset metadata in screen, disabling it
                             break;
                     }
-                    //store the name of the last file opened
-                    _saveFileName = FileName;
+                    //refresh and store the name of the last file opened
+                    LastPlugin = FileName;
+                    UpdateTitles();
                     //clean up
                     errorListView.Items.Clear();
                     ShowErrorGrid(false);
@@ -429,8 +426,9 @@ namespace Gear.GUI
                         }
                         break;
                 }
-
-                _saveFileName = FileName;
+                //refresh & store the plugin name
+                LastPlugin = FileName;
+                UpdateTitles();
             }
             catch (Exception e)
             {
@@ -449,6 +447,7 @@ namespace Gear.GUI
         /// Actually call a C# compiler to determine errors, using references.
         /// @param[in] sender Object who called this on event.
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
+        /// @throws Exception
         private void CheckSource_Click(object sender, EventArgs e)
         {
             /// @todo Modify this to support multiple code windows
@@ -492,11 +491,11 @@ namespace Gear.GUI
                     DateTime TimeOfBuild;
                     try
                     {
-                        TimeOfBuild = ((CodeChanged | string.IsNullOrEmpty(_saveFileName)) ?
+                        TimeOfBuild = ((CodeChanged | string.IsNullOrEmpty(LastPlugin)) ?
                             //on modified content, use present time
                             DateTime.Now :
                             //use the file date time
-                            AssemblyUtils.GetFileDateTime(_saveFileName));
+                            AssemblyUtils.GetFileDateTime(LastPlugin));
                     }
                     catch (Exception ex)
                     {
@@ -580,16 +579,16 @@ namespace Gear.GUI
             bool continueAnyway = true;
             if (CodeChanged)
             {
-                continueAnyway = CloseAnyway(SaveFileName); //ask the user to not lost changes
+                continueAnyway = CloseAnyway(PluginFileName); //ask the user to not lost changes
             }
             if (continueAnyway)
             {
                 OpenFileDialog dialog = new OpenFileDialog();
                 dialog.Filter = "Gear plug-in component (*.xml)|*.xml|All Files (*.*)|*.*";
                 dialog.Title = "Open Gear Plug-in...";
-                if (!String.IsNullOrEmpty(_saveFileName))
+                if (!String.IsNullOrEmpty(LastPlugin))
                     //retrieve from last plugin edited
-                    dialog.InitialDirectory = Path.GetDirectoryName(_saveFileName);
+                    dialog.InitialDirectory = Path.GetDirectoryName(LastPlugin);
                 else
                     if (!String.IsNullOrEmpty(Properties.Settings.Default.LastPlugin))
                         //retrieve from global last plugin
@@ -609,7 +608,7 @@ namespace Gear.GUI
         /// @since v15.03.26 - Added.
         public void UpdateLastPluginOpened()
         {
-            Properties.Settings.Default.LastPlugin = GetLastPlugin;
+            Properties.Settings.Default.LastPlugin = LastPlugin;
             Properties.Settings.Default.Save();
         }
 
@@ -618,10 +617,10 @@ namespace Gear.GUI
         /// @param[in] e `EventArgs` class with a list of argument to the event call.
         private void SaveButton_Click(object sender, EventArgs e)
         {
-            if (!string.IsNullOrEmpty(_saveFileName) &
+            if (!string.IsNullOrEmpty(LastPlugin) &
                 (!string.IsNullOrEmpty(_systemFormatVersion)))
             {
-                SaveFile(_saveFileName, _systemFormatVersion);
+                SaveFile(LastPlugin, _systemFormatVersion);
             }
             else
                 SaveAsButton_Click(sender, e);
@@ -651,9 +650,9 @@ namespace Gear.GUI
                         break;
                 };
             dialog.Title = "Save Gear Plug-in...";
-            if (!String.IsNullOrEmpty(_saveFileName))
+            if (!String.IsNullOrEmpty(LastPlugin))
                 //retrieve from last plugin edited
-                dialog.InitialDirectory = Path.GetDirectoryName(_saveFileName);   
+                dialog.InitialDirectory = Path.GetDirectoryName(LastPlugin);   
             else
                 if (!String.IsNullOrEmpty(Properties.Settings.Default.LastPlugin))
                     //retrieve from global last plugin
@@ -925,7 +924,7 @@ namespace Gear.GUI
         {
             if (CodeChanged)
             {
-                if (!CloseAnyway(SaveFileName)) //ask the user to not lose changes
+                if (!CloseAnyway(PluginFileName)) //ask the user to not lose changes
                     e.Cancel = true;    //cancel the closing event
             }
         }
@@ -1332,6 +1331,7 @@ namespace Gear.GUI
         /// @param[in] resetEmpty Boolean to reset the value if not user defined (=true), 
         /// or default (=false).
         /// @returns Array of elements of the group.
+        /// @throws Exception
         /// @since v15.03.26 - Added.
         private string[] GetElementsFromMetadata(string groupName, bool resetEmpty)
         {

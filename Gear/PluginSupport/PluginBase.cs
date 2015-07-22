@@ -78,20 +78,20 @@ namespace Gear.PluginSupport
         // @note Mirror's: allows hot keys to be disabled for a plugin.
         // @note Source: <a href="http://forums.parallax.com/showthread.php/100380-More-GEAR-Improved-mulation-of-the-Propeller">
         // Mirror Post for Version V08_10_16 in propeller forums</a>
-        //public override Boolean AllowHotKeys { get { return true; } }
+        //public override bool AllowHotKeys { get { return true; } }
 
         // @brief Attribute to allow the window to be closed (default) or not (like cog windows).
         // @remarks Not to be used in Plugin Editor by user plugins.
-        //public override Boolean IsClosable { get { return true; } }
+        //public override bool IsClosable { get { return true; } }
 
         // @brief Identify a plugin as user (=true) or system (=false).
         // @remarks Not to be used in Plugin Editor by user plugins.
         // @since V15.03.26 - Added.
-        //public virtual Boolean IsUserPlugin { get { return true; } }        
+        //public virtual bool IsUserPlugin { get { return true; } }        
 
         /// @brief Attribute to allow a single instance (=true) or multiple (=false).
         /// @since V15.03.26 - Added.
-        public override Boolean SingleInstanceAllowed { get { return false; } }
+        public override bool SingleInstanceAllowed { get { return false; } }
 
         /// @brief Points to propeller instance.
         /// @note Asterisk's: Occurs once the plugin is loaded. It gives you a reference to the 
