@@ -279,6 +279,8 @@ namespace Gear.PluginSupport
                         PluginSystemVersion, 
                         ".dll");
                     //create a temporally app domain
+                    //TODO ASB - see use of appdomain & app proxy class
+                    //http://stackoverflow.com/questions/2100296/how-can-i-switch-net-assembly-for-execution-of-one-method/2101048#2101048
                     AppDomain testDomain = AppDomain.CreateDomain(InstanceName + "TestDomain");
                     if (AssemblyFile == null)
                     {

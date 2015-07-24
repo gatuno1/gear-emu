@@ -42,7 +42,7 @@ namespace Gear.PluginSupport
     /// @brief Compile a PluginBase Module to memory, returning eventual errors.
     static class ModuleCompiler
     {
-        /// @brief path to compliling cache
+        /// @brief path to compiling cache
         static public readonly string chachePath = @".\plugincache\";
         
         /// @brief Collection for error list on compile a dynamic plugin.
