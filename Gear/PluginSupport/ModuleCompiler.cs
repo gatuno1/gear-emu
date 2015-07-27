@@ -27,11 +27,9 @@
 /// @since v15.03.26 - Changed the file name from ModuleLoader.cs.
 
 using System;
-using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.IO;
 using System.Reflection;
-using Microsoft.CSharp;
 
 namespace Gear.PluginSupport
 {

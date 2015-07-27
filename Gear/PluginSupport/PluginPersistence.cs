@@ -262,27 +262,119 @@ namespace Gear.PluginSupport
                 ValidationErrors.Add(errorText);
         }
 
+        /// @brief Generate the name of the compiled plugin.
+        /// @param extension Extension to add to the name. If it is null, none will be added.
+        /// @returns Name of the compiled plugin.
+        /// @since v15.03.26 - Added.
+        private string CompiledPluginName(string extension)
+        {
+            return string.Format("{0}-PlgnSysV{1}{2}",
+                InstanceName,
+                PluginSystemVersion.Replace(".", "_"),
+                ((string.IsNullOrEmpty(extension)) ? string.Empty :
+                    (!extension.Contains(".")) ? ("." + extension) : extension));
+        }
+
+        /// @brief Generate the full name for a compiled plugin.
+        /// @param timeOfBuild The time of build.
+        /// @returns Full name of a compiled plugin as it should be retrieved from an assembly.
+        /// @since v15.03.26 - Added.
+        private string PluginAssemblyName(DateTime timeOfBuild)
+        {
+            string fullName = string.Concat(
+                //name of compiled module
+                CompiledPluginName(".dll"), ", ",
+                //version
+                "Version=", FormatVersion(PluginVersion, 2), ".",
+                    TimeStampDotnetEpoch(timeOfBuild), ", ",
+                //culture
+                "Culture=neutral, ",
+                //key
+                "PublicKeyToken=null");
+            return fullName;
+        }
+
+        /// @brief Format the version numbers, stripping to the digits given as parameter, 
+        /// or completing with zeros if version is smaller than it.
+        /// @param version Version string to complete as Assembly standards.
+        /// @param digits How many digits will use.
+        /// @returns A complete version string.
+        /// @since v15.03.26 - Added.
+        private string FormatVersion(string version, uint digits)
+        {
+            string[] parts = version.Split('.');
+            string completed = System.String.Empty;
+            for (int i = 0; i < digits; i++)
+            {
+                if ((parts.Length <= i) || (string.IsNullOrEmpty(parts[i])))
+                    completed += "0";
+                else
+                    completed += parts[i];
+                completed += ((i < (digits - 1)) ? "." : String.Empty);
+            }
+            return completed;
+        }
+
+        /// @brief Use the given DateTime to generate build and revision for building an 
+        /// executable or assembly.
+        /// @details Calculate the difference from .NET epoch (Jan 1 2000 00:00:00), in days 
+        /// between the given parameter date and seconds from last midnight. The build number 
+        /// is equal to the number of days since January 1, 2000 local time, and revision is 
+        /// equal to the number of seconds since midnight local time, divided by 2.
+        /// @note Source: <a href="http://blog.codinghorror.com/determining-build-date-the-hard-way/">
+        /// Determining Build Date the hard way</a>
+        /// @param dat Date to calculate. It should be in Local Time.
+        /// @returns A string for build and revision in format "<build>.<revision>".
+        /// @throws Exception Generic exception in the case the parameter have unspecified 
+        /// Kind (nor Local nor Utc).
+        /// @since v15.03.26 - Added.
+        private string TimeStampDotnetEpoch(DateTime dat)
+        {
+            //convert the datetime to local time (as specified for .NET)
+            switch (dat.Kind)
+            {
+                case DateTimeKind.Local:
+                    break;
+                default:
+                case DateTimeKind.Utc:
+                    dat = dat.ToLocalTime();
+                    break;
+                case DateTimeKind.Unspecified:
+                    throw new Exception(
+                        string.Format("Time '{0}' don't have DateTimeKind specified. " +
+                            "It is unsafe to assume local.",
+                        dat.ToString("u")));
+            }
+            //create the epoch
+            DateTime dotnetEpoch = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Local);
+            TimeSpan diff = dat.Subtract(dotnetEpoch);
+            int daysSince2000 = diff.Days;
+            int secondsSinceLastMidnight =
+                (diff.Subtract(new TimeSpan(daysSince2000, 0, 0, 0)).Seconds / (int)2);
+            return string.Format("{0}.{1}", daysSince2000, secondsSinceLastMidnight);
+        }
+
         /// @brief Determine if the plugin allow only one instance o not.
-        /// @details Use reflection to load and evaluate the member PluginCommon.SingleInstanceAllowed
+        /// @details Use reflection to load and evaluate the member 
+        /// PluginCommon.SingleInstanceAllowed.
+        /// @param appDom Reference to %AppDomain to use to evaluate the member.
         /// @throws NotValidPluginDataException 
         /// @returns True if plugin allow only one instance, of False if more than one is allowed.
-        public bool OnlySingleInstance()
+        /// @since v15.03.26 - Added.
+        public bool OnlySingleInstance(AppDomain appDom)
         {
-            //bool value;
             if (isValid) 
             {
                 if (!string.IsNullOrEmpty(MainFile))
                 {
                     //determine the file name to compile the plugin
-                    string nameToCompile = AssemblyUtils.CompiledPluginName(
-                        InstanceName, 
-                        PluginSystemVersion, 
-                        ".dll");
+                    string nameToCompile = CompiledPluginName(".dll");
                     //create a temporally app domain
                     //TODO ASB - see use of appdomain & app proxy class
                     //http://stackoverflow.com/questions/2100296/how-can-i-switch-net-assembly-for-execution-of-one-method/2101048#2101048
+                    //http://www.codemag.com/Article/0211081
                     AppDomain testDomain = AppDomain.CreateDomain(InstanceName + "TestDomain");
-                    if (AssemblyFile == null)
+                    if (string.IsNullOrEmpty(AssemblyFile))
                     {
                         if (!CompileToFile(nameToCompile))
                             throw new NotValidPluginDataException(
