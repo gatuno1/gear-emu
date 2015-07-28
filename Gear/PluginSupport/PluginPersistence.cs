@@ -207,8 +207,12 @@ namespace Gear.PluginSupport
         //public string Usage;                //!< @brief Guides to use the plugin.
         //public string[] Links;              //!< @brief Links supporting the plugin.
 
-        public string InstanceName;         //!< @brief Class name of the plugin definition.
-        public string[] References;         //!< @brief Auxiliary references to compile the plugin.
+        /// @brief Class name of the plugin definition.
+        public string InstanceName;
+        /// @brief Flag to allow single instance of the plugin only.
+        public bool SingleInstanceFlag;     
+        /// @brief Auxiliary references to compile the plugin.
+        public string[] References;         
 
         /// @brief Flag to write the code in external file or embedded in XML file.
         public bool[] UseExtFiles;
@@ -221,15 +225,12 @@ namespace Gear.PluginSupport
         /// @brief Name of the assembly file in case of had been compiled to file
         public string AssemblyFile;
         /// @brief Assembly full name for the plugin file.
+        //TODO ASB - check if it is necessary yet after factorization
         public string AssemblyFullName
         {
             get
             {
-                return AssemblyUtils.CompiledPluginFullName(
-                    AssemblyUtils.GetFileDateTime(this.MainFile), 
-                    this.InstanceName, 
-                    this.metaData.PluginVersion, 
-                    this.PluginSystemVersion);
+                return PluginAssemblyName(AssemblyUtils.GetFileDateTime(this.MainFile));
             }
         }
         /// @brief Hold the result for a validity test of related XML file, based on DTD.
@@ -251,6 +252,8 @@ namespace Gear.PluginSupport
             ValidationErrors = new List<string>();
             AssemblyFile = null;
             metaData = new PluginMetadata();
+            //use default value for SingleInstance on plugin loading
+            this.SingleInstanceFlag = Properties.Settings.Default.PluginSingleInstanceAssumed;
         }
 
         /// @brief Add an error to the list.
@@ -279,7 +282,7 @@ namespace Gear.PluginSupport
         /// @param timeOfBuild The time of build.
         /// @returns Full name of a compiled plugin as it should be retrieved from an assembly.
         /// @since v15.03.26 - Added.
-        private string PluginAssemblyName(DateTime timeOfBuild)
+        public string PluginAssemblyName(DateTime timeOfBuild)
         {
             string fullName = string.Concat(
                 //name of compiled module
@@ -326,7 +329,7 @@ namespace Gear.PluginSupport
         /// @param dat Date to calculate. It should be in Local Time.
         /// @returns A string for build and revision in format "<build>.<revision>".
         /// @throws Exception Generic exception in the case the parameter have unspecified 
-        /// Kind (nor Local nor Utc).
+        /// Kind (nor Local nor UTC).
         /// @since v15.03.26 - Added.
         private string TimeStampDotnetEpoch(DateTime dat)
         {
@@ -772,6 +775,11 @@ namespace Gear.PluginSupport
             root.AppendChild(instance);
             textElement = xmlDoc.CreateTextNode(Data.InstanceName);
             instance.AppendChild(textElement);
+            //level 1 element - single_instance
+            instance = xmlDoc.CreateElement("single_instance");
+            root.AppendChild(instance);
+            textElement = xmlDoc.CreateTextNode(Data.SingleInstanceFlag.ToString());
+            instance.AppendChild(textElement);
             //level 1 elements - reference
             if (Data.References != null)
             {
@@ -900,6 +908,10 @@ namespace Gear.PluginSupport
                     }
                 }
                 XR.Close();
+                //assume default for SingleInstanceFlag
+                Data.SingleInstanceFlag =
+                    Properties.Settings.Default.PluginSingleInstanceAssumed;
+                //references processing
                 if (referencesTmp.Count > 0)   //if elements exists...
                     Data.References = referencesTmp.ToArray(); //fill the array for references
                 else
@@ -1053,6 +1065,13 @@ namespace Gear.PluginSupport
                                     break;
                                 case "instance_class":
                                     Data.InstanceName = XR.Value;
+                                    break;
+                                case "single_instance":
+                                    bool val = false;
+                                    if (bool.TryParse(XR.Value, out val))
+                                        Data.SingleInstanceFlag = val;
+                                    else Data.SingleInstanceFlag = 
+                                        Properties.Settings.Default.PluginSingleInstanceAssumed;
                                     break;
                                 case "reference":
                                     referencesTmp.Add(XR.Value);   //add to the list of references

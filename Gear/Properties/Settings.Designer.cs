@@ -129,12 +129,33 @@ namespace Gear.Properties {
         [DescriptionAttribute("Flag to embed the C# code of the plugin into XML file, or to " + 
             "create in a separated .CS file.")]
         [DisplayNameAttribute("Embedded code?")]
+        [DefaultValueAttribute(true)]
         public bool EmbeddedCode {
             get {
                 return ((bool)(this["EmbeddedCode"]));
             }
             set {
                 this["EmbeddedCode"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [CategoryAttribute("Propeller Emulator")]
+        [DescriptionAttribute("Flag to assume default value for single instance property " + 
+            "for plugin loading.")]
+        [DisplayNameAttribute("Single instance default value")]
+        [DefaultValueAttribute(true)]
+        public bool PluginSingleInstanceAssumed
+        {
+            get
+            {
+                return ((bool)(this["PluginSingleInstanceAssumed"]));
+            }
+            set
+            {
+                this["PluginSingleInstanceAssumed"] = value;
             }
         }
     }

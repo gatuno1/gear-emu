@@ -1,4 +1,4 @@
-<!ELEMENT plugin (metadata, instance_class, reference*, code+)>
+<!ELEMENT plugin (metadata, instance_class, single_instance?, reference*, code+)>
 <!ATTLIST plugin plugin_system_version CDATA "1.0">
 <!ATTLIST plugin version               CDATA #REQUIRED>
 
@@ -15,6 +15,7 @@
         <!ELEMENT link                ANY>        <!-- use CDATA -->
 
     <!ELEMENT instance_class    ANY>
+    <!ELEMENT single_instance   ANY>
     <!ELEMENT reference         ANY>
     <!ELEMENT code              (#PCDATA)>        <!-- use CDATA -->
         <!ATTLIST code ref        CDATA #IMPLIED>

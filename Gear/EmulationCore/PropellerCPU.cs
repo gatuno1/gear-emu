@@ -506,7 +506,9 @@ namespace Gear.EmulationCore
                     break;
                 }
             }
-            if (!found)
+            // (!found | (found && !plugin.SingleInstanceAllowed)) is equivalent 
+            // to (!found | !plugin.SingleInstanceAllowed)
+            if (!found | !plugin.SingleInstanceAllowed)
                 PlugIns.Add(plugin);
             //if (!(PlugIns.Contains(plugin)))
             //{

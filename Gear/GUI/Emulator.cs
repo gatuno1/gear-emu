@@ -235,11 +235,8 @@ namespace Gear.GUI
                                 AssemblyUtils.GetFileDateTime(pluginCandidate.ExtFiles[i]).ToBinary()) );
                 }
                 //generate the full name of the assembly corresponding to the plugin candidate
-                string candidateAssemblyFullName = AssemblyUtils.CompiledPluginFullName(
-                    TimeOfBuild,
-                    pluginCandidate.InstanceName,
-                    pluginCandidate.PluginVersion,
-                    pluginCandidate.PluginSystemVersion);
+                string candidateAssemblyFullName = 
+                    pluginCandidate.PluginAssemblyName(TimeOfBuild);
 
                 //determine the version to look for the correct method to load it
                 switch (pluginCandidate.PluginSystemVersion)
