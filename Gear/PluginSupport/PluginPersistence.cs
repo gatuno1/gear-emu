@@ -188,7 +188,6 @@ namespace Gear.PluginSupport
         public string PluginSystemVersion;
         /// @brief Metadata properties for the plugin.
         public PluginMetadata metaData;
-        //public string PluginVersion;
         /// @brief Version of the plugin itself.
         public string PluginVersion
         {
@@ -211,9 +210,9 @@ namespace Gear.PluginSupport
         /// @brief Class name of the plugin definition.
         public string InstanceName;
         /// @brief Flag to allow single instance of the plugin only.
-        public bool SingleInstanceFlag;     
+        public bool SingleInstanceFlag;
         /// @brief Auxiliary references to compile the plugin.
-        public string[] References;         
+        public string[] References;
 
         /// @brief Flag to write the code in external file or embedded in XML file.
         public bool[] UseExtFiles;
@@ -428,7 +427,7 @@ namespace Gear.PluginSupport
         private bool CompileToFile(string fileName)
         {
             //TODO ASB - complete the PluginData.CompileToFile() method
-            //ModuleCompiler.chachePath
+            //StaticModuleCompiler.chachePath
             //delete the following:
             return true;    //temp statement
         }
@@ -1228,4 +1227,26 @@ namespace Gear.PluginSupport
         }
 
     }
+
+    /// @brief hold resumed data for a compiled plugin
+    struct PluginDataStruct
+    {
+        /// @brief Version of plugin system.
+        public string PluginSystemVersion;
+        /// @brief Version of the plugin itself.
+        public string PluginVersion;
+        /// @brief Class name of the plugin definition.
+        public string InstanceName;
+        /// @brief Flag to allow single instance of the plugin only.
+        public bool SingleInstanceFlag;
+        /// @brief Auxiliary references to compile the plugin.
+        public string[] References;
+        /// @brief Text of the C# code of the plugin.
+        public string[] Codes;
+        /// @brief Name of the main XML plugin file.
+        public string MainFile;
+        /// @brief Assembly full name for the plugin file.
+        public string AssemblyFullName;
+    }
+
 }

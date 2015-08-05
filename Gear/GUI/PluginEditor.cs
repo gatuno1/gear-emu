@@ -554,7 +554,7 @@ namespace Gear.GUI
                         }
                         else
                         {
-                            ModuleCompiler.EnumerateErrors(EnumErrors);
+                            StaticModuleCompiler.EnumerateErrors(EnumErrors);
                             ShowErrorGrid(true);    //show the error list
                         }
                     }

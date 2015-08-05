@@ -37,8 +37,23 @@ namespace Gear.PluginSupport
     /// @param e Compiler error to enumerate.
     public delegate void ErrorEnumProc(System.CodeDom.Compiler.CompilerError e);
 
+    public class ModuleCompiler
+    {
+        /// @brief Collection for error list on compile a dynamic plugin.
+        private CompilerErrorCollection errorsCollection;
+        /// @brief data of plugin to compile
+        private PluginDataStruct m_pluginData;
+        /// @brief StaticModuleCompiler Constructor.
+        /// @details Clear error list by default.
+        public ModuleCompiler(PluginDataStruct pluginData)
+        {
+            errorsCollection = null;
+            m_pluginData = pluginData;
+        }
+    }
+
     /// @brief Compile a PluginBase Module to memory, returning eventual errors.
-    static class ModuleCompiler
+    static class StaticModuleCompiler
     {
         /// @brief path to compiling cache
         static public readonly string chachePath = @".\plugincache\";
@@ -46,9 +61,9 @@ namespace Gear.PluginSupport
         /// @brief Collection for error list on compile a dynamic plugin.
         static private CompilerErrorCollection m_Errors;    
 
-        /// @brief ModuleCompiler Constructor.
+        /// @brief StaticModuleCompiler Constructor.
         /// @details Clear error list by default.
-        static ModuleCompiler()
+        static StaticModuleCompiler()
         {
             m_Errors = null;
         }
@@ -387,5 +402,6 @@ namespace Gear.PluginSupport
 
         }
     }
+
 
 }
