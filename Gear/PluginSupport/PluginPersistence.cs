@@ -22,7 +22,7 @@
  */
 
 using System;
-using System.Collections;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -183,7 +183,8 @@ namespace Gear.PluginSupport
     public class PluginData
     {
         /// @brief Version of plugin system.
-        /// @note Will be a version, if only is a valid plugin (attribute PluginData::isValid = true).
+        /// @note Will be a version, if only is a valid plugin 
+        /// (attribute PluginData.isValid = true).
         public string PluginSystemVersion;
         /// @brief Metadata properties for the plugin.
         public PluginMetadata metaData;
@@ -225,7 +226,7 @@ namespace Gear.PluginSupport
         /// @brief Name of the assembly file in case of had been compiled to file
         public string AssemblyFile;
         /// @brief Assembly full name for the plugin file.
-        //TODO ASB - check if it is necessary yet after factorization
+        //TODO ASB - check if it is necessary after factorization yet
         public string AssemblyFullName
         {
             get
@@ -265,14 +266,28 @@ namespace Gear.PluginSupport
                 ValidationErrors.Add(errorText);
         }
 
-        /// @brief Generate the name of the compiled plugin.
-        /// @param extension Extension to add to the name. If it is null, none will be added.
+        /// @brief Generate the name of the compiled plugin, assuming "PlgnSysV" as last 
+        /// part of the name of compiled plugin.
+        /// @param extension Extension to add to the name. If it is null, none will 
+        /// be added.
         /// @returns Name of the compiled plugin.
         /// @since v15.03.26 - Added.
         private string CompiledPluginName(string extension)
         {
-            return string.Format("{0}-PlgnSysV{1}{2}",
+            return CompiledPluginName("PlgnSysV",extension);
+        }
+
+        /// @brief Generate the name of the compiled plugin, but specifying the last 
+        /// part of the name.
+        /// @param extension Extension to add to the name. If it is null, none will be added.
+        /// @param lastPart Last part of the name
+        /// @returns Name of the compiled plugin.
+        /// @since v15.03.26 - Added.
+        private string CompiledPluginName(string lastPart, string extension)
+        {
+            return string.Format("{0}-{1}{2}{3}",
                 InstanceName,
+                lastPart,
                 PluginSystemVersion.Replace(".", "_"),
                 ((string.IsNullOrEmpty(extension)) ? string.Empty :
                     (!extension.Contains(".")) ? ("." + extension) : extension));
@@ -416,6 +431,37 @@ namespace Gear.PluginSupport
             //ModuleCompiler.chachePath
             //delete the following:
             return true;    //temp statement
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="DataOfPlugin"></param>
+        /// <param name="Domain"></param>
+        /// <returns></returns>
+        public PluginCommon Compile(AppDomain Domain, PluginData DataOfPlugin)
+        {
+            string compiledName = 
+                CompiledPluginName(Path.GetRandomFileName().Substring(0, 8), ".dll");
+            CompilerParameters cp = new CompilerParameters(
+                new[] { "System.Windows.Forms.dll", "System.dll", "System.Data.dll", "System.Drawing.dll", "System.Xml.dll" },
+                compiledName,
+#if DEBUG
+                true);
+#else
+                false);
+#endif
+            cp.ReferencedAssemblies.Add(System.Windows.Forms.Application.ExecutablePath);
+            cp.GenerateExecutable = false;
+            cp.GenerateInMemory = false;
+            cp.CompilerOptions = "/optimize";
+            cp.WarningLevel = 4;    //to do not consider C00618 warning (obsolete PluginBaseV0_0 class)
+            cp.MainClass = "Gear.PluginSupport." + this.InstanceName;
+            //traverse list adding not null nor empty texts
+            foreach (string s in this.References)
+                if (!string.IsNullOrEmpty(s))
+                    cp.ReferencedAssemblies.Add(s);
+
         }
 
         /// @brief Handle the error in the validation, saving the messages and setting 

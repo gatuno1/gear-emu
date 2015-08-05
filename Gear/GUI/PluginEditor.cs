@@ -38,6 +38,9 @@ namespace Gear.GUI
     /// @brief Form to edit or create GEAR plugins.
     public partial class PluginEditor : Form
     {
+        /// @brief Counter of instances of PluginEditor class.
+        /// @since v15.03.26 - Added.
+        static private uint NumInstances = 0;
         /// @brief File name of current plugin on editor window.
         /// @note Include full path and name to the file.
         private string _lastPluginNameFile;
@@ -64,6 +67,9 @@ namespace Gear.GUI
                 }
             }
         }
+        /// @brief Application Domain to test plugin code compilation.
+        /// @since v15.03.26 - Added.
+        private AppDomain TempDomain;
         /// @brief Default font for editor code.
         /// @since v14.07.03 - Added.
         private static Font defaultFont = new Font(FontFamily.GenericMonospace, 10, 
@@ -140,7 +146,7 @@ namespace Gear.GUI
             }
         }
 
-        /// @brief Complete Name for plugin, including path, for presentation porpouses.
+        /// @brief Complete Name for plugin, including path, for presentation purposes.
         /// @since v15.03.26 - Added.
         private string PluginFileName
         {
@@ -180,6 +186,9 @@ namespace Gear.GUI
             _systemFormatVersion = null;
             changeDetectEnabled = true;
             CodeChanged = false;
+            //increment instance number of this class to generate AppDomain for it
+            NumInstances++;
+            TempDomain = AppDomain.CreateDomain(string.Format("TestDomain{0:D3}",NumInstances));
 
             // setting default font
             defaultFont = new Font(FontFamily.GenericMonospace, 10, FontStyle.Regular);
@@ -204,6 +213,13 @@ namespace Gear.GUI
                 item.Text = GetDefaultTextMetadataElement(item.Group);
                 item.ToolTipText = GetDefaultTooltipMetadataElement(item.Group);
             }
+        }
+
+        /// @brief Default destructor.
+        /// @since v15.03.26 - Added.
+        ~PluginEditor()
+        {
+            NumInstances--;
         }
 
         /// @brief Shows or hide the error grid.
@@ -460,33 +476,39 @@ namespace Gear.GUI
             }
             else
             {
-                string pluginVersion = null, aux = null;
-                string[] codesToCompile = new string[] { codeEditorView.Text };
-                if (DetectClassName(codeEditorView.Text, out aux))  //class name detected?
+                PluginData DataOfPlugin = new PluginData();
+                DataOfPlugin.PluginSystemVersion = _systemFormatVersion;
+                //string pluginVersion = null, aux = null;
+                DataOfPlugin.Codes = new string[] { codeEditorView.Text };
+                //class name detected?
+                if (DetectClassName(codeEditorView.Text, out DataOfPlugin.InstanceName))  
                 {
                     int i = 0;
                     object objInst = null;
-                    instanceName.Text = aux;        //show the name found in the screen field
+                    //show the name found in the screen field
+                    instanceName.Text = DataOfPlugin.InstanceName;
                     errorListView.Items.Clear();    //clear error list, if any
-                    //prepare reference list
-                    string[] refs = new string[referencesList.Items.Count];
+                    //set reference list
+                    DataOfPlugin.References = new string[referencesList.Items.Count];
                     foreach (string s in referencesList.Items)
-                        refs[i++] = s;
-                    if (_systemFormatVersion == "0.0")
+                        DataOfPlugin.References[i++] = s;
+                    //correct & complete things depending on plugin system version
+                    if (DataOfPlugin.PluginSystemVersion == "0.0")
                     {
                         //Search and replace plugin class declarations for V0.0 plugin 
                         // system compatibility.
-                        codesToCompile[0] = 
+                        DataOfPlugin.Codes[0] =
                             PluginSystem.ReplacePropellerClassV0_0(
-                                PluginSystem.ReplaceBaseClassV0_0(codesToCompile[0]) );
-                        pluginVersion = "0.0";
+                                PluginSystem.ReplaceBaseClassV0_0(DataOfPlugin.Codes[0]));
                     }
                     else
                     {
                         objInst = new PropellerCPU(null);
-                        //the expected plugin version is two numbers: "major.minor"
-                        pluginVersion = GetElementsFromMetadata("Version", false)[0];
                     }
+                    //the expected plugin version is two numbers: "major.minor"
+                    this.metaData.PluginVersion =
+                            GetElementsFromMetadata("Version", false)[0];
+                    //TODO ASB - define if it would be necessary anymore to insert details in assembly
                     //determine time to use to build the plugin
                     DateTime TimeOfBuild;
                     try
@@ -506,21 +528,21 @@ namespace Gear.GUI
                         }
                         else throw;
                     }
+                    //TODO ASB - define if it would be necessary anymore to insert details in assembly
+                    this.metaData.Description = GetElementsFromMetadata("Description", false)[0];
+                    DataOfPlugin.metaData = this.metaData;
                     //add information into code to generate the plugin
-                    codesToCompile[0] = PluginSystem.InsertAssemblyDetails(
-                        codesToCompile[0],
+                    DataOfPlugin.Codes[0] = PluginSystem.InsertAssemblyDetails(
+                        DataOfPlugin.Codes[0],
                         TimeOfBuild,
-                        instanceName.Text, 
-                        GetElementsFromMetadata("Description", false)[0], 
-                        pluginVersion);
+                        DataOfPlugin.InstanceName,
+                        DataOfPlugin.metaData.Description,
+                        DataOfPlugin.metaData.PluginVersion);
                     try
                     {
-                        PluginCommon plugin = ModuleCompiler.CompileModule(
-                                codesToCompile,         //string[] codeTexts
-                                instanceName.Text,      //string module
-                                refs,                   //string[] references
-                                objInst,                //object obj 
-                                _systemFormatVersion);  //string pluginSystemVersion
+                        PluginCommon plugin = 
+                            DataOfPlugin.Compile(TempDomain, DataOfPlugin);
+
                         if (plugin != null)
                         {
                             ShowErrorGrid(false);    //hide the error list
