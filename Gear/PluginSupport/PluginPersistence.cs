@@ -442,24 +442,7 @@ namespace Gear.PluginSupport
         {
             string compiledName = 
                 CompiledPluginName(Path.GetRandomFileName().Substring(0, 8), ".dll");
-            CompilerParameters cp = new CompilerParameters(
-                new[] { "System.Windows.Forms.dll", "System.dll", "System.Data.dll", "System.Drawing.dll", "System.Xml.dll" },
-                compiledName,
-#if DEBUG
-                true);
-#else
-                false);
-#endif
-            cp.ReferencedAssemblies.Add(System.Windows.Forms.Application.ExecutablePath);
-            cp.GenerateExecutable = false;
-            cp.GenerateInMemory = false;
-            cp.CompilerOptions = "/optimize";
-            cp.WarningLevel = 4;    //to do not consider C00618 warning (obsolete PluginBaseV0_0 class)
-            cp.MainClass = "Gear.PluginSupport." + this.InstanceName;
-            //traverse list adding not null nor empty texts
-            foreach (string s in this.References)
-                if (!string.IsNullOrEmpty(s))
-                    cp.ReferencedAssemblies.Add(s);
+            
 
         }
 
@@ -1229,7 +1212,7 @@ namespace Gear.PluginSupport
     }
 
     /// @brief hold resumed data for a compiled plugin
-    struct PluginDataStruct
+    public struct PluginDataStruct
     {
         /// @brief Version of plugin system.
         public string PluginSystemVersion;

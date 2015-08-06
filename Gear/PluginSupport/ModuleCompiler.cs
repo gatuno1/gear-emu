@@ -50,6 +50,30 @@ namespace Gear.PluginSupport
             errorsCollection = null;
             m_pluginData = pluginData;
         }
+
+        /// @brief
+        /// @param compiledName 
+        public CompileToMemory(string compiledName)
+        {
+            CompilerParameters cp = new CompilerParameters(
+                new[] { "System.Windows.Forms.dll", "System.dll", "System.Data.dll", "System.Drawing.dll", "System.Xml.dll" },
+                compiledName,
+#if DEBUG
+                true);
+#else
+                false);
+#endif
+            cp.ReferencedAssemblies.Add(System.Windows.Forms.Application.ExecutablePath);
+            cp.GenerateExecutable = false;
+            cp.GenerateInMemory = false;
+            cp.CompilerOptions = "/optimize";
+            cp.WarningLevel = 4;    //to do not consider C00618 warning (obsolete PluginBaseV0_0 class)
+            cp.MainClass = "Gear.PluginSupport." + m_pluginData.InstanceName;
+            //traverse list adding not null nor empty texts
+            foreach (string s in m_pluginData.References)
+                if (!string.IsNullOrEmpty(s))
+                    cp.ReferencedAssemblies.Add(s);
+        }
     }
 
     /// @brief Compile a PluginBase Module to memory, returning eventual errors.

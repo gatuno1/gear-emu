@@ -1020,7 +1020,7 @@ namespace Gear.GUI
                 //get the group the selected item belongs
                 ListViewGroup group = SelectedItem.Group;
                 isUserValue = (textPluginMetadataBox.Text != GetDefaultTextMetadataElement(group));
-                //is a metadata element with many items allowed (>1) or is the default (first one)
+                //is a metadata element with many items allowed (>1) or is the default (first one)?
                 if (!isUserValue | 
                     !IsUserDefinedMetadataElement(SelectedItem) | 
                     ((group.Name != "Authors") && (group.Name != "Links")) )
