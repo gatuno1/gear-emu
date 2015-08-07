@@ -29,6 +29,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Schema;
 
@@ -183,6 +184,9 @@ namespace Gear.PluginSupport
     /// @since v15.03.26 - Added.
     public class PluginData
     {
+        /// @brief Epoch constant for counting time for programs dates.
+        public readonly DateTime dotnetEpoch = 
+            new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Local);
         /// @brief Version of plugin system.
         /// @note Will be a version, if only is a valid plugin 
         /// (attribute PluginData.isValid = true).
@@ -224,14 +228,22 @@ namespace Gear.PluginSupport
         /// @brief Name of the main XML plugin file.
         public string MainFile;
         /// @brief Name of the assembly file in case of had been compiled to file
-        public string AssemblyFile;
-        /// @brief Assembly full name for the plugin file.
         //TODO ASB - check if it is necessary after factorization yet
+        public string AssemblyFile;
+        /// @brief Date & Time of last modification of plugin
+        public DateTime LastModification;
+        /// @brief Assembly full name for the plugin file, taking care of last 
+        /// date & time modification.
         public string AssemblyFullName
         {
             get
             {
-                return PluginAssemblyName(AssemblyUtils.GetFileDateTime(this.MainFile));
+                //check if last modification was updated
+                if (LastModification >= dotnetEpoch)
+                    //return PluginAssemblyName(AssemblyUtils.GetFileDateTime(this.MainFile));
+                    return PluginAssemblyFullName(LastModification).FullName;
+                else
+                    return PluginAssemblyFullName(DateTime.Now).FullName;
             }
         }
         /// @brief Hold the result for a validity test of related XML file, based on DTD.
@@ -248,13 +260,14 @@ namespace Gear.PluginSupport
         /// @version v15.03.26 - Added.
         public PluginData()
         {
-            this.isValid = true;
-            this.errorType = PluginDataErrorType.none;
-            ValidationErrors = new List<string>();
-            AssemblyFile = null;
             metaData = new PluginMetadata();
             //use default value for SingleInstance on plugin loading
             this.SingleInstanceFlag = Properties.Settings.Default.PluginSingleInstanceAssumed;
+            this.AssemblyFile = null;
+            this.LastModification = dotnetEpoch;
+            this.isValid = true;
+            this.errorType = PluginDataErrorType.none;
+            ValidationErrors = new List<string>();
         }
 
         /// @brief Add an error to the list.
@@ -297,18 +310,17 @@ namespace Gear.PluginSupport
         /// @param timeOfBuild The time of build.
         /// @returns Full name of a compiled plugin as it should be retrieved from an assembly.
         /// @since v15.03.26 - Added.
-        public string PluginAssemblyName(DateTime timeOfBuild)
+        public AssemblyName PluginAssemblyFullName(DateTime timeOfBuild)
         {
-            string fullName = string.Concat(
-                //name of compiled module
-                CompiledPluginName(".dll"), ", ",
-                //version
-                "Version=", FormatVersion(PluginVersion, 2), ".",
-                    TimeStampDotnetEpoch(timeOfBuild), ", ",
-                //culture
-                "Culture=neutral, ",
-                //key
-                "PublicKeyToken=null");
+            AssemblyName fullName = new AssemblyName();
+            //name of compiled module
+            fullName.Name = CompiledPluginName(".dll");
+            //version: note that FormatVersion returns the main 2 numbers
+            fullName.Version = new Version( string.Format("{0}.{1}",
+                FormatVersion(PluginVersion, 2),    // returns major,minor
+                TimeStampDotnetEpoch(timeOfBuild)));  // returns major revision, minor revision
+            //culture
+            fullName.CultureInfo = new CultureInfo("neutral");
             return fullName;
         }
 
@@ -364,7 +376,7 @@ namespace Gear.PluginSupport
                         dat.ToString("u")));
             }
             //create the epoch
-            DateTime dotnetEpoch = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Local);
+            //DateTime dotnetEpoch = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Local);
             TimeSpan diff = dat.Subtract(dotnetEpoch);
             int daysSince2000 = diff.Days;
             int secondsSinceLastMidnight =
@@ -375,16 +387,17 @@ namespace Gear.PluginSupport
         /// @brief Transform to PluginDataStruct with the essential data.
         /// @returns The struct with the data.
         /// @since v15.03.26 - Added.
-        private PluginDataStruct ToStruct()
+        private PluginDataStruct ToPluginDataStruct()
         {
-            PluginDataStruct st = new PluginDataStruct();
-            st.PluginSystemVersion = this.PluginSystemVersion;
-            st.PluginVersion = this.PluginVersion;
-            st.SingleInstanceFlag = this.SingleInstanceFlag;
-            st.References = this.References;
-            st.Codes = this.Codes;
-            st.MainFile = this.MainFile;
-            st.AssemblyFullName = this.AssemblyFullName;
+            PluginDataStruct st = new PluginDataStruct(
+                this.PluginSystemVersion, 
+                this.PluginVersion,
+                this.InstanceName,
+                this.SingleInstanceFlag,
+                this.References,
+                this.Codes,
+                this.MainFile,
+                new AssemblyName(this.AssemblyFullName));
             return st;
         }
 
@@ -394,31 +407,38 @@ namespace Gear.PluginSupport
         /// @since v15.03.26 - Added.
         public PluginCommon Compile(AppDomain Domain)
         {
-            //get the assembly name with a random name appended to it
-            string assemblyName = 
-                CompiledPluginName(Path.GetRandomFileName().Substring(0, 8), ".dll");
-            //TODO ASB - see use of appdomain & app proxy class
-            //http://stackoverflow.com/questions/2100296/how-can-i-switch-net-assembly-for-execution-of-one-method/2101048#2101048
-            //http://www.codemag.com/Article/0211081
-            //compile the proxy class into an assembly
-            object ResultAssembly = Domain.CreateInstanceAndUnwrap(
-                assemblyName,                                   //string assemblyName
-                "ModuleCompiler",                               //string typeName
-                false,                                          //bool ignoreCase
-                BindingFlags.Public | BindingFlags.Instance,    //BindingFlags bindingAttr
-                null,                                           //Binder binder
-                new object[] { this.ToStruct() },               //object[] args
-                null,                                           //CultureInfo culture
-                null);                                          //object[] activationAttributes
-            if (ResultAssembly == null)
+            if (Domain != AppDomain.CurrentDomain)
             {
-                //TODO ASB - complete the error message
-                return null;
+                //TODO ASB - see use of appdomain & app proxy class
+                //http://stackoverflow.com/questions/2100296/how-can-i-switch-net-assembly-for-execution-of-one-method/2101048#2101048
+                //http://www.codemag.com/Article/0211081
+                //compile the proxy class into an assembly, using 
+                // constructor with PluginDataStruct parameter
+                object ResultAssembly = Domain.CreateInstanceAndUnwrap(
+                    Assembly.GetExecutingAssembly().FullName,       //string assemblyName
+                    "ModuleCompiler",                               //string typeName
+                    false,                                          //bool ignoreCase
+                    BindingFlags.Public | BindingFlags.Instance,    //BindingFlags bindingAttr
+                    null,                                           //Binder binder
+                    new object[] { this.ToPluginDataStruct() },               //object[] args
+                    null,                                           //CultureInfo culture
+                    null);                                          //object[] activationAttributes
+                if (ResultAssembly == null)
+                {
+                    //TODO ASB - complete the error message
+                    return null;
+                }
+                //case assembly successfully compiled
+                else
+                {
+                    //TODO ASB - complete the 
+                }
             }
-            //case assembly successfully compiled
-            else 
-            { 
-                //TODO ASB - complete the 
+            //we are in the same appdomain as GEAR main program
+            else
+            {
+                ModuleCompiler comp = new ModuleCompiler(this.ToPluginDataStruct());
+                comp.CompileToMemory();
             }
         }
 
@@ -1187,7 +1207,8 @@ namespace Gear.PluginSupport
 
     }
 
-    /// @brief hold resumed data for a compiled plugin
+    /// @brief hold resumed data for a compiled plugin.
+    /// @since v15.03.26 - Added.
     public struct PluginDataStruct
     {
         /// @brief Version of plugin system.
@@ -1204,8 +1225,45 @@ namespace Gear.PluginSupport
         public string[] Codes;
         /// @brief Name of the main XML plugin file.
         public string MainFile;
-        /// @brief Assembly full name for the plugin file.
-        public string AssemblyFullName;
+        /// @brief Internal assembly name object.
+        private AssemblyName _assemblyFullName;
+        /// @brief Assembly full name for the plugin file, including version.
+        public string AssemblyFullName
+        {
+            get
+            {
+                return _assemblyFullName.ToString();
+            }
+        }
+        /// @brief The version string of the assembly associated to this plugin.
+        public string AssemblyVersion
+        {
+            get
+            {
+                return _assemblyFullName.Version.ToString();
+            }
+        }
+        /// @brief Name component only of the assembly associated to this plugin.
+        public string AssemblyNameOnly
+        {
+            get
+            {
+                return _assemblyFullName.Name;
+            }
+        }
+        public PluginDataStruct(string pluginSystemVersion, string pluginVersion, string instanceName, 
+            bool singleInstanceFlag, string[] references, string[] codes, string mainFile, 
+            AssemblyName assemblyFullName)
+        {
+            PluginSystemVersion = pluginSystemVersion;
+            PluginVersion = pluginVersion;
+            InstanceName = instanceName;
+            SingleInstanceFlag = singleInstanceFlag;
+            References = references;
+            Codes = codes;
+            MainFile = mainFile;
+            _assemblyFullName = assemblyFullName;
+        }
     }
 
 }

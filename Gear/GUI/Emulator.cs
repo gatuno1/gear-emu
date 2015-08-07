@@ -236,7 +236,7 @@ namespace Gear.GUI
                 }
                 //generate the full name of the assembly corresponding to the plugin candidate
                 string candidateAssemblyFullName = 
-                    pluginCandidate.PluginAssemblyName(TimeOfBuild);
+                    pluginCandidate.PluginAssemblyFullName(TimeOfBuild).FullName;
 
                 //determine the version to look for the correct method to load it
                 switch (pluginCandidate.PluginSystemVersion)

@@ -37,41 +37,43 @@ namespace Gear.PluginSupport
     /// @param e Compiler error to enumerate.
     public delegate void ErrorEnumProc(System.CodeDom.Compiler.CompilerError e);
 
+    /// @brief Proxy class to compile in a AppDomain a plugin.
+    /// @since v15.03.26 - Added.
     public class ModuleCompiler : MarshalByRefObject
     {
         /// @brief Collection for error list on compile a dynamic plugin.
         private CompilerErrorCollection errorsCollection;
         /// @brief data of plugin to compile
-        private PluginDataStruct m_pluginData;
+        private PluginDataStruct _pluginData;
         /// @brief StaticModuleCompiler Constructor.
         /// @details Clear error list by default.
         public ModuleCompiler(PluginDataStruct pluginData)
         {
             errorsCollection = null;
-            m_pluginData = pluginData;
+            _pluginData = pluginData;
         }
 
         /// @brief Compiles in memory an assembly containing the plugin.
-        /// @param compiledName 
-        public Assembly CompileToMemory(string compiledName)
+        /// @returns If successful, returns the assembly compiled, if not, returns null.
+        public Assembly CompileToMemory()
         {
             CompilerParameters cp = new CompilerParameters(
-                new[] { "System.Windows.Forms.dll", "System.dll", "System.Data.dll", "System.Drawing.dll", "System.Xml.dll" },  //references added by default
-                compiledName,   //name of the compiled assembly
-                false);         //false = no debug
+                new[] { "System.Windows.Forms.dll", "System.dll", "System.Data.dll", "System.Drawing.dll", "System.Xml.dll" }, //references added by default
+                _pluginData.AssemblyNameOnly,               //name of the compiled assembly
+                false);                                     //false = no debug
             cp.ReferencedAssemblies.Add(System.Windows.Forms.Application.ExecutablePath);
             cp.GenerateExecutable = false;
             cp.GenerateInMemory = false;
             cp.CompilerOptions = "/optimize";
             cp.WarningLevel = 4;    //to do not consider C00618 warning (obsolete PluginBaseV0_0 class)
-            cp.MainClass = "Gear.PluginSupport." + m_pluginData.InstanceName;
+            //cp.MainClass = "Gear.PluginSupport." + _pluginData.InstanceName;
             //traverse list adding not null nor empty texts
-            foreach (string s in m_pluginData.References)
+            foreach (string s in _pluginData.References)
                 if (!string.IsNullOrEmpty(s))
                     cp.ReferencedAssemblies.Add(s);
             CodeDomProvider provider = new Microsoft.CSharp.CSharpCodeProvider();
             //compile the assembly
-            CompilerResults results = provider.CompileAssemblyFromFile(cp, m_pluginData.Codes);
+            CompilerResults results = provider.CompileAssemblyFromFile(cp, _pluginData.Codes);
             //check if there are errors
             if (results.Errors.HasErrors | results.Errors.HasWarnings)
             {
@@ -79,6 +81,13 @@ namespace Gear.PluginSupport
                 return null;
             }
             return results.CompiledAssembly;
+        }
+
+        /// @brief Determine if it is loaded in memory assembly of the plugin in the Domain where 
+        /// ModuleCompiler is running.
+        public bool AssemblyAlreadyLoaded()
+        {
+            //TODO ASB - complete the method to determine if Assembly is Already Loaded.
         }
     }
 
