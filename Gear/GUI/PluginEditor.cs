@@ -188,8 +188,11 @@ namespace Gear.GUI
             CodeChanged = false;
             //increment instance number of this class to generate AppDomain for it
             NumInstances++;
-            TempDomain = AppDomain.CreateDomain(string.Format("TestDomain{0:D3}",NumInstances));
-
+            string temp = string.Format("TestDomain{0:D3}", NumInstances);
+            TempDomain = AppDomain.CreateDomain(
+                temp, 
+                null,
+                new AppDomainSetup() { ApplicationName = temp + " of GEAR Application" });
             // setting default font
             defaultFont = new Font(FontFamily.GenericMonospace, 10, FontStyle.Regular);
             codeEditorView.Font = defaultFont;
@@ -540,9 +543,8 @@ namespace Gear.GUI
                         DataOfPlugin.metaData.PluginVersion);
                     try
                     {
-                        PluginCommon plugin = 
-                            DataOfPlugin.Compile(TempDomain, DataOfPlugin);
-
+                        //compile the assembly of the plugin
+                        PluginCommon plugin = DataOfPlugin.Compile(TempDomain);
                         if (plugin != null)
                         {
                             ShowErrorGrid(false);    //hide the error list

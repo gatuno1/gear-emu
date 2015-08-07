@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Xml;
 using System.Xml.Schema;
@@ -371,79 +372,54 @@ namespace Gear.PluginSupport
             return string.Format("{0}.{1}", daysSince2000, secondsSinceLastMidnight);
         }
 
-        /// @brief Determine if the plugin allow only one instance o not.
-        /// @details Use reflection to load and evaluate the member 
-        /// PluginCommon.SingleInstanceAllowed.
-        /// @param appDom Reference to %AppDomain to use to evaluate the member.
-        /// @throws NotValidPluginDataException 
-        /// @returns True if plugin allow only one instance, of False if more than one is allowed.
+        /// @brief Transform to PluginDataStruct with the essential data.
+        /// @returns The struct with the data.
         /// @since v15.03.26 - Added.
-        public bool OnlySingleInstance(AppDomain appDom)
+        private PluginDataStruct ToStruct()
         {
-            if (isValid) 
-            {
-                if (!string.IsNullOrEmpty(MainFile))
-                {
-                    //determine the file name to compile the plugin
-                    string nameToCompile = CompiledPluginName(".dll");
-                    //create a temporally app domain
-                    //TODO ASB - see use of appdomain & app proxy class
-                    //http://stackoverflow.com/questions/2100296/how-can-i-switch-net-assembly-for-execution-of-one-method/2101048#2101048
-                    //http://www.codemag.com/Article/0211081
-                    AppDomain testDomain = AppDomain.CreateDomain(InstanceName + "TestDomain");
-                    if (string.IsNullOrEmpty(AssemblyFile))
-                    {
-                        if (!CompileToFile(nameToCompile))
-                            throw new NotValidPluginDataException(
-                                PluginDataErrorType.openFile,
-                                string.Concat(" trying to compile file '", nameToCompile, "'"));
-                    }
-                    //try to load the plugin from the assembly file
-                    //ObjectHandle pluginHandle = 
-                    //    testDomain.CreateInstanceFrom(MainFile, InstanceName);
-                    //if (pluginTest != null)
-                    //    value = pluginTest.SingleInstanceAllowed;
-                    //else throw new NotValidPluginData(
-                    //        PluginDataErrorType.openFile,
-                    //        string.Concat("couldn't invoke '", InstanceName,
-                    //            ".SingleInstanceAllowed' member with Reflection ",
-                    //            "on PluginData.OnlySingleInstance()"));
-                    //unload the test domain
-                    AppDomain.Unload(testDomain);
-                    return true;    //temp statement
-                }
-                else throw new NotValidPluginDataException(PluginDataErrorType.openFile,
-                    "because file name is empty on PluginData.OnlySingleInstance()");
-            }
-            else throw new NotValidPluginDataException(
-                PluginDataErrorType.openFile,
-                string.Concat("because Plugin data for '", InstanceName, 
-                    "' is not valid, on PluginData.OnlySingleInstance()"));
+            PluginDataStruct st = new PluginDataStruct();
+            st.PluginSystemVersion = this.PluginSystemVersion;
+            st.PluginVersion = this.PluginVersion;
+            st.SingleInstanceFlag = this.SingleInstanceFlag;
+            st.References = this.References;
+            st.Codes = this.Codes;
+            st.MainFile = this.MainFile;
+            st.AssemblyFullName = this.AssemblyFullName;
+            return st;
         }
 
-        /// @brief Compile the plugin to a file.
-        /// @returns True if the compile was successful, false otherwise.
+        /// @brief Compile the plugin into the given AppDomain.
+        /// @param Domain Application Domain where the assembly plugin will be compiled.
+        /// @returns A PluginCommon reference if the compile was successful, null otherwise.
         /// @since v15.03.26 - Added.
-        private bool CompileToFile(string fileName)
+        public PluginCommon Compile(AppDomain Domain)
         {
-            //TODO ASB - complete the PluginData.CompileToFile() method
-            //StaticModuleCompiler.chachePath
-            //delete the following:
-            return true;    //temp statement
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="DataOfPlugin"></param>
-        /// <param name="Domain"></param>
-        /// <returns></returns>
-        public PluginCommon Compile(AppDomain Domain, PluginData DataOfPlugin)
-        {
-            string compiledName = 
+            //get the assembly name with a random name appended to it
+            string assemblyName = 
                 CompiledPluginName(Path.GetRandomFileName().Substring(0, 8), ".dll");
-            
-
+            //TODO ASB - see use of appdomain & app proxy class
+            //http://stackoverflow.com/questions/2100296/how-can-i-switch-net-assembly-for-execution-of-one-method/2101048#2101048
+            //http://www.codemag.com/Article/0211081
+            //compile the proxy class into an assembly
+            object ResultAssembly = Domain.CreateInstanceAndUnwrap(
+                assemblyName,                                   //string assemblyName
+                "ModuleCompiler",                               //string typeName
+                false,                                          //bool ignoreCase
+                BindingFlags.Public | BindingFlags.Instance,    //BindingFlags bindingAttr
+                null,                                           //Binder binder
+                new object[] { this.ToStruct() },               //object[] args
+                null,                                           //CultureInfo culture
+                null);                                          //object[] activationAttributes
+            if (ResultAssembly == null)
+            {
+                //TODO ASB - complete the error message
+                return null;
+            }
+            //case assembly successfully compiled
+            else 
+            { 
+                //TODO ASB - complete the 
+            }
         }
 
         /// @brief Handle the error in the validation, saving the messages and setting 

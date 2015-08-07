@@ -37,7 +37,7 @@ namespace Gear.PluginSupport
     /// @param e Compiler error to enumerate.
     public delegate void ErrorEnumProc(System.CodeDom.Compiler.CompilerError e);
 
-    public class ModuleCompiler
+    public class ModuleCompiler : MarshalByRefObject
     {
         /// @brief Collection for error list on compile a dynamic plugin.
         private CompilerErrorCollection errorsCollection;
@@ -51,18 +51,14 @@ namespace Gear.PluginSupport
             m_pluginData = pluginData;
         }
 
-        /// @brief
+        /// @brief Compiles in memory an assembly containing the plugin.
         /// @param compiledName 
-        public CompileToMemory(string compiledName)
+        public Assembly CompileToMemory(string compiledName)
         {
             CompilerParameters cp = new CompilerParameters(
-                new[] { "System.Windows.Forms.dll", "System.dll", "System.Data.dll", "System.Drawing.dll", "System.Xml.dll" },
-                compiledName,
-#if DEBUG
-                true);
-#else
-                false);
-#endif
+                new[] { "System.Windows.Forms.dll", "System.dll", "System.Data.dll", "System.Drawing.dll", "System.Xml.dll" },  //references added by default
+                compiledName,   //name of the compiled assembly
+                false);         //false = no debug
             cp.ReferencedAssemblies.Add(System.Windows.Forms.Application.ExecutablePath);
             cp.GenerateExecutable = false;
             cp.GenerateInMemory = false;
@@ -73,6 +69,16 @@ namespace Gear.PluginSupport
             foreach (string s in m_pluginData.References)
                 if (!string.IsNullOrEmpty(s))
                     cp.ReferencedAssemblies.Add(s);
+            CodeDomProvider provider = new Microsoft.CSharp.CSharpCodeProvider();
+            //compile the assembly
+            CompilerResults results = provider.CompileAssemblyFromFile(cp, m_pluginData.Codes);
+            //check if there are errors
+            if (results.Errors.HasErrors | results.Errors.HasWarnings)
+            {
+                errorsCollection = results.Errors;
+                return null;
+            }
+            return results.CompiledAssembly;
         }
     }
 
